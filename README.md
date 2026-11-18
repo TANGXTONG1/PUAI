@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>在线入口</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=c1ae2f9e43">下载 skill</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=84205cab92">下载 skill</a>
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
@@ -43,7 +43,7 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 
 从反复出现的相处方式里挑一个主题，再用你的原话做成报告。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
 
-[![九种 A 版长图的标题与金句](docs/themes/overview.png?v=56ef097691)](https://xn--sxrw8m230b.com/PUAI/themes/)
+[![九种 A 版长图的标题与金句](docs/themes/overview.png?v=ffef27aa57)](https://xn--sxrw8m230b.com/PUAI/themes/)
 
 [打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/)
 
