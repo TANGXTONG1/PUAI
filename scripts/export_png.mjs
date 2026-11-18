@@ -137,7 +137,7 @@ async function main() {
     });
     const result = await page.evaluate(() => {
       const canvas = document.querySelector('#poster');
-      if (!(canvas instanceof HTMLCanvasElement)) throw new Error('Expected the report canvas #poster. Generate a compact report with --style comic first.');
+      if (!(canvas instanceof HTMLCanvasElement)) throw new Error('Expected the report canvas #poster. Generate a report with --style print or --style comic first.');
       const fonts = [...document.fonts].filter(face => face.status === 'error').map(face => face.family);
       if (fonts.length) throw new Error('Failed to load embedded fonts: ' + fonts.join(', '));
       return { width: canvas.width, height: canvas.height,

@@ -505,11 +505,14 @@ def public_report(report, compact=False):
     return public
 
 
-def render_report(report, template, compact=False):
+def render_report(report, template, compact=False, style=None):
     validate_report(report)
+    if style == "print" and any("rewrite" in quote for quote in report.get("activity", {}).get("share_quotes", [])):
+        raise ReportError("print reports require approved verbatim share_quotes; reselect the original lines to share")
     marker = "__REPORT_JSON__"
     if template.count(marker) != 1:
         raise ReportError("template: expected exactly one __REPORT_JSON__ marker")
+    template = template.replace("__PUAI_LAYOUT__", "print" if style == "print" else "comic")
     font_marker = "__DISPLAY_FONT_BASE64__"
     if font_marker in template:
         font_path = Path(__file__).resolve().parents[1] / "assets" / "SmileySans-Oblique.woff2"
@@ -532,7 +535,7 @@ def main(argv=None):
     source.add_argument("--demo", action="store_true", help="use the bundled fictional example")
     parser.add_argument("--output", type=Path, required=True, help="standalone HTML output path")
     parser.add_argument("--compact", action="store_true", help="use the compact template and minimal public fields")
-    parser.add_argument("--style", choices=("classic", "comic", "poster", "ticket"),
+    parser.add_argument("--style", choices=("classic", "comic", "print", "poster", "ticket"),
                         help="compact visual style; choosing any style implies --compact")
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[1]
@@ -545,16 +548,18 @@ def main(argv=None):
         report = json.loads(input_path.read_text(encoding="utf-8"))
         style = args.style
         if isinstance(report, dict) and "theme" in report:
-            style = style or "comic"
-            if report["theme"] != "puai" and style != "comic":
-                raise ReportError("report.theme: themed posters require --style comic")
+            style = style or "print"
+            if report["theme"] != "puai" and style not in {"print", "comic"}:
+                raise ReportError("report.theme: themed posters require --style print or comic")
         compact = args.compact or style is not None
-        if style in {"comic", "poster", "ticket"}:
+        if style == "print":
+            template_name = "comic-template.html"
+        elif style in {"comic", "poster", "ticket"}:
             template_name = f"{style}-template.html"
         else:
             template_name = "compact-template.html" if compact else "report-template.html"
         template = (root / "assets" / template_name).read_text(encoding="utf-8")
-        html = render_report(report, template, compact=compact)
+        html = render_report(report, template, compact=compact, style=style)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(html, encoding="utf-8")
     except (OSError, UnicodeError, json.JSONDecodeError, ReportError) as exc:

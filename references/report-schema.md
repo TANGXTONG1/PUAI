@@ -63,7 +63,7 @@
 
 `share_quotes[].emphasis` 为可选的 1–30 个字符，必须是该条 `text` 的连续子串，不接受空值或改写。它仅供模板放大原文中的重点字，不新增文字，也不改变原句。旧数据不提供此字段时保持原有输出。
 
-显式主题只接收原话。`repeat_message_ids` 的复读排名仅用于 PUAI 及历史无主题输入。以下 `rewrite` 规则仅为无主题的历史输入兼容保留，当前流程及演示不填此字段；用户撤销改写授权后，须回到经过核验的原文再生成，不能沿用旧改写。历史 `share_quotes[].rewrite` 为可选的 `{text,emphasis?}`：`text` 为 1–80 个字符；可选 `emphasis` 为 1–30 个字符，必须是改写 `text` 的连续子串。改写无需逐字匹配证据，但原 `text`、原 `emphasis` 和原消息证据仍按上述规则完整核验，不得用改写绕过原话核验。紧凑输出只保留改写版 `text`，增加 `kind="rewrite"`；重点字仅取改写对象内的 `emphasis`，没有则省略，不继承原重点字。原文只留在私有输入中，不在公开 HTML 同时嵌入两份。界面必须明确标注「改写」，不能冒充历史原话。没有 `rewrite` 时保持旧字段与输出不变。
+印刷版和显式主题只接收可公开的原话。`repeat_message_ids` 的复读排名仅用于 PUAI 及历史无主题输入。以下 `rewrite` 规则仅为无主题的历史输入兼容保留，当前流程及演示不填此字段；用户撤销改写授权后，须回到经过核验的原文再生成，不能沿用旧改写。历史 `share_quotes[].rewrite` 为可选的 `{text,emphasis?}`：`text` 为 1–80 个字符；可选 `emphasis` 为 1–30 个字符，必须是改写 `text` 的连续子串。改写无需逐字匹配证据，但原 `text`、原 `emphasis` 和原消息证据仍按上述规则完整核验，不得用改写绕过原话核验。紧凑输出只保留改写版 `text`，增加 `kind="rewrite"`；重点字仅取改写对象内的 `emphasis`，没有则省略，不继承原重点字。原文只留在私有输入中，不在公开 HTML 同时嵌入两份。界面必须明确标注「改写」，不能冒充历史原话。没有 `rewrite` 时保持旧字段与输出不变。
 
 `share_quotes[].repeat_message_ids` 是可选的 2–50,000 个唯一消息 ID，必须包含本条 `message_id`。所有 ID 都须存在于 `activity.messages`，属于已核验 `roast_message_ids`，并按用户时区落在同一分析期的 `rhythm.analysis_months` 内；可跨月份，也可来自没有选展日历的分析期月份。非 `demo` 模式逐条检查，每条消息自己的关联证据都必须包含相同、完整的 `text`，不能凭别条证据或关键词命中凑数。展示原句的普通规则不变，只有要求复读统计时才增加这些条件。
 
@@ -108,11 +108,11 @@
 
 四个 token 数字均不接受布尔值、浮点数、负数或超出 JavaScript 安全整数范围的值。先按同一时区限定整个分析期，再按来源语义处理累计值、重复事件与主会话/子代理边界；证据须保存可复算的方法与实际计数。不能把累计快照逐条相加，也不能把缺失日志补成零。生成器只校验日期、整数、加法和证据引用，不能替代对日志口径、去重或覆盖完整性的核验。
 
-紧凑公开输出仅保留 `{total_tokens,cached_input_tokens,coverage,scope}`；日期复用 `rhythm`，不公开证据 ID 或原始使用日志。未提供该字段时完全省略；普通非紧凑输出保持原样，不新增 token 汇总。主图写「和 AI 对话，烧了 T token」，不加天数；不得外推连续在线时长或全年的总使用量。token 总量不是用户字数，`cached_input_tokens` 也不等于新生成内容；用户骂 AI 的占比另用消息数计算，不与 token 数混用。
+紧凑公开输出仅保留 `{total_tokens,cached_input_tokens,coverage,scope}`；日期复用 `rhythm`，不公开证据 ID 或原始使用日志。未提供该字段时完全省略；普通非紧凑输出保持原样，不新增 token 汇总。主图标出对话 token 和已核验的总量，不加天数；不得外推连续在线时长或全年的总使用量。token 总量不是用户字数，`cached_input_tokens` 也不等于新生成内容；用户骂 AI 的占比另用消息数计算，不与 token 数混用。
 
 ## 紧凑长图输出
 
-默认 `--style comic` 使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式的公开白名单一致，仅为：
+默认印刷版 `--style print` 与原漫画版 `--style comic` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式的公开白名单一致，仅为：
 
 - `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
 - `person` 只公开 `{name}`；`name` 沿用输入的 1–16 字校验，须为用户明确提供用于分享的昵称，不得从本地目录、工作信息或邮箱推测。
@@ -133,7 +133,7 @@
 
 有 `activity.theme_message_ids` 时，紧凑输出派生 `activity.theme_stats = {messages,months,days}`。例如当天两条消息只有一条体现主主题，可能得到 `{"messages":1,"months":{"2026-06":1},"days":{"2026-06-21":1}}`。按用户时区将已核验且属于分析期的消息逐条计入，每条仅算一次。`messages` 是全期合计，`months` 包含每个有对话的分析期月份及次数（可为 0），`days` 只含有命中的本地日期及次数。分析期前的 ID 不计入任何这三项。若未提供复核子集，整个 `theme_stats` 省略；显式 `[]` 则返回零计数。原始 ID、未选原句和证据不公开，也不接受直接在私有输入伪造 `theme_stats`。
 
-新版漫画的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分母为对应月的全部用户消息。只有主题子集经语义复核、分母有可用消息时才有占比。呈现为已核验消息下限，舍入比例用「约」。不从标签、金句数或 `roast_message_ids` 推算主题计数。指令总数、活跃日历及日志 token 都与所选主主题独立。
+印刷版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分母为对应月的全部用户消息。只有主题子集经语义复核、分母有可用消息时才有占比。呈现为已核验消息下限，舍入比例用「约」。不从标签、金句数或 `roast_message_ids` 推算主题计数。指令总数、活跃日历及日志 token 都与所选主主题独立。
 
 公开 `activity.share_quotes` 为 `[{date,text,kind?,emphasis?,repeat_count?}]`：`kind` 仅在输入附有 `rewrite` 时输出为 `"rewrite"`，同时 `text` 与可选 `emphasis` 取改写版本；其他可选字段只在对应输入提供时输出，旧数据仍为 `{date,text}`。日期由对应原消息的时间戳按同一 `timezone` 换算，只保留 `rhythm.analysis_months` 内的条目，不受日历选展月份限制；输出沿用输入的编辑顺序，过滤不改变剩余条目的相对顺序，不按日期重新排序。原消息 ID、复读 ID 列表、时间戳、来源和证据引用不公开；有改写时也不公开原 `text` 或原 `emphasis`。模板按不同日期升序编号，同一天共用日期标记，编号不受编辑排序影响；日期可能没有对应的选展日历，仍须标出原消息日期。同日不同消息仍可各占一条。未提供此字段时省略，显式空列表或全部落在分析期前时输出 `[]`。普通非紧凑输出保持原逻辑，不自动增加此分享列表或 `rhythm`。
 
@@ -152,10 +152,10 @@
 在 skill 根目录执行：
 
 ```bash
-python3 scripts/build_report.py --input /absolute/path/report.json --style comic --output /absolute/path/share.html
+python3 scripts/build_report.py --input /absolute/path/report.json --style print --output /absolute/path/share.html
 node scripts/export_png.mjs --input /absolute/path/share.html --output /absolute/path/share.png
 ```
 
-导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；显式 `theme` 的输入不写 `--style` 时自动使用 `comic`，非 `puai` 的主题只支持该模板。未提供 `theme` 也未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
+导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；显式 `theme` 的输入不写 `--style` 时自动使用 `print`。九型共用印刷母版与一套字号，专色和页眉记号按主题变化；显式 `--style comic` 保留 PUAI 原红白漫画版，其他八型仍使用印刷母版。未提供 `theme` 也未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
 
 生成器不修改输入文件。验证失败时返回非零状态，不写入输出；错误消息指出字段。输出使用字段白名单，去掉证据并将 `<`、`>`、`&`、Unicode 行分隔符安全转义，避免用户文字逃逸嵌入数据块。

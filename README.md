@@ -50,13 +50,13 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/preview.png">
-    <img src="docs/preview.png" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格">
+  <a href="https://xn--sxrw8m230b.com/PUAI/themes/puai.png">
+    <img src="docs/themes/puai.png" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">查看完整报告</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">查看完整报告</a> · <a href="https://xn--sxrw8m230b.com/PUAI/preview.png">原漫画版</a>
 </p>
 
 原话只精选，不改写；没有记录不编数字；私人工作背景不上图。每个人的金句和标签都取自自己的记录。
@@ -67,7 +67,7 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 读取 [SKILL.md](SKILL.md)，按其中流程整理用户授权的记录，再运行：
 
 ```bash
-python3 scripts/build_report.py --input /path/to/report.json --style comic --output /path/to/share.html
+python3 scripts/build_report.py --input /path/to/report.json --style print --output /path/to/share.html
 node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.png
 ```
 

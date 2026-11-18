@@ -5,7 +5,7 @@
 先生成 HTML，再导出：
 
 ```bash
-python3 scripts/build_report.py --input /path/report.json --style comic --output /path/report.html
+python3 scripts/build_report.py --input /path/report.json --style print --output /path/report.html
 node scripts/export_png.mjs --input /path/report.html --output /path/report.png --mobile-preview /path/report-mobile.png
 ```
 
