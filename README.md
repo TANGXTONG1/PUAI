@@ -47,7 +47,7 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 
 [![九种 A 版长图的标题与金句](docs/themes/overview.png?v=ffef27aa57)](https://xn--sxrw8m230b.com/PUAI/themes/)
 
-[打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/)
+[打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/) · [九种人机关系的亮底轻赛博色样](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/)
 
 [轻赛博配色 · 8 张高对比报告](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术配色样刊 · 同一张报告的 16 种印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/)
 
