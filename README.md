@@ -22,7 +22,7 @@
 把 `XXX` 换成你的昵称，复制给能读取链接、运行代码的 Agent：
 
 ```text
-叫我「XXX」，生成我的 PUAI 年度报告长图。
+叫我「XXX」，生成我调教 AI 的年度报告长图。
 参考该 skill：https://github.com/TANGXTONG1/PUAI
 ```
 
