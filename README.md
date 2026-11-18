@@ -2,7 +2,7 @@
 
 [在线入口：填写昵称，复制口令](https://xn--sxrw8m230b.com/PUAI/)
 
-把你的 AI 对话做成一张年度报告：token 用量、开喷比例、发言日历、原话金句和用户人格。默认红白漫画 A 版，导出手机可读的 PNG 长图。
+把你的 AI 对话（主要是，PUA AI）做成一张年度报告：token 用量、开喷比例、发言日历、原话金句和用户人格。
 
 ## 示例
 
@@ -12,15 +12,6 @@
   </a>
 </p>
 
-人物、统计和日期为演示，金句摘自不同作者的真实公开发言。[查看完整样例与出处](https://xn--sxrw8m230b.com/PUAI/sample.html)
-
-**金句示例**
-
-> 你干不好有的是 agents 愿意干
-
-> 我花钱雇了一个老油条，然后老油条还想当我老板
-
-**用户人格示例：** 赛博包工头 · 付费牛马 · 活爹克星
 
 ## 分享与使用
 
@@ -56,4 +47,4 @@ node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.
 
 Python 3.9+、Node.js 20+、Playwright 和 Chromium；缺少依赖时见 [PNG 导出说明](references/png-export.md)。输入格式见 [report-schema.md](references/report-schema.md)，无需用户手填。
 
-字体得意黑 Smiley Sans 随包保留 [OFL 许可](assets/SmileySans-OFL.txt)。独立创意项目，非网易云音乐官方产品。
+字体得意黑 Smiley Sans 随包保留 [OFL 许可](assets/SmileySans-OFL.txt)。独立创意项目。
