@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  把你的 AI 对话（主要是，PUA AI）做成一张年度报告：<br>
-  token 用量、开喷比例、发言日历、原话金句和用户人格。
+  从你和 AI 的聊天里挑出年度人格，用你的原话做成长图。<br>
+  你是给 AI 上课，给 AI 挂急诊，还是花会员费给 AI 提供情绪价值？
 </p>
 
 <p align="center">
@@ -12,7 +12,7 @@
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip">下载 skill</a>
   &nbsp; · &nbsp;
-  <a href="#报告示例">报告示例</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
   <a href="SKILL.md">Skill 说明</a>
 </p>
@@ -39,7 +39,15 @@ npx skills add TANGXTONG1/PUAI
 
 Agent 无法访问你的历史时，上传聊天导出文件即可。生成在你的 Agent 环境中完成。
 
-## 报告示例
+## 你的年度人机关系
+
+从反复出现的相处方式里挑一个主题，再用你的原话做成报告。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
+
+[![九种主题封面](docs/themes/overview.png)](https://xn--sxrw8m230b.com/PUAI/themes/)
+
+[打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/)
+
+## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
   <a href="https://xn--sxrw8m230b.com/PUAI/preview.png">

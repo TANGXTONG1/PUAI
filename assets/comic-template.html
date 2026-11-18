@@ -104,7 +104,21 @@ const canvas=document.getElementById('poster'),ctx=canvas.getContext('2d');
 const ink='#231e1a',muted='#6c5650',violet='#ff3d32',green='#231e1a',red='#ff3d32',paper='#fff7ed',pale='#e8dcd2';
 const fontFamily='"PingFang SC","Microsoft YaHei",sans-serif',displayFamily='"Smiley Sans","STHeiti",sans-serif';
 const owner=report.person?.name||'你';
-const reportTitle=report.year+' PUAI 报告';
+// A theme supplies the colors, cover illustration, quote shape and reading order.
+// PUAI keeps its original renderer below. None of these scenes use its roast counters.
+const editions = {
+  aicu:     { name:'AICU', paper:'#f3fbf6', ink:'#123e39', accent:'#00716b', tint:'#b9e7d2', signal:'#f78c68', cover:'#c8f5d9', shape:'chart',    keyword:'急救' },
+  all:      { name:'AI特全体', paper:'#eff4ff', ink:'#151c50', accent:'#3346a9', tint:'#d8ddff', signal:'#ed92ed', cover:'#dadeff', shape:'thread', keyword:'跨模型' },
+  hush:     { name:'AI在心口难开', paper:'#fff6f2', ink:'#582e3e', accent:'#9a3858', tint:'#f6d6df', signal:'#e59578', cover:'#fce0d4', shape:'letter', keyword:'代写' },
+  einstein: { name:'AI因斯坦', paper:'#f3f8ff', ink:'#1a304f', accent:'#225895', tint:'#d1e7fb', signal:'#f2b848', cover:'#dcecff', shape:'proof', keyword:'追问' },
+  edison:   { name:'AI迪生', paper:'#fff8dd', ink:'#412e22', accent:'#95511b', tint:'#ffe18a', signal:'#fb8342', cover:'#ffe57c', shape:'memo', keyword:'新点子' },
+  support:  { name:'AI的供养', paper:'#f9f1ff', ink:'#422a5a', accent:'#804292', tint:'#edd8f4', signal:'#ff9dcf', cover:'#f2d7f0', shape:'ticket', keyword:'应援' },
+  free:     { name:'AI咋咋地', paper:'#f3f8e9', ink:'#253b29', accent:'#436d31', tint:'#d7e9bd', signal:'#d6ed65', cover:'#e1f5b7', shape:'slip', keyword:'放权' },
+  teach:    { name:'AI的教育', paper:'#fdf9ed', ink:'#273b50', accent:'#a24635', tint:'#f1d9b4', signal:'#efaa61', cover:'#f4e4bf', shape:'exercise', keyword:'教学' }
+};
+const edition=Object.hasOwn(editions, report.theme) ? editions[report.theme] : null;
+const isSpecimen=Boolean(edition && report.mode==='demo' && owner==='版式试样');
+const reportTitle=edition ? report.year+' '+edition.name+' 年度报告' : report.year+' PUAI 报告';
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
 const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
@@ -140,7 +154,17 @@ ctx.translate(48,36);box(0,0,w,56,0,red);ctx.fillStyle=paper;ctx.fillText(label,
 function marker(q,x,y,color=ink){box(x,y,32,32,16,color);centered(markers.get(q.date),x+16,y+3,24,color===paper?ink:paper,600);text(q.date.slice(5).replace('-','.'),x+44,y,32,color,550)}
 const stickerLayouts=[];
 const wordSegmenter=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh-CN',{granularity:'word'}):null;
-function richLines(q,width,size,balance=true){const split=(str,strong)=>(wordSegmenter?[...wordSegmenter.segment(str)].map(t=>t.segment):[...str.matchAll(/[A-Za-z0-9]+|./gu)].map(t=>t[0])).map(value=>({value,strong}));const start=q.emphasis?q.text.indexOf(q.emphasis):-1;let tokens;if(start<0)tokens=split(q.text,false);else{font(size,700);const middle=ctx.measureText(q.emphasis).width<=width?[{value:q.emphasis,strong:true}]:split(q.emphasis,true);tokens=[...split(q.text.slice(0,start),false),...middle,...split(q.text.slice(start+q.emphasis.length),false)]}const rows=[];let row=[],used=0;for(const token of tokens){font(size,token.strong?700:600);const w=ctx.measureText(token.value).width;if(row.length&&(/[。！？]$/.test(row.at(-1).value)&&width-used<size*2.5||used+w>width)){if(/^[，。！？、；：）”]$/.test(token.value)&&row.length>1){const last=row.pop();rows.push(row);row=[last];font(size,last.strong?700:600);used=ctx.measureText(last.value).width}else{rows.push(row);row=[];used=0}}row.push(token);used+=w}if(row.length)rows.push(row);
+function richLines(q,width,size,balance=true){const split=(str,strong)=>(wordSegmenter?[...wordSegmenter.segment(str)].map(t=>t.segment):[...str.matchAll(/[A-Za-z0-9]+|./gu)].map(t=>t[0])).map(value=>({value,strong}));const start=q.emphasis?q.text.indexOf(q.emphasis):-1;let tokens;if(start<0)tokens=split(q.text,false);else{font(size,700);const middle=ctx.measureText(q.emphasis).width<=width?[{value:q.emphasis,strong:true}]:split(q.emphasis,true);tokens=[...split(q.text.slice(0,start),false),...middle,...split(q.text.slice(start+q.emphasis.length),false)]}if(edition) {
+  // Long URLs and identifiers have no word-break boundary. Preserve them across lines.
+  const graphemes=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh-CN',{granularity:'grapheme'}):null;
+  tokens=tokens.flatMap(token=>{
+    font(size,token.strong?700:600);
+    if(ctx.measureText(token.value).width<=width) return [token];
+    const chars=graphemes?Array.from(graphemes.segment(token.value),part=>part.segment):Array.from(token.value);
+    return chars.map(value=>({value,strong:token.strong}));
+  });
+}
+const rows=[];let row=[],used=0;for(const token of tokens){font(size,token.strong?700:600);const w=ctx.measureText(token.value).width;if(row.length&&(/[。！？]$/.test(row.at(-1).value)&&width-used<size*2.5||used+w>width)){if(/^[，。！？、；：）”]$/.test(token.value)&&row.length>1){const last=row.pop();rows.push(row);row=[last];font(size,last.strong?700:600);used=ctx.measureText(last.value).width}else{rows.push(row);row=[];used=0}}row.push(token);used+=w}if(row.length)rows.push(row);
 if(balance){
   const lineWidth=row=>row.reduce((n,t)=>{font(size,t.strong?700:600);return n+ctx.measureText(t.value).width},0);
   let balanced=rows;
@@ -253,8 +277,299 @@ quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
 if(draw){box(0,y-8,900,196,0,red);text('用户人格',48,y+16,38,paper,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
 return Math.ceil(y+188)
 }
-function render(){canvas.height=drawPoster(false);drawPoster(true);document.getElementById('preview').src=canvas.toDataURL('image/png')}
+function strokePath(points, color, weight=3, closed=false, fill=null) {
+  ctx.beginPath();
+  points.forEach(([x,y],index)=>index ? ctx.lineTo(x,y) : ctx.moveTo(x,y));
+  if(closed) ctx.closePath();
+  if(fill) {ctx.fillStyle=fill;ctx.fill()}
+  if(color) {ctx.strokeStyle=color;ctx.lineWidth=weight;ctx.stroke()}
+}
+function disk(x,y,r,color,stroke=null,width=2) {
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  if(stroke) {ctx.lineWidth=width;ctx.strokeStyle=stroke;ctx.stroke()}
+}
+function frame(x,y,w,h,r,fill,stroke=null,width=2) {
+  box(x,y,w,h,r,fill);
+  if(stroke) {ctx.lineWidth=width;ctx.strokeStyle=stroke;ctx.stroke()}
+}
+function grid(x,y,w,h,step,color) {
+  for(let xx=x;xx<=x+w;xx+=step) line(xx,y,xx,y+h,color);
+  for(let yy=y;yy<=y+h;yy+=step) line(x,yy,x+w,yy,color);
+}
+function fitText(value,x,y,width,size,color,weight=600,family=fontFamily) {
+  const str=String(value);font(size,weight,family);
+  const constrained=Math.min(size,size*width/Math.max(1,ctx.measureText(str).width));
+  text(str,x,y,constrained,color,weight,family);
+}
+function innerLabel(value,x,y,w,h,size,fg,bg,radius=0) {
+  ctx.save();box(x,y,w,h,radius,bg);font(size,700);
+  const width=ctx.measureText(value).width;
+  if(width>w-22) font(size*(w-22)/width,700);
+  ctx.textBaseline='alphabetic';const m=ctx.measureText(value);ctx.fillStyle=fg;
+  ctx.fillText(value,x+(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,y+(h+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+  ctx.restore();
+}
+function coverMark(x,y) {
+  const e=edition, color=e.ink;
+  ctx.save();ctx.translate(x,y);ctx.lineJoin='round';ctx.lineCap='round';
+  switch(e.shape) {
+    case 'chart':
+      frame(8,8,212,146,16,e.ink);grid(24,28,178,98,18,'#2a6258');
+      strokePath([[22,89],[56,89],[68,69],[84,117],[100,39],[115,99],[129,81],[140,89],[199,89]],'#a4f6c5',6);
+      box(82,160,62,6,3,e.ink);break;
+    case 'thread':
+      for(const [tx,ty] of [[170,30],[185,82],[169,138]]) {
+        strokePath([[86,84],[120,84],[139,ty],[tx-16,ty]],e.accent,3);
+        frame(tx-8,ty-18,54,32,10,'#fff',color,2);
+        disk(tx+12,ty-2,4,e.signal);disk(tx+23,ty-2,4,e.accent);
+      }
+      frame(6,40,88,85,18,color);innerLabel('@',8,40,84,85,59,'#fff',color,17);break;
+    case 'letter':
+      ctx.rotate(-.055);strokePath([[4,51],[113,2],[220,51],[220,150],[4,150]],color,3,true,e.tint);
+      frame(39,18,142,103,3,'#fff',color);line(58,44,154,44,e.accent,4);line(58,58,141,58,e.accent,4);
+      strokePath([[4,51],[108,107],[220,51],[220,150],[4,150]],color,3,true,'#fff8ec');
+      strokePath([[4,150],[80,94]],color,2);strokePath([[220,150],[143,94]],color,2);disk(110,105,12,e.accent);break;
+    case 'proof':
+      grid(1,3,217,153,19,'#a7c4e2');
+      for(const angle of [-.67,.67,0]) {ctx.beginPath();ctx.ellipse(113,79,96,32,angle,0,2*Math.PI);ctx.strokeStyle=color;ctx.lineWidth=3;ctx.stroke()}
+      disk(113,79,14,e.signal,color,3);disk(207,77,7,e.accent);disk(48,122,6,color);break;
+    case 'memo':
+      ctx.beginPath();ctx.moveTo(88,110);ctx.bezierCurveTo(88,87,60,80,63,53);ctx.bezierCurveTo(66,0,147,-8,155,48);ctx.bezierCurveTo(161,78,133,91,133,110);ctx.closePath();ctx.fillStyle='#fff6c4';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=5;ctx.stroke();
+      strokePath([[98,108],[89,68],[110,83],[134,65],[120,108]],e.accent,4);
+      for(let n=0;n<3;n++) line(86,116+n*9,134-n*3,116+n*9,color,5);
+      for(const [ax,ay,bx,by] of [[38,48,19,43],[51,10,36,0],[168,13,180,1],[181,47,203,38],[174,91,193,101],[47,93,29,103]]) line(ax,ay,bx,by,color,4);
+      break;
+    case 'ticket':
+      ctx.rotate(-.1);frame(10,31,206,102,14,'#fff4fe',color,3);
+      ctx.setLineDash([5,6]);line(164,34,164,130,e.accent,2);ctx.setLineDash([]);
+      for(let n=0;n<5;n++) line(174+n*6,52,174+n*6,112,color,n%2?2:4);
+      ctx.beginPath();ctx.moveTo(87,111);ctx.bezierCurveTo(22,71,54,35,85,56);ctx.bezierCurveTo(121,31,150,64,87,111);ctx.fillStyle=e.signal;ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=3;ctx.stroke();break;
+    case 'slip':
+      ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(0,143);ctx.bezierCurveTo(26,164,93,101,53,100);ctx.bezierCurveTo(24,111,54,151,105,100);ctx.strokeStyle=e.accent;ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
+      strokePath([[63,58],[218,8],[163,130],[131,88],[104,104],[106,76]],color,3,true,'#fffef2');
+      strokePath([[104,104],[115,77],[217,9],[131,88]],color,3,true,e.signal);break;
+    case 'exercise':
+      grid(3,2,207,154,22,'#cfbd9d');frame(32,11,135,136,2,'#fff9ed',color,3);
+      for(let n=0;n<5;n++) line(50,34+n*20,149,34+n*20,'#b5bfd0',2);
+      line(59,13,59,146,'#df9e8e',2);
+      strokePath([[90,77],[105,94],[152,42]],e.accent,7);
+      strokePath([[151,120],[192,43],[203,49],[162,127],[147,140]],color,2,true,e.signal);
+      break;
+  }
+  ctx.restore();
+}
+function editionCover() {
+  const e=edition;
+  box(0,0,900,284,0,e.cover);
+  if(e.shape==='proof'||e.shape==='exercise') grid(0,0,900,282,32,e.shape==='proof'?'#c5def4':'#e1d1ae');
+  if(e.shape==='ticket') {ctx.setLineDash([10,9]);line(0,267,900,267,e.accent,2);ctx.setLineDash([])}
+  else if(e.shape==='memo') {for(let x=60;x<900;x+=72) disk(x,14,5,e.ink)}
+  else if(e.shape==='chart') {for(let n=0;n<14;n++) line(48+n*14,267,48+n*14,274+(n%4===0?6:0),e.accent,2)}
+  else line(0,282,900,282,e.accent,3);
+  const label=isSpecimen?'版式试样':owner+'的';font(32,700);
+  const badgeW=Math.min(600,Math.max(120,Math.ceil(ctx.measureText(label).width)+42));
+  innerLabel(label,48,35,badgeW,53,32,'#fff',e.ink,e.shape==='thread'?24:2);
+  const stamp=isSpecimen?'演示数据':report.mode==='demo'?'虚构演示':report.mode==='self_report'?'自述':'';
+  if(stamp) right(stamp,850,42,31,e.accent,700);
+  fitText(e.name,48,109,575,84,e.ink,400,displayFamily);
+  text(report.year+' 年度报告',48,218,36,e.accent,700);
+  coverMark(634,86);
+}
+function editionMetrics(y,draw) {
+  const e=edition,stats=a?.theme_stats;
+  const metrics=[];
+  if(tokenUsage) metrics.push({label:'和 AI 对话，烧了',value:tokenLabel});
+  if(s) metrics.push({label:'发出的指令',value:s.messages.toLocaleString('zh-CN')+' 条'});
+  if(!metrics.length) return 0;
+  // When a measured theme share is present, keep the other counts as a single meta line.
+  const measured=s?.messages>0 && Number.isInteger(stats?.messages);
+  if(measured) {
+    if(metrics.length===2) metrics.pop();
+    const share = Math.round(stats.messages / s.messages * 1000) / 10;
+    metrics.push({label:e.keyword+'指令占比',value:stats.messages ? '约 '+share+'%' : '0%'});
+  }
+  const gap=12,available=804;
+  const widths=metrics.length===1?[available]:[498,available-498-gap];
+  let x=48;
+  metrics.forEach((metric,i)=>{
+    if(draw) {
+      const w=widths[i],bg=i===0?e.ink:e.tint,fg=i===0?'#fff':e.ink;
+      frame(x,y,w,152,e.shape==='thread'?20:e.shape==='ticket'?13:2,bg);
+      if(e.shape==='exercise') line(x+15,y+10,x+15,y+141,i===0?e.signal:e.accent,2);
+      text(metric.label,x+26,y+17,31,fg,600);
+      fitText(metric.value,x+26,y+64,w-52,51,fg,750);
+    }
+    x+=widths[i]+gap;
+  });
+  if(measured&&draw) {
+    const matches = stats.messages ? '至少 '+stats.messages.toLocaleString('zh-CN')+' 条' : '核验 0 条';
+    fitText(s.messages.toLocaleString('zh-CN')+' 条指令 · '+matches+'与'+e.keyword+'相关',48,y+170,804,30,e.ink,600);
+  }
+  return measured?226:174;
+}
+function editionHeading(label,y) {
+  const e=edition;
+  if(e.shape==='letter') {line(48,y+50,852,y+50,e.accent,2);text(label,48,y,38,e.ink,750)}
+  else if(e.shape==='ticket'||e.shape==='slip') {text(label,48,y,38,e.ink,750);font(38,750);const end=64+ctx.measureText(label).width;ctx.setLineDash([8,8]);line(end,y+24,852,y+24,e.accent,2);ctx.setLineDash([])}
+  else {box(48,y+5,9,36,3,e.accent);text(label,76,y,38,e.ink,750)}
+}
+function editionCell(x,y,size,known,count,hit) {
+  const e=edition,fill=hit?e.signal:count?e.accent:known?e.tint:e.paper;
+  const radius=e.shape==='thread'||e.shape==='ticket'?size/2:e.shape==='exercise'||e.shape==='proof'?0:4;
+  frame(x,y,size,size,radius,fill,hit?e.ink:known?null:e.accent,1);
+  if(!known) line(x+4,y+size-4,x+size-4,y+4,e.accent,1);
+}
+function editionMonth(month,x,y,w) {
+  const e=edition,num=Number(month.month.slice(5)),cx=x+w/2;
+  centered(String(num).padStart(2,'0')+' 月',cx,y,34,e.ink,750);
+  const first=new Date(Date.UTC(report.year,num-1,1)),last=new Date(Date.UTC(report.year,num,0));
+  const offset=(first.getUTCDay()+6)%7,step=28,size=23,weeks=Math.ceil((offset+last.getUTCDate())/7);
+  const left=cx-((weeks-1)*step+size)/2;
+  for(let d=1;d<=last.getUTCDate();d++) {
+    const date=month.month+'-'+String(d).padStart(2,'0'),idx=offset+d-1,px=left+Math.floor(idx/7)*step,py=y+56+idx%7*step;
+    const st=dayState(date),hit=(a?.theme_stats?.days?.[date]||0)>0;
+    editionCell(px,py,size,st.known,st.count,hit);
+    const id=markers.get(date);
+    if(id) {ctx.strokeStyle=e.ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,hit?e.ink:'#fff',700)}
+  }
+  const monthly=a?.theme_stats?.months?.[month.month];
+  const tally=Number.isInteger(monthly)?monthly+' / '+month.messages+' 条':month.messages.toLocaleString('zh-CN')+' 条指令';
+  ctx.save();font(31,650);const fit=Math.min(31,31*(w-8)/Math.max(1,ctx.measureText(tally).width));centered(tally,cx,y+261,fit,e.ink,650);ctx.restore();
+  if(Number.isInteger(monthly) && month.messages) {box(x+15,y+312,w-30,8,3,e.tint);if(monthly>0)box(x+15,y+312,(w-30)*monthly/month.messages,8,3,e.accent)}
+}
+function editionActivity(y,draw) {
+  if(!months.length) return 0;
+  const e=edition,measured=Boolean(a?.theme_stats);
+  if(draw) {
+    editionHeading('发言日历',y);
+    const legend=[['发言',true,1,false],...(measured?[[e.keyword,true,1,true]]:[]),['0 条',true,0,false],['缺记录',false,0,false]];
+    const step=804/legend.length;
+    legend.forEach(([label,known,count,hit],i)=>{const x=48+i*step;editionCell(x,y+76,20,known,count,hit);text(label,x+30,y+68,30,e.ink,550)});
+    const w=(804-16*(months.length-1))/months.length;
+    months.forEach((m,i)=>editionMonth(m,48+i*(w+16),y+126,w));
+  }
+  return measured?478:460;
+}
+function quoteSurface(w,h,i) {
+  const e=edition,white='#fffefa';
+  switch(e.shape) {
+    case 'chart':
+      frame(0,0,w,h,6,white,e.accent);box(0,0,12,h,0,e.accent);line(12,59,w,59,e.tint,2);
+      strokePath([[w-153,38],[w-121,38],[w-112,28],[w-105,46],[w-95,17],[w-84,39],[w-51,39]],e.accent,3);break;
+    case 'thread':
+      frame(3,7,w-3,h-3,25,e.tint);frame(0,0,w-4,h-5,25,i%2===0?white:e.tint,e.accent,2);
+      for(let n=0;n<3;n++) disk(w-44-n*13,31,4,e.accent);break;
+    case 'letter':
+      ctx.save();ctx.translate(6,6);box(0,0,w-6,h-6,2,e.tint);ctx.restore();frame(0,0,w-6,h-6,2,white,e.accent);
+      for(let n=0;n<5;n++) line(w-111+n*12,16,w-102+n*12,16,e.signal,4);
+      line(25,h-18,w-32,h-18,e.tint,2);break;
+    case 'proof':
+      frame(0,0,w,h,0,'#fafdff',e.accent,2);box(0,0,w,8,0,e.accent);
+      grid(w-97,18,68,32,16,e.tint);line(w-97,50,w-29,18,e.accent,2);break;
+    case 'memo': {
+      const fold=28;strokePath([[0,0],[w-fold,0],[w,fold],[w,h],[0,h]],e.ink,2,true,i%2===0?'#fffef4':'#fff1b9');
+      strokePath([[w-fold,0],[w-fold,fold],[w,fold]],e.ink,1.5,true,e.signal);
+      box(22,0,74,7,0,e.accent);break;
+    }
+    case 'ticket':
+      frame(0,0,w,h,18,white,e.accent,2);ctx.setLineDash([7,5]);line(16,58,w-16,58,e.accent,1.6);ctx.setLineDash([]);
+      for(const xx of [0,w]) {disk(xx,58,9,e.paper);ctx.beginPath();ctx.arc(xx,58,9,xx===0?-Math.PI/2:Math.PI/2,xx===0?Math.PI/2:Math.PI*1.5);ctx.strokeStyle=e.accent;ctx.lineWidth=2;ctx.stroke()}
+      for(let n=0;n<7;n++) line(w-29-n*6,20,w-29-n*6,43,e.ink,n%2===0?2:4);break;
+    case 'slip':
+      strokePath([[0,0],[w-15,0],[w,14],[w,h],[13,h],[0,h-12]],e.accent,2,true,i%2===0?white:e.tint);
+      strokePath([[w-86,33],[w-32,33],[w-44,20]],e.accent,3);break;
+    case 'exercise':
+      frame(0,0,w,h,0,white,e.ink,2);line(19,0,19,h,e.signal,2);line(25,0,25,h,e.signal,1);
+      for(let yy=122;yy<h-10;yy+=62) line(26,yy,w-1,yy,'#dae3e8',1);
+      strokePath([[w-72,29],[w-58,39],[w-35,15]],e.accent,4);break;
+  }
+}
+function editionQuote(q,i,y,draw) {
+  const e=edition;
+  const routed=e.shape==='thread'||e.shape==='slip';
+  const shift=routed?(e.shape==='thread'?48:24):0, x=48+(i%2?shift:0),w=804-shift;
+  const pad=e.shape==='exercise'?41:32,size=type.quote,lead=62;
+  const rows=richLines(q,w-pad*2-6,size),height=rows.length*lead+97;
+  if(!draw) return height;
+  ctx.save();ctx.translate(x,y);quoteSurface(w,height,i);
+  const date=q.date.slice(5).replace('-','.');
+  const ix=markers.get(q.date);
+  disk(pad+14,31,15,e.accent);centered(ix,pad+14,20,22,'#fff',650);text(date,pad+40,14,30,e.ink,650);
+  if(q.repeat_count) text('复读×'+q.repeat_count,pad+146,17,27,e.accent,700);
+  if(q.kind==='rewrite') text('改写',pad+(q.repeat_count?270:150),17,27,e.accent,650);
+  rows.forEach((row,index)=>{
+    let xx=pad;
+    const yy=75+index*lead;
+    const runs=[];
+    for(const item of row) {
+      if(runs.at(-1)?.strong===item.strong) runs.at(-1).value+=item.value;
+      else runs.push({...item});
+    }
+    for(const run of runs) {
+      const weight=run.strong?700:600;font(size,weight);
+      const width=ctx.measureText(run.value).width;
+      if(run.strong) box(xx-2,yy+13,width+4,36,2,e.tint);
+      text(run.value,xx,yy,size,e.ink,weight);xx+=width;
+    }
+  });
+  ctx.restore();
+  stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width:w,height,fontSize:size,rows:rows.map(row=>row.map(t=>t.value).join(''))});
+  return height;
+}
+function editionQuotes(y,draw) {
+  if(!quotes.length) return 0;
+  const start=y;
+  if(draw) editionHeading(isSpecimen?'选句示意 · 非原话':'金句',y);
+  y+=72;
+  quotes.forEach((q,i)=>{y+=editionQuote(q,i,y,draw)+24});
+  return y-start+10;
+}
+function editionFooter(y,draw) {
+  const e=edition,tags=report.keywords||[];
+  if(!tags.length)return 12;
+  if(draw) {
+    box(0,y,900,173,0,e.ink);text(isSpecimen?'标签示意':'用户人格',48,y+15,36,'#fff',750);
+    const gap=16,w=(804-gap*(tags.length-1))/tags.length;
+    tags.forEach((tag,i)=>innerLabel(tag,48+i*(w+gap),y+75,w,65,40,e.ink,i===0?e.signal:e.tint,e.shape==='thread'||e.shape==='ticket'?30:2));
+  }
+  return 173;
+}
+function drawEdition(draw) {
+  if(draw) {
+    stickerLayouts.length=0;ctx.fillStyle=edition.paper;ctx.fillRect(0,0,900,canvas.height);editionCover();
+  }
+  let y=314;
+  y+=editionMetrics(y,draw)+16;
+  if(['letter','memo','ticket'].includes(edition.shape)) {
+    y+=editionQuotes(y,draw);y+=editionActivity(y,draw);
+  } else {
+    y+=editionActivity(y,draw);y+=editionQuotes(y,draw);
+  }
+  return Math.ceil(y+editionFooter(y,draw));
+}
+function editionDescription() {
+  const stats=a?.theme_stats;
+  const parts=[owner+'的'+reportTitle];
+  if(isSpecimen) parts.push('版式试样。日期和统计为演示，选句栏为原创场景文案。');
+  else parts.push(introduction);
+  if(s) parts.push('指令总数：'+s.messages);
+  if(tokenUsage) parts.push('日志 token 总量：'+tokenUsage.total_tokens+'，缓存已包含；覆盖状态：'+tokenUsage.coverage+'。');
+  if(stats) parts.push('主题指令已核验 '+stats.messages+' 条，占比的分母为分析期内全部可见指令。');
+  if(rhythm?.analysis_start) parts.push('分析区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'；日历从中选展。');
+  parts.push(...months.map(m=>m.month+'：'+m.messages+' 条指令'+(Number.isInteger(stats?.months?.[m.month])?'，其中 '+stats.months[m.month]+' 条与主题相关':'')));
+  parts.push(isSpecimen?'选句示意 · 非原话':'金句',...quotes.map(q=>q.date+' '+(q.kind==='rewrite'?'（改写）':'')+q.text));
+  parts.push((isSpecimen?'标签示意：':'用户人格：')+report.keywords.join(' / '));
+  return parts.join('\n');
+}
+
+function render(){
+  const draw=edition?drawEdition:drawPoster;
+  canvas.height=draw(false);draw(true);
+  if(edition) document.getElementById('save').style.backgroundColor=edition.accent;
+  document.getElementById('preview').src=canvas.toDataURL('image/png');
+}
 const newline=String.fromCharCode(10);const summary=[owner+'的'+reportTitle,introduction,report.mode==='demo'?'虚构演示':'','最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),'金句：',...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),'用户人格：'+report.keywords.join(' / '),'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
-document.getElementById('transcript').textContent=summary;document.getElementById('preview').alt=summary;
+const readableSummary=edition?editionDescription():summary;
+document.getElementById('transcript').textContent=readableSummary;document.getElementById('preview').alt=readableSummary;
 let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('68px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});
 </script></body></html>

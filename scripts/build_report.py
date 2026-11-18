@@ -13,6 +13,9 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
+THEMES = ("puai", "teach", "aicu", "all", "hush", "einstein", "edison", "support", "free")
+
+
 class ReportError(ValueError):
     """A report violates the portable schema."""
 
@@ -131,9 +134,22 @@ def validate_token_usage(usage, active_dates, mode, evidence, refs):
         raise ReportError(f"{path}: token usage needs provided records, not memory or estimates")
 
 
-def validate_activity(activity, start, end, mode, evidence, refs, now):
+def reviewed_message_ids(activity, field, messages_by_id):
+    ids = set()
+    for index, value in enumerate(array(activity[field], 0, 50_000, f"activity.{field}")):
+        path = f"activity.{field}[{index}]"
+        mid = string(value, 128, path)
+        if mid not in messages_by_id:
+            raise ReportError(f"{path}: unknown message ID {mid!r}")
+        if mid in ids:
+            raise ReportError(f"{path}: duplicate message ID")
+        ids.add(mid)
+    return ids
+
+
+def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None):
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
-        optional=["roast_message_ids", "share_quotes", "token_usage"])
+        optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
     zone = string(activity["timezone"], 100, "activity.timezone")
     try:
         target_zone = ZoneInfo(zone)
@@ -169,21 +185,27 @@ def validate_activity(activity, start, end, mode, evidence, refs, now):
         validate_token_usage(activity["token_usage"], active_dates, mode, evidence, refs)
     roast_ids = set()
     if "roast_message_ids" in activity:
-        for index, value in enumerate(array(activity["roast_message_ids"], 0, 50_000,
-                                            "activity.roast_message_ids")):
-            path = f"activity.roast_message_ids[{index}]"
-            mid = string(value, 128, path)
-            if mid not in messages_by_id:
-                raise ReportError(f"{path}: unknown message ID {mid!r}")
-            if mid in roast_ids:
-                raise ReportError(f"{path}: duplicate roast message ID")
-            roast_ids.add(mid)
+        roast_ids = reviewed_message_ids(activity, "roast_message_ids", messages_by_id)
+    if "theme_message_ids" in activity:
+        if theme is None:
+            raise ReportError("activity.theme_message_ids: specify report.theme for this reviewed subset")
+        if theme == "puai":
+            raise ReportError("activity.theme_message_ids: PUAI uses roast_message_ids for its reviewed subset")
+        theme_ids = reviewed_message_ids(activity, "theme_message_ids", messages_by_id)
+        if mode != "demo":
+            for mid in theme_ids:
+                if not any(evidence[eid]["type"] == "provided" for eid in messages_by_id[mid]["evidence_ids"]):
+                    raise ReportError("activity.theme_message_ids: counted messages need provided records")
     if "share_quotes" in activity:
         analysis_months = set(derive_rhythm(active_dates)["analysis_months"])
         seen_quotes = set()
         for index, quote in enumerate(array(activity["share_quotes"], 0, 6, "activity.share_quotes")):
             path = f"activity.share_quotes[{index}]"
             obj(quote, ["message_id", "text"], path, optional=["emphasis", "repeat_message_ids", "rewrite"])
+            if theme and "rewrite" in quote:
+                raise ReportError(f"{path}.rewrite: themed reports display the user's original words")
+            if theme not in (None, "puai") and "repeat_message_ids" in quote:
+                raise ReportError(f"{path}.repeat_message_ids: roast repeat counts belong to the PUAI theme")
             mid = string(quote["message_id"], 128, f"{path}.message_id")
             quote_text = string(quote["text"], 120, f"{path}.text")
             if "emphasis" in quote:
@@ -298,7 +320,9 @@ def validate_report(report, today=None, now=None):
     today = today or date.today()
     obj(report, ["schema_version", "year", "mode", "period", "person", "identity",
                  "phrase", "keywords", "metrics", "moments", "closing", "evidence"], "report",
-        optional=["activity"])
+        optional=["activity", "theme"])
+    if "theme" in report and report["theme"] not in THEMES:
+        raise ReportError(f"report.theme: expected one of {', '.join(THEMES)}")
     if type(report["schema_version"]) is not int or report["schema_version"] != 1:
         raise ReportError("schema_version: expected integer 1")
     year = report["year"]
@@ -379,8 +403,23 @@ def validate_report(report, today=None, now=None):
     refs(closing["evidence_ids"], "closing.evidence_ids")
     if "activity" in report:
         validate_activity(report["activity"], start, end, mode, evidence, refs,
-                          now or datetime.now(timezone.utc))
+                          now or datetime.now(timezone.utc), theme=report.get("theme"))
     return report
+
+
+def count_theme_messages(activity, analysis_months, target_zone):
+    reviewed = set(activity["theme_message_ids"])
+    days = Counter()
+    months = {month: 0 for month in sorted(analysis_months)}
+    for message in activity["messages"]:
+        if message["id"] not in reviewed:
+            continue
+        day = activity_timestamp(message["timestamp"], "theme message timestamp").astimezone(target_zone).date()
+        month = day.isoformat()[:7]
+        if month in months:
+            months[month] += 1
+            days[day.isoformat()] += 1
+    return {"messages": sum(months.values()), "months": months, "days": dict(sorted(days.items()))}
 
 
 def compact_activity(activity):
@@ -422,8 +461,10 @@ def compact_activity(activity):
     if "token_usage" in activity:
         result["token_usage"] = {key: activity["token_usage"][key] for key in (
             "total_tokens", "cached_input_tokens", "coverage", "scope")}
+    target_zone = ZoneInfo(activity["timezone"])
+    if "theme_message_ids" in activity:
+        result["theme_stats"] = count_theme_messages(activity, analysis_months, target_zone)
     if "share_quotes" in activity:
-        target_zone = ZoneInfo(activity["timezone"])
         messages_by_id = {message["id"]: message for message in activity["messages"]}
         quotes = []
         for quote in activity["share_quotes"]:
@@ -448,6 +489,8 @@ def public_report(report, compact=False):
     if compact:
         public = {key: copy.deepcopy(report[key]) for key in ("year", "mode", "period", "keywords")}
         public["person"] = {"name": report["person"]["name"]}
+        if "theme" in report:
+            public["theme"] = report["theme"]
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])
         return public
@@ -500,9 +543,14 @@ def main(argv=None):
         if input_path.stat().st_size > 32_000_000:
             raise ReportError("input exceeds 32 MB; keep only evidence and timestamps needed for this report")
         report = json.loads(input_path.read_text(encoding="utf-8"))
-        compact = args.compact or args.style is not None
-        if args.style in {"comic", "poster", "ticket"}:
-            template_name = f"{args.style}-template.html"
+        style = args.style
+        if isinstance(report, dict) and "theme" in report:
+            style = style or "comic"
+            if report["theme"] != "puai" and style != "comic":
+                raise ReportError("report.theme: themed posters require --style comic")
+        compact = args.compact or style is not None
+        if style in {"comic", "poster", "ticket"}:
+            template_name = f"{style}-template.html"
         else:
             template_name = "compact-template.html" if compact else "report-template.html"
         template = (root / "assets" / template_name).read_text(encoding="utf-8")
