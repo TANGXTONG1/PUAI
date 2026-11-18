@@ -39,15 +39,15 @@ description: 用本人授权的 AI 聊天记录做一张 PUAI 年度报告长图
 ## 生成
 
 1. 阅读 [schema](references/report-schema.md)，在用户工作目录准备私有 `report.json`。按上述判定填写顶层 `theme`，把证据与消息 ID 留在私有输入。`person.name` 只用明确授权分享的昵称。旧 v1 结构的必填兼容字段用已有材料填写，`metrics`、`highlights` 可用空数组，`closing.text` 可用“（略）”。公开金句只走 `share_quotes`，不填历史 `rewrite` 字段。
-2. 从 skill 根目录运行。九型共用一套年刊版式。署名、年款、字号、首句、统计日历与人格栏的位置统一。每型仅更换专色和标题旁的一枚小记号。首句优先选能独立读懂、能体现主题的本人原话。
+2. 从 skill 根目录运行。九型共用原红白漫画 A 版的构图。顶部保留署名、黑底用量块与小圆环，其后是发言日历、整句对白和人格贴纸。金句交替使用尖尾气泡、反白气泡和爆炸框。主题只影响专色、小记号和统计内容。首句优先选能独立读懂、能体现主题的本人原话。
 
    ```bash
-   python3 scripts/build_report.py --input /path/report.json --style print --output /path/share.html
+   python3 scripts/build_report.py --input /path/report.json --style comic --output /path/share.html
    node scripts/export_png.mjs --input /path/share.html --output /path/share.png
    ```
 
-   缺少 Playwright、Chromium 或中文字体时见 [PNG 导出说明](references/png-export.md)。仅当用户要旧视觉时使用 `classic`、`poster`、`ticket`。显式提供主题会默认使用印刷版。用户点名原红白 A 版时，PUAI 使用 `--style comic`。旧的无主题、无样式调用仍生成多页版。
-3. 检查 PNG 的 900 px 原始画布、字体与 390 px 宽手机预览。确认昵称在名签内居中，每条原话作为一个段落连续阅读，长句未截断。年份、主题、日历与命中的比例使用同一口径。金句和标签应脱离工作背景可读。默认只交付 PNG，可附同内容 HTML。无法实际导出时如实交付 HTML。
+   缺少 Playwright、Chromium 或中文字体时见 [PNG 导出说明](references/png-export.md)。仅当用户要旧视觉时使用 `classic`、`poster`、`ticket`。显式提供主题时默认生成 A 版。`--style print` 是兼容既有口令的别名。旧的无主题、无样式调用仍生成多页版。
+3. 检查 PNG 的 900 px 原始画布、字体与 390 px 宽手机预览。确认昵称在名签内居中，每条原话在同一张贴纸上连续阅读，长句未截断。年份、主题、日历与命中的比例使用同一口径。金句和标签应脱离工作背景可读。默认只交付 PNG，可附同内容 HTML。无法实际导出时如实交付 HTML。
 
 ## 试样与个人数据
 

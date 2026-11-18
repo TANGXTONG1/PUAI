@@ -18,8 +18,12 @@ h1 time{display:block;font:500 clamp(18px,1.75vw,24px)/1.4 "Helvetica Neue",Aria
 header p{font-size:15px;line-height:1.52;color:#484946;margin:0 0 3px;text-align:right}
 main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(16px,2.1vw,32px);row-gap:clamp(28px,3.2vw,52px)}
 .edition{min-width:0;margin:0;scroll-margin-top:18px}
-.sheet{display:block;position:relative;aspect-ratio:900/587;overflow:hidden;background:#fff;outline:1px solid #0002;outline-offset:-1px;cursor:zoom-in}
-.sheet img{display:block;width:100%;height:auto}
+.sheet{display:block;position:relative;overflow:hidden;background:var(--paper);outline:1px solid #0002;outline-offset:-1px;cursor:zoom-in}
+.mast,.excerpt,.shelf{display:block;overflow:hidden;position:relative}
+.mast{aspect-ratio:900 / var(--head)}.shelf{aspect-ratio:900 / var(--shelf)}.excerpt{aspect-ratio:900 / var(--band)}
+.sheet img{display:block;position:absolute;top:0;left:0;width:100%;height:auto}.excerpt img{top:var(--offset)}
+.seam{display:flex;align-items:center;gap:9px;padding:3px 5.33% 4px;font-size:clamp(12px,1.05vw,15px);font-weight:560;line-height:1.4;color:#4a4643}
+.seam:after{content:"";flex:1;border-top:1px dashed #aaa7a2}
 figcaption{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0 0}
 figcaption h2{font-weight:650;font-size:clamp(20px,1.85vw,27px);letter-spacing:-.04em;line-height:1.25;margin:0}
 figcaption p{margin:4px 0 0;color:#4c4d48;font-size:15px;line-height:1.5}
@@ -59,87 +63,113 @@ html.browsing{overflow:hidden}
 <header><h1><time datetime="2026">2026</time>人机关系图册</h1>
 <p>唐某的本人报告，另附<a href="#hush">八款试样</a>。<br>试样使用演示数据和原创场景短句。</p></header>
 <main><figure id="puai" class="edition" data-title="PUAI">
-  <a class="sheet" href="puai.png?v=df7c2a3d93" aria-label="打开PUAI完整长图">
-    <img src="puai.png?v=df7c2a3d93" width="900" height="1971" alt="PUAI年度报告的版面预览" loading="eager">
+  <a class="sheet" href="../preview.png?v=c3467abfee" aria-label="打开PUAI完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="../preview.png?v=c3467abfee" width="900" height="2484" alt="" loading="eager"></span>
+    <span class="seam">原话节选</span>
+    <span class="shelf"><span class="excerpt"><img src="../preview.png?v=c3467abfee" width="900" height="2484" alt="" loading="eager"></span></span>
   </a>
   <figcaption>
     <div><p class="source">本人报告</p><h2>不愿透露姓名的唐某</h2></div>
     <div class="personal-actions">
-      <a class="save" href="puai.png?v=df7c2a3d93" download="PUAI-唐某.png" aria-label="保存唐某的 PUAI 长图">保存长图</a>
-      <a href="../preview.png">看原漫画版</a>
+      <a class="save" href="../preview.png?v=c3467abfee" download="PUAI-唐某.png" aria-label="保存唐某的 PUAI 长图">保存长图</a>
     </div>
   </figcaption>
 </figure>
 <figure id="hush" class="edition" data-title="AI在心口难开">
-  <a class="sheet" href="hush.png?v=67bbfbfdab" aria-label="打开AI在心口难开完整长图">
-    <img src="hush.png?v=67bbfbfdab" width="900" height="1856" alt="AI在心口难开年度报告的版面预览" loading="eager">
+  <a class="sheet" href="hush.png?v=1e9b67c254" aria-label="打开AI在心口难开完整长图"
+     style="--head:216;--band:470;--shelf:532;--offset:-284.8936170%;--paper:#fff7ed">
+    <span class="mast"><img src="hush.png?v=1e9b67c254" width="900" height="2298" alt="" loading="eager"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="hush.png?v=1e9b67c254" width="900" height="2298" alt="" loading="eager"></span></span>
   </a>
   <figcaption>
     <div><h2>AI在心口难开</h2><p>心里的长篇大论，交给 AI 改成一句能发的。</p></div>
-    <a class="save" href="hush.png?v=67bbfbfdab" download="PUAI-AI在心口难开.png" aria-label="保存AI在心口难开长图">保存</a>
+    <a class="save" href="hush.png?v=1e9b67c254" download="PUAI-AI在心口难开.png" aria-label="保存AI在心口难开长图">保存</a>
   </figcaption>
 </figure>
 <figure id="aicu" class="edition" data-title="AICU">
-  <a class="sheet" href="aicu.png?v=aae2d5e4aa" aria-label="打开AICU完整长图">
-    <img src="aicu.png?v=aae2d5e4aa" width="900" height="1910" alt="AICU年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="aicu.png?v=3f65344c46" aria-label="打开AICU完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="aicu.png?v=3f65344c46" width="900" height="2360" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="aicu.png?v=3f65344c46" width="900" height="2360" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AICU</h2><p>留给 AI 的时间，通常以分钟计。</p></div>
-    <a class="save" href="aicu.png?v=aae2d5e4aa" download="PUAI-AICU.png" aria-label="保存AICU长图">保存</a>
+    <a class="save" href="aicu.png?v=3f65344c46" download="PUAI-AICU.png" aria-label="保存AICU长图">保存</a>
   </figcaption>
 </figure>
 <figure id="teach" class="edition" data-title="AI的教育">
-  <a class="sheet" href="teach.png?v=c8448a7bbe" aria-label="打开AI的教育完整长图">
-    <img src="teach.png?v=c8448a7bbe" width="900" height="1950" alt="AI的教育年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="teach.png?v=e81513269e" aria-label="打开AI的教育完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="teach.png?v=e81513269e" width="900" height="2298" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="teach.png?v=e81513269e" width="900" height="2298" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI的教育</h2><p>AI 答错一道题，用户补写一页教案。</p></div>
-    <a class="save" href="teach.png?v=c8448a7bbe" download="PUAI-AI的教育.png" aria-label="保存AI的教育长图">保存</a>
+    <a class="save" href="teach.png?v=e81513269e" download="PUAI-AI的教育.png" aria-label="保存AI的教育长图">保存</a>
   </figcaption>
 </figure>
 <figure id="all" class="edition" data-title="AI特全体">
-  <a class="sheet" href="all.png?v=6f80d4b09f" aria-label="打开AI特全体完整长图">
-    <img src="all.png?v=6f80d4b09f" width="900" height="1930" alt="AI特全体年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="all.png?v=a955baf426" aria-label="打开AI特全体完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="all.png?v=a955baf426" width="900" height="2360" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="all.png?v=a955baf426" width="900" height="2360" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI特全体</h2><p>同一道题，几个模型轮流上台。</p></div>
-    <a class="save" href="all.png?v=6f80d4b09f" download="PUAI-AI特全体.png" aria-label="保存AI特全体长图">保存</a>
+    <a class="save" href="all.png?v=a955baf426" download="PUAI-AI特全体.png" aria-label="保存AI特全体长图">保存</a>
   </figcaption>
 </figure>
 <figure id="einstein" class="edition" data-title="AI因斯坦">
-  <a class="sheet" href="einstein.png?v=aac36ce723" aria-label="打开AI因斯坦完整长图">
-    <img src="einstein.png?v=aac36ce723" width="900" height="1836" alt="AI因斯坦年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="einstein.png?v=f9bd4e7a1a" aria-label="打开AI因斯坦完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="einstein.png?v=f9bd4e7a1a" width="900" height="2298" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="einstein.png?v=f9bd4e7a1a" width="900" height="2298" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI因斯坦</h2><p>上一个答案，只够再生出一个为什么。</p></div>
-    <a class="save" href="einstein.png?v=aac36ce723" download="PUAI-AI因斯坦.png" aria-label="保存AI因斯坦长图">保存</a>
+    <a class="save" href="einstein.png?v=f9bd4e7a1a" download="PUAI-AI因斯坦.png" aria-label="保存AI因斯坦长图">保存</a>
   </figcaption>
 </figure>
 <figure id="edison" class="edition" data-title="AI迪生">
-  <a class="sheet" href="edison.png?v=4d9460c971" aria-label="打开AI迪生完整长图">
-    <img src="edison.png?v=4d9460c971" width="900" height="1836" alt="AI迪生年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="edison.png?v=c99854ce9f" aria-label="打开AI迪生完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="edison.png?v=c99854ce9f" width="900" height="2298" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="edison.png?v=c99854ce9f" width="900" height="2298" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI迪生</h2><p>一个点子没落地，下一个已经通电。</p></div>
-    <a class="save" href="edison.png?v=4d9460c971" download="PUAI-AI迪生.png" aria-label="保存AI迪生长图">保存</a>
+    <a class="save" href="edison.png?v=c99854ce9f" download="PUAI-AI迪生.png" aria-label="保存AI迪生长图">保存</a>
   </figcaption>
 </figure>
 <figure id="support" class="edition" data-title="AI的供养">
-  <a class="sheet" href="support.png?v=edaccce828" aria-label="打开AI的供养完整长图">
-    <img src="support.png?v=edaccce828" width="900" height="1950" alt="AI的供养年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="support.png?v=648147296b" aria-label="打开AI的供养完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="support.png?v=648147296b" width="900" height="2360" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="support.png?v=648147296b" width="900" height="2360" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI的供养</h2><p>花自己的钱，给 AI 提供情绪价值。</p></div>
-    <a class="save" href="support.png?v=edaccce828" download="PUAI-AI的供养.png" aria-label="保存AI的供养长图">保存</a>
+    <a class="save" href="support.png?v=648147296b" download="PUAI-AI的供养.png" aria-label="保存AI的供养长图">保存</a>
   </figcaption>
 </figure>
 <figure id="free" class="edition" data-title="AI咋咋地">
-  <a class="sheet" href="free.png?v=564593f08f" aria-label="打开AI咋咋地完整长图">
-    <img src="free.png?v=564593f08f" width="900" height="1910" alt="AI咋咋地年度报告的版面预览" loading="lazy">
+  <a class="sheet" href="free.png?v=0e832b4990" aria-label="打开AI咋咋地完整长图"
+     style="--head:216;--band:532;--shelf:532;--offset:-251.6917293%;--paper:#fff7ed">
+    <span class="mast"><img src="free.png?v=0e832b4990" width="900" height="2360" alt="" loading="lazy"></span>
+    <span class="seam">场景示意（非原话）</span>
+    <span class="shelf"><span class="excerpt"><img src="free.png?v=0e832b4990" width="900" height="2360" alt="" loading="lazy"></span></span>
   </a>
   <figcaption>
     <div><h2>AI咋咋地</h2><p>连决定要不要请示，也想外包。</p></div>
-    <a class="save" href="free.png?v=564593f08f" download="PUAI-AI咋咋地.png" aria-label="保存AI咋咋地长图">保存</a>
+    <a class="save" href="free.png?v=0e832b4990" download="PUAI-AI咋咋地.png" aria-label="保存AI咋咋地长图">保存</a>
   </figcaption>
 </figure></main></div>
 <dialog id="viewer" aria-labelledby="viewTitle">

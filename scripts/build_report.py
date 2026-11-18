@@ -512,7 +512,6 @@ def render_report(report, template, compact=False, style=None):
     marker = "__REPORT_JSON__"
     if template.count(marker) != 1:
         raise ReportError("template: expected exactly one __REPORT_JSON__ marker")
-    template = template.replace("__PUAI_LAYOUT__", "print" if style == "print" else "comic")
     font_marker = "__DISPLAY_FONT_BASE64__"
     if font_marker in template:
         font_path = Path(__file__).resolve().parents[1] / "assets" / "SmileySans-Oblique.woff2"
@@ -548,7 +547,7 @@ def main(argv=None):
         report = json.loads(input_path.read_text(encoding="utf-8"))
         style = args.style
         if isinstance(report, dict) and "theme" in report:
-            style = style or "print"
+            style = style or "comic"
             if report["theme"] != "puai" and style not in {"print", "comic"}:
                 raise ReportError("report.theme: themed posters require --style print or comic")
         compact = args.compact or style is not None

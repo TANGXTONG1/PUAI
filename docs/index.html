@@ -6,11 +6,11 @@
 <header><a class="wordmark" href="./" aria-label="PUAI 首页">PUAI</a><nav><a href="https://github.com/TANGXTONG1/PUAI">GitHub</a><a href="themes/">九型图鉴</a></nav></header>
 <main class="layout"><section class="intro"><h1>2026<br>PUAI 报告</h1><p class="lead">给 AI 上课，找 AI 急救，还是让几个模型互评？<br>用你的<strong>聊天原话</strong>，做一张年度人机关系报告。</p>
 <label for="nickname">报告上怎么称呼你？</label><div class="name-row"><span>叫我</span><input id="nickname" maxlength="16" placeholder="不愿透露姓名的某某" aria-describedby="help" autocomplete="off"></div>
-<div class="prompt" id="prompt"><span id="instruction">叫我「XXX」，生成我调教 AI 的年度报告长图。</span><br>参考该 skill：<a href="https://github.com/TANGXTONG1/PUAI">https://github.com/TANGXTONG1/PUAI</a></div><div class="actions"><button class="copy" id="copy" type="button">复制链接与指令</button><a class="download" href="PUAI-skill.zip?v=dd34dbb1fc" download>下载 skill</a></div><p class="status" id="status" role="status" aria-live="polite"></p>
+<div class="prompt" id="prompt"><span id="instruction">叫我「XXX」，生成我调教 AI 的年度报告长图。</span><br>参考该 skill：<a href="https://github.com/TANGXTONG1/PUAI">https://github.com/TANGXTONG1/PUAI</a></div><div class="actions"><button class="copy" id="copy" type="button">复制链接与指令</button><a class="download" href="PUAI-skill.zip?v=c1ae2f9e43" download>下载 skill</a></div><p class="status" id="status" role="status" aria-live="polite"></p>
 <p class="how" id="help">把口令发给支持读取链接、运行 skill 的 Agent。<br>它访问不到的聊天记录，由你上传导出文件；页面不会读取或上传你的聊天。</p>
 <ul class="content-list"><li>Token 用量</li><li>年度主题</li><li>发言日历</li><li>原话金句</li><li>用户人格</li></ul>
 <p class="note"><a href="themes/">看九种年度人格</a>，每张都能保存为 PNG 长图。<br>安装命令：<code>npx skills add TANGXTONG1/PUAI</code><br>完整生成要求都在 <a href="https://github.com/TANGXTONG1/PUAI/blob/main/SKILL.md">PUAI skill</a> 里。</p></section>
-<figure><a class="preview-link" href="sample.html" aria-label="打开唐某的完整报告并保存长图"><img src="themes/puai.png" width="900" height="1971" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格"></a><figcaption>不愿透露姓名的唐某 · 2026 PUAI 报告。<a href="sample.html">查看完整报告</a></figcaption></figure></main>
+<figure><a class="preview-link" href="sample.html" aria-label="打开唐某的完整报告并保存长图"><img src="preview.png" width="900" height="2484" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格"></a><figcaption>不愿透露姓名的唐某 · 2026 PUAI 报告。<a href="sample.html">查看完整报告</a></figcaption></figure></main>
 <footer><span>PUAI · 你的 AI 年度报告</span><a href="https://github.com/TANGXTONG1/PUAI">代码与 skill 托管在 GitHub</a></footer>
 <script>
 const nickname=document.querySelector('#nickname'),prompt=document.querySelector('#prompt'),instruction=document.querySelector('#instruction'),status=document.querySelector('#status');

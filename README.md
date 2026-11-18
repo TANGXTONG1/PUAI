@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>在线入口</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=dd34dbb1fc">下载 skill</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=c1ae2f9e43">下载 skill</a>
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
@@ -43,20 +43,20 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 
 从反复出现的相处方式里挑一个主题，再用你的原话做成报告。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
 
-[![九种主题封面](docs/themes/overview.png?v=c9e7cb71b8)](https://xn--sxrw8m230b.com/PUAI/themes/)
+[![九种 A 版长图的标题与金句](docs/themes/overview.png?v=56ef097691)](https://xn--sxrw8m230b.com/PUAI/themes/)
 
 [打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/)
 
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/themes/puai.png">
-    <img src="docs/themes/puai.png" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格">
+  <a href="https://xn--sxrw8m230b.com/PUAI/preview.png">
+    <img src="docs/preview.png" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">查看完整报告</a> · <a href="https://xn--sxrw8m230b.com/PUAI/preview.png">原漫画版</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">查看完整报告</a>
 </p>
 
 原话只精选，不改写；没有记录不编数字；私人工作背景不上图。每个人的金句和标签都取自自己的记录。
@@ -67,7 +67,7 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 读取 [SKILL.md](SKILL.md)，按其中流程整理用户授权的记录，再运行：
 
 ```bash
-python3 scripts/build_report.py --input /path/to/report.json --style print --output /path/to/share.html
+python3 scripts/build_report.py --input /path/to/report.json --style comic --output /path/to/share.html
 node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.png
 ```
 
