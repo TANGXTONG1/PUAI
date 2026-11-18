@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN"><!-- Display font: Smiley Sans v2.0.1. Source: https://github.com/atelier-anchor/smiley-sans
+Copyright (c) 2022--2024, atelierAnchor <https://atelier-anchor.com>,
+with Reserved Font Name <Smiley> and <得意黑>.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+
+--><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PUAI 报告</title>
+<style>@font-face{font-family:"Smiley Sans";src:url(data:font/woff2;base64,__DISPLAY_FONT_BASE64__) format("woff2");font-weight:400;font-style:normal;font-display:block}*{box-sizing:border-box}body{margin:0;padding:24px 18px 36px;background:#e9ebf4;color:#15399e;font-family:"PingFang SC","Microsoft YaHei",sans-serif}main{max-width:480px;margin:auto}#preview{display:block;width:100%;height:auto;box-shadow:0 12px 40px #29224418}button{display:block;width:100%;margin-top:16px;border:0;border-radius:8px;padding:15px;background:#245bdb;color:#fff;font:inherit;font-weight:600;cursor:pointer}button:focus-visible{outline:3px solid #c13059;outline-offset:4px}#status{font-size:12px;text-align:center;min-height:18px;color:#696680}details{font-size:12px;color:#696680;line-height:1.8;margin-top:12px}summary{cursor:pointer}#transcript{white-space:pre-wrap}canvas[hidden]{display:none}</style></head>
+<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><button id="save" type="button">保存长图</button><p id="status" role="status"></p><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
+<script id="report-data" type="application/json">__REPORT_JSON__</script><script>
+'use strict';
+const report=JSON.parse(document.getElementById('report-data').textContent);
+const canvas=document.getElementById('poster'),ctx=canvas.getContext('2d');
+const ink='#15399e',muted='#58638a',violet='#245bdb',green='#168c75',red='#e35437',paper='#fff09a',pale='#d7c76d';
+const fontFamily='"PingFang SC","Microsoft YaHei",sans-serif',displayFamily='"Smiley Sans","STHeiti",sans-serif';
+const owner=report.person?.name||'你';
+const reportTitle=report.year+' PUAI 报告';
+const type={title:64,stat:52,quote:46,section:36,label:40,meta:32};
+document.title=owner+'的'+reportTitle;
+const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
+const shortDate=d=>d?Number(d.slice(5,7))+'.'+d.slice(8):'暂无';
+const analysisRange=rhythm?.analysis_start?shortDate(rhythm.analysis_start)+'—'+shortDate(rhythm.analysis_end):'暂无可计算记录';
+const visibleRange=rhythm?.first_seen?report.year+' 年 '+shortDate(rhythm.first_seen)+'—'+shortDate(rhythm.last_seen):'未提供带日期的记录';
+const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
+const markers=new Map([...new Set(quotes.map(q=>q.date))].sort().map((d,i)=>[d,i+1]));
+const roastKnown=Boolean(s&&Object.hasOwn(s,'roast_messages'));
+const ratio=roastKnown&&s.messages>0?s.roast_messages/s.messages:null;
+const percent=ratio===null?null:Math.round(ratio*1000)/10;
+const tokenUsage=a?.token_usage;
+const spanDays=rhythm?.analysis_start&&rhythm?.analysis_end?Math.round((Date.parse(rhythm.analysis_end+'T00:00:00Z')-Date.parse(rhythm.analysis_start+'T00:00:00Z'))/86400000)+1:null;
+function tokenAmount(n){const scale=n>=1e8?100000000:n>=1e4?10000:1,unit=scale===100000000?'亿':scale===10000?'万':'';const v=Number((BigInt(n)*100n)/BigInt(scale))/100;return v.toLocaleString('zh-CN',{maximumFractionDigits:2})+unit}
+const tokenLabel=tokenUsage?(tokenUsage.coverage==='partial'?'≥':'约')+tokenAmount(tokenUsage.total_tokens)+' token':null;
+const monthLabel=months.map(m=>Number(m.month.slice(5))+'月').join('、');
+const partialCalendar=Boolean(rhythm&&rhythm.analysis_months.length>months.length);
+const scope=months.length?(partialCalendar?'日历选展：':'阶段月份：')+monthLabel:'没有可用的月份记录';
+const consecutive=months.every((m,i)=>i===0||Number(m.month.slice(5))===Number(months[i-1].month.slice(5))+1);
+const selectedRange=months.length?report.year+' 年 '+(consecutive&&months.length>1?Number(months[0].month.slice(5))+' 月—'+Number(months.at(-1).month.slice(5))+' 月':monthLabel)+(months.at(-1).month===report.period.end.slice(0,7)?' '+Number(report.period.end.slice(8))+' 日':''):report.year+' 年';
+function font(size,weight=400,family=fontFamily){ctx.font=weight+' '+size+'px '+family;ctx.textBaseline='top'}
+function text(str,x,y,size=24,color=ink,weight=400,family=fontFamily){font(size,weight,family);ctx.fillStyle=color;ctx.fillText(String(str),x,y)}
+function box(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function line(x1,y1,x2,y2,color=pale,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function wrap(str,width,size,weight=400,family=fontFamily){font(size,weight,family);const out=[];let current='';for(const ch of (str.match(/[A-Za-z0-9]+|./gu)||[])){if(current&&ctx.measureText(current+ch).width>width&&!/^[，。！？、；：）”]$/.test(ch)){out.push(current.trim());current=ch}else current+=ch}if(current.trim())out.push(current.trim());return out}
+function paragraph(str,x,y,width,size=28,color=ink,weight=400,leading=1.45,family=fontFamily,draw=true){let rows=wrap(str,width,size,weight,family);if(rows.length>1){font(size,weight,family);if(ctx.measureText(rows.at(-1)).width<width*.3){const original=rows.length;for(let w=width-size/2;w>width*.5;w-=size/2){const candidate=wrap(str,w,size,weight,family);if(candidate.length>original)break;rows=candidate;}}}if(draw)rows.forEach((r,i)=>text(r,x,y+i*size*leading,size,color,weight,family));return rows.length*size*leading}
+function centered(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-ctx.measureText(String(str)).width/2,y,size,color,weight)}
+function right(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-ctx.measureText(String(str)).width,y,size,color,weight)}
+function nameBadge(){
+ctx.save();font(36,400,displayFamily);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+const label=owner+'的',m=ctx.measureText(label),width=Math.min(m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44,780),height=56;
+ctx.translate(40,32);ctx.rotate(-.012);box(0,0,width,height,7,'#ffad83');ctx.fillStyle=ink;
+// Center the visible glyphs, including the display font's italic overhang.
+ctx.fillText(label,(width+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore();
+}
+function marker(q,x,y,color=ink){box(x,y,32,32,16,color);centered(markers.get(q.date),x+16,y+3,24,paper,600);text(q.date.slice(5).replace('-','.'),x+44,y,32,color,550)}
+const stickerLayouts=[];
+const wordSegmenter=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh-CN',{granularity:'word'}):null;
+function richLines(q,width,size,balance=true){const split=(str,strong)=>(wordSegmenter?[...wordSegmenter.segment(str)].map(t=>t.segment):[...str.matchAll(/[A-Za-z0-9]+|./gu)].map(t=>t[0])).map(value=>({value,strong}));const start=q.emphasis?q.text.indexOf(q.emphasis):-1;let tokens;if(start<0)tokens=split(q.text,false);else{font(size,700);const middle=ctx.measureText(q.emphasis).width<=width?[{value:q.emphasis,strong:true}]:split(q.emphasis,true);tokens=[...split(q.text.slice(0,start),false),...middle,...split(q.text.slice(start+q.emphasis.length),false)]}const rows=[];let row=[],used=0;for(const token of tokens){font(size,token.strong?700:500);const w=ctx.measureText(token.value).width;if(row.length&&(/[。！？]$/.test(row.at(-1).value)&&width-used<size*2.5||used+w>width)){if(/^[，。！？、；：）”]$/.test(token.value)&&row.length>1){const last=row.pop();rows.push(row);row=[last];font(size,last.strong?700:500);used=ctx.measureText(last.value).width}else{rows.push(row);row=[];used=0}}row.push(token);used+=w}if(row.length)rows.push(row);
+if(balance){
+  const lineWidth=row=>row.reduce((n,t)=>{font(size,t.strong?700:500);return n+ctx.measureText(t.value).width},0);
+  let balanced=rows;
+  if(rows.length>2&&lineWidth(rows.at(-1))<width*.45){
+    for(let w=width-size/2;w>=width*.65;w-=size/2){const candidate=richLines(q,w,size,false);if(candidate.length>rows.length)break;balanced=candidate;if(lineWidth(candidate.at(-1))>=width*.5)break}
+  }
+  for(let i=1;i<balanced.length;i++){
+    const before=balanced[i-1],current=balanced[i],last=before.at(-1),str=current.map(t=>t.value).join('');
+    if(/^[^，。！？][，。！？]/u.test(str)&&before.length>1&&last&&!/[，。！？\s]$/u.test(last.value)&&lineWidth([last,...current])<=width){before.pop();current.unshift(last)}
+  }
+  return balanced
+}return rows}
+function sticker(q,x,y,width,options={},draw=true){
+  const o={size:type.quote,fill:'#ffffff',highlight:'#ffdf5b',color:ink,angle:0,inline:false,...options},pad=28;
+  const canInline=o.inline&&!q.repeat_count&&q.kind!=='rewrite'&&richLines(q,width-248,o.size).length===1;
+  const rows=richLines(q,canInline?width-248:width-pad*2,o.size),leading=60,height=canInline?108:rows.length*leading+88;
+  if(!draw)return height;
+  ctx.save();ctx.translate(x,y);ctx.shadowColor='#15399e24';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=6;
+  box(0,0,width,height,22,'#ffffff');ctx.shadowColor='transparent';box(5,5,width-10,height-10,17,o.fill);
+  ctx.strokeStyle=o.color;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(5,5,width-10,height-10,17);ctx.stroke();
+  marker(q,pad,canInline?(height-32)/2:24,o.color);
+  if(canInline)line(196,24,196,height-24,o.color,1);
+  if(q.kind==='rewrite'){box(width-112,20,84,40,6,'#ffad83');text('改写',width-105,24,30,o.color,550);if(q.repeat_count)right('原话×'+q.repeat_count,width-124,24,30,o.color,550)}
+  else if(q.repeat_count)right('复读×'+q.repeat_count,width-pad,24,type.meta,o.color,550);
+  let bodyY=76;
+  if(canInline){font(o.size,500);const m=ctx.measureText(q.text);bodyY=(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2}
+  rows.forEach((row,i)=>{
+    let xx=canInline?220:pad;const yy=bodyY+i*leading,runs=[];
+    for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
+    for(const run of runs){font(o.size,run.strong?700:500);const w=ctx.measureText(run.value).width;if(run.strong)box(xx-2,yy+3,w+4,o.size+7,4,o.highlight);text(run.value,xx,yy,o.size,o.color,run.strong?700:500);xx+=w}
+  });
+  ctx.restore();stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width,height,fontSize:o.size,inline:canInline,rows:rows.map(row=>row.map(t=>t.value).join(''))});return height
+}
+function dayState(date){const d=dayMap.get(date);if(d)return {known:true,count:d.count,roast:d.roast_count||0};return {known:Boolean(a?.coverage==='complete'&&date>=report.period.start&&date<=report.period.end),count:0,roast:0}}
+function cell(x,y,size,st){box(x,y,size,size,3,st.roast>0?red:st.count>0?green:st.known?'#dfd48f':paper);if(!st.known){ctx.strokeStyle='#c9bc78';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);line(x+3,y+size-3,x+size-3,y+3,'#c9bc78')}}
+function calendar(m,x,y,width){
+  const month=Number(m.month.slice(5)),cx=x+width/2;
+  font(type.section,400,displayFamily);const label=String(month).padStart(2,'0')+' 月';text(label,cx-ctx.measureText(label).width/2,y,type.section,ink,400,displayFamily);
+  const first=new Date(Date.UTC(report.year,month-1,1)),last=new Date(Date.UTC(report.year,month,0)),monday=new Date(first);monday.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);
+  const weeks=Math.floor((last-monday)/86400000/7)+1,step=29,size=25,gx=cx-(weeks*step-(step-size))/2,gy=y+60;
+  for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
+    const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;cell(px,py,size,dayState(date));
+    const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-1,py-1,size+2,size+2);centered(id,px+size/2,py+1,21,'#fff',600)}
+  }
+  const known=Object.hasOwn(m,'roast_messages'),labelStats=known?m.roast_messages+' 喷 / '+m.messages+' 条':'未核验';centered(labelStats,cx,y+284,type.meta,ink,550);
+  const barWidth=width-32;box(x+16,y+332,barWidth,12,5,known?green:pale);if(known&&m.messages&&m.roast_messages)box(x+16,y+332,barWidth*m.roast_messages/m.messages,12,5,red)
+}
+function donut(y){
+  const cx=756,cy=y+72,r=62;ctx.strokeStyle=ratio===null?'#d8ce98':green;ctx.lineWidth=22;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,1.5*Math.PI);ctx.stroke();
+  if(ratio>0){ctx.strokeStyle=red;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*ratio);ctx.stroke()}
+  centered(percent===null?'未核验':'约',cx,cy-36,26,muted);font(type.stat,400,displayFamily);const val=percent===null?'—':percent+'%';text(val,cx-ctx.measureText(val).width/2,cy-5,type.stat,ink,400,displayFamily);centered('指令在骂 AI',cx,cy+98,type.meta,ink,550)
+}
+function activity(y){
+  line(40,y,860,y,ink,1);text('发言日历',40,y+24,type.section,ink,400,displayFamily);if(partialCalendar)right('部分月份',860,y+28,type.meta,muted);
+  const legend=[['发言',{known:true,count:1,roast:0}],['开喷',{known:true,count:1,roast:1}],['0 条',{known:true,count:0,roast:0}],['缺记录',{known:false,count:0,roast:0}]];
+  legend.forEach(([label,state],i)=>{const x=40+i*205;cell(x,y+84,20,state);text(label,x+32,y+76,type.meta,muted)});
+  if(!months.length){text('暂无日期记录',40,y+136,type.meta,muted);return 196}
+  const column=(820-24*(months.length-1))/months.length;months.forEach((m,i)=>calendar(m,40+i*(column+24),y+136,column));return 496
+}
+const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':'根据你与 AI 的真实对话记录整理。';
+function drawPoster(draw=true){let y=0;if(draw){
+  stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);nameBadge();text(reportTitle,40,112,type.title,ink,400,displayFamily);
+  if(report.mode==='demo')right('虚构演示',860,42,type.meta,red,600);else if(report.mode==='self_report')right('自述',860,42,type.meta,red,600);
+  text(tokenUsage?'和 AI 对话，烧了':'你向 AI 发出了',40,216,type.section,ink,400,displayFamily);
+  text(tokenLabel||(s?s.messages.toLocaleString('zh-CN')+' 条指令':'暂无消息统计'),40,268,type.stat,ink,400,displayFamily);
+  text((tokenUsage&&s?s.messages.toLocaleString('zh-CN')+'条指令 · ':'')+(roastKnown?'至少'+s.roast_messages+'条开喷':'吐槽未核验'),40,352,type.meta,ink,550);donut(202)
+}
+y=434;if(draw)activity(y);y+=months.length?496:196;y+=40;
+if(quotes.length){if(draw)text('金句',40,y,type.section,ink,400,displayFamily);y+=56}
+quotes.forEach((q,i)=>{const styles=[{fill:'#ffffff'},{fill:'#ffffff'},{fill:'#ffbda3',highlight:'#ffffff',inline:true},{fill:'#d4e9ff',highlight:'#ffffff'}];y+=sticker(q,40,y,820,styles[i]||{},draw)+(i===quotes.length-1?40:24)});
+if(draw){
+  text('用户人格',40,y,type.section,ink,400,displayFamily);let xx=40;const colors=[ink,'#ffad83','#ffffff'];
+  report.keywords.forEach((k,i)=>{
+    font(type.label,400,displayFamily);const w=(820-20*(report.keywords.length-1))/report.keywords.length;
+    ctx.save();ctx.translate(xx,y+56);box(0,0,w,64,6,colors[i]);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,64);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=i===0?'#ffffff':ink;
+    ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(64+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore();xx+=w+20
+  })
+}return Math.ceil(y+160)}
+function render(){canvas.height=drawPoster(false);drawPoster(true);document.getElementById('preview').src=canvas.toDataURL('image/png')}
+const newline=String.fromCharCode(10);const summary=[owner+'的'+reportTitle,introduction,report.mode==='demo'?'虚构演示':'','最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),'金句：',...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),'用户人格：'+report.keywords.join(' / '),'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
+document.getElementById('transcript').textContent=summary;document.getElementById('preview').alt=summary;
+let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('64px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});
+</script></body></html>

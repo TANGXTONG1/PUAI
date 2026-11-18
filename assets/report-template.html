@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人工年度报告 · 你与 AI</title>
+<style>
+:root{color-scheme:light;--ink:#352952;--muted:#726482;--blue:#6553a3;--paper:#f6f2f9;--line:#ded4e7;--coral:#dc4455}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",sans-serif}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #bf4c39;outline-offset:5px}button:disabled{cursor:default;opacity:.4}a{color:inherit}header{max-width:1220px;margin:auto;padding:28px 42px;display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:650;letter-spacing:1px}.mark{position:relative;width:29px;height:25px}.mark:before,.mark:after{content:"";position:absolute;width:21px;height:16px;border-radius:9px 9px 3px 9px;background:#415aca;transform:rotate(-16deg)}.mark:after{background:#e79c8a;left:9px;top:9px;transform:rotate(164deg)}.edition{font-size:12px;color:var(--muted)}main{max-width:1140px;margin:22px auto 54px;padding:0 32px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:78px;align-items:start}.intro{padding-top:12px}.note{display:inline-block;color:#9b3b2e;background:#ffe9e3;padding:8px 11px;border-radius:5px;font-size:12px;line-height:1.5}.intro h1{font-size:46px;line-height:1.3;letter-spacing:-2px;font-weight:600;margin:23px 0 20px}.lead{font-size:15px;line-height:1.9;color:var(--muted);max-width:310px}.steps{display:flex;gap:7px;margin:28px 0 26px;flex-wrap:wrap}.steps button{border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:20px;font-size:13px}.steps button[aria-current="step"]{background:#e9dff6;color:#553980;font-weight:600}.form{border-top:1px solid var(--line);padding-top:22px;margin-top:6px;max-width:330px}.form label[for=nickname]{font-size:12px;display:block;margin-bottom:8px;color:var(--muted)}.form input[type=text]{background:transparent;border:0;border-bottom:1px solid #aeb9dc;padding:6px 0 10px;color:var(--ink);width:100%;border-radius:0;font-size:18px}.check{display:flex;gap:8px;align-items:center;font-size:13px;margin:16px 0 20px}.censor{margin-top:-8px}.check input{accent-color:var(--blue);width:16px;height:16px}.primary{border:0;background:var(--blue);color:white;border-radius:10px;padding:15px 22px;min-height:48px;width:100%;font-weight:550;font-size:15px}.secondary{border:0;background:transparent;color:var(--blue);font-size:13px;text-decoration:underline;text-underline-offset:4px;padding:12px 0}.save-note{font-size:11px;line-height:1.7;color:var(--muted);margin:6px 0 0}.viewer{width:100%;max-width:480px;justify-self:center}.canvas-wrap{border-radius:18px;overflow:hidden;background:#e8edff;box-shadow:0 26px 75px -32px #596bb074;border:1px solid #dce2f2}canvas{display:block;width:100%;height:auto;aspect-ratio:3/4}.nav{display:flex;align-items:center;justify-content:space-between;margin:17px 4px 0}.nav button{width:42px;height:42px;border-radius:50%;border:1px solid #c9d1e8;background:transparent;color:var(--ink);font-size:20px}.page-indicator{font-size:12px;color:var(--muted)}.status{font-size:12px;line-height:1.6;min-height:20px;color:var(--blue);margin:8px 0}.lower{max-width:1080px;border-top:1px solid var(--line);padding:28px 0;margin:0 auto 38px;display:flex;gap:40px;justify-content:space-between;font-size:12px;line-height:1.9;color:var(--muted)}.lower p{margin:0;max-width:490px}.summon{font-size:13px;color:var(--ink)}.summon code{font-family:inherit;background:#e1e6f8;border-radius:4px;padding:3px 6px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}details{max-width:1080px;margin:0 auto 38px;font-size:13px;line-height:1.9;color:var(--muted)}summary{cursor:pointer}.transcript{white-space:pre-wrap;max-width:650px}.failure{background:white;padding:20px;border-radius:8px}.download-fallback{display:block;width:100%;height:auto;margin-top:16px;border-radius:10px}
+@media(min-width:1400px){main{margin-top:45px;gap:100px}.viewer{max-width:510px}}
+@media(max-width:900px){main{gap:35px;grid-template-columns:310px minmax(0,1fr);margin-top:10px;padding:0 24px}.intro{padding-top:10px}.intro h1{font-size:39px}.steps{gap:2px}.steps button{padding:9px}.lower,details{margin-left:26px;margin-right:26px}.lead{font-size:14px}}
+@media(max-width:680px){header{padding:22px 22px}.edition{font-size:10px}main{display:flex;flex-direction:column;padding:0 22px;gap:22px;margin:4px auto 35px}.intro{width:100%;padding:0}.intro h1{font-size:34px;line-height:1.35;letter-spacing:-1px;margin:15px 0 10px}.intro h1 br{display:initial}.lead{max-width:none;margin:0;font-size:13px}.note{font-size:11px;padding:5px 8px}.steps{margin:15px 0 0}.form{border:0;padding:0;max-width:none;display:grid;grid-template-columns:1fr 1fr;gap:0 16px;margin:18px 0 0}.form label[for=nickname]{grid-column:1;margin:0}.form input[type=text]{grid-column:1;font-size:15px;height:35px}.check{grid-column:2;grid-row:1/3;align-self:center;margin:0;justify-self:end;font-size:12px}.censor{grid-column:1/3;grid-row:auto;justify-self:start;margin:13px 0 0}.primary{grid-column:1/3;margin-top:12px;padding:12px;min-height:44px}.secondary{grid-column:1;font-size:11px;text-align:left}.save-note{grid-column:2;text-align:right;align-self:center;font-size:10px}.status{grid-column:1/3;min-height:0;margin:0}.viewer{max-width:450px}.canvas-wrap{border-radius:12px}.lower{flex-direction:column;gap:17px;margin:0 22px 25px;padding:20px 0}.nav{margin-top:11px}details{margin:0 22px 30px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+[hidden]{display:none!important}.activity-detail{margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:12px;background:#ffffff80;font-size:13px;line-height:1.8}.activity-detail label{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted)}.activity-detail input{min-width:0;border:1px solid var(--line);border-radius:6px;padding:6px;background:white;color:var(--ink)}.activity-detail h2{font-size:17px;margin:16px 0 6px}.activity-detail p{margin:6px 0}.activity-hint{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="mark" aria-hidden="true"></span>人工年度报告</div><span class="edition" id="edition"></span></header>
+<main>
+  <section class="intro" aria-label="报告控制">
+    <div class="note" id="mode-note"></div>
+    <h1><span id="report-year"></span><br>人工年度报告</h1>
+    <p class="lead">你的金句、人格关键词和使用记录。</p>
+    <nav class="steps" aria-label="报告章节" id="steps"></nav>
+    <div class="form">
+      <label for="nickname">分享图上的名字</label><input type="text" id="nickname" maxlength="16" autocomplete="off">
+      <label class="check"><input type="checkbox" id="anonymous">隐藏名字</label>
+      <label class="check censor"><input type="checkbox" id="safe-language">分享时粗口打码</label>
+      <button type="button" class="primary" id="save-share">保存分享图</button>
+      <button type="button" class="secondary" id="save-current">保存当前页</button>
+      <p class="save-note">1080 × 1440 PNG · 本地生成</p>
+      <p class="status" role="status" id="status"></p>
+    </div>
+  </section>
+  <section class="viewer" aria-label="报告预览">
+    <div class="canvas-wrap"><canvas id="poster" width="1080" height="1440" role="img" aria-label="年度报告预览，文字版在页面下方"></canvas></div>
+    <div class="nav"><button id="previous" aria-label="上一页">←</button><span class="page-indicator" id="page-indicator"></span><button id="next" aria-label="下一页">→</button></div>
+    <section class="activity-detail" id="activity-detail" aria-label="查看某天的使用记录" hidden>
+      <label for="activity-date">点绿格，也可以选日期<input id="activity-date" type="date"></label>
+      <div aria-live="polite"><h2 id="activity-day-title"></h2><p id="activity-day-text"></p></div>
+      <p class="activity-hint" id="activity-hint"></p>
+    </section>
+    <div id="download-fallback"></div>
+  </section>
+</main>
+<div class="lower"><p id="coverage"></p><p class="summon">生成你的报告：<br><code>用 $puai，盘点你今年是怎么气我的。</code></p></div>
+<details><summary>阅读文字版报告</summary><div class="transcript" id="transcript"></div></details>
+<script id="report-data" type="application/json">__REPORT_JSON__</script>
+<script>
+'use strict';
+const report = JSON.parse(document.getElementById('report-data').textContent);
+const canvas = document.getElementById('poster');
+const ctx = canvas.getContext('2d');
+const $ = id => document.getElementById(id);
+const sans = '"PingFang SC", "Microsoft YaHei", sans-serif';
+const serif = '"Songti SC", "STSong", serif';
+const colors = {ink:'#352952',muted:'#726482',blue:'#6553a3',rose:'#dc4455',pale:'#efebfb',white:'#ffffff'};
+const modes = {demo:'虚构演示 · 非个人统计',excerpt:'对话片段版',self_report:'个人自述版',full:'完整年度版'};
+const hasActivity = Boolean(report.activity);
+const chapters = hasActivity?['首页','出勤','金句','人工','关键词','晒图']:['首页','金句','人工','关键词','晒图'];
+const shareIndex = chapters.length-1;
+let current = hasActivity&&location.hash==='#activity'?1:0;
+const dayMap = new Map((report.activity?.days||[]).map(d=>[d.date,d]));
+let selectedDate = report.activity?.summary.peak_day?.date||report.period.start;
+let calendarCells = [];
+let displayName = report.person.name;
+let anonymous = false;
+let censored = false;
+const shortDate = d => d.replaceAll('-','.');
+function periodText(){return shortDate(report.period.start)+' — '+shortDate(report.period.end)}
+function nameText(){return anonymous?'匿名碳基甲方':displayName || '匿名碳基甲方'}
+function identityLabel(){return '人格关键词'}
+function display(s){return censored?String(s).replace(/他妈的|他妈|傻逼|傻B|傻b|傻屄|煞笔|傻比|妈的|草泥马|操你妈|他娘的/g,'＊＊'):String(s)}
+function font(size,weight=400,family=sans){ctx.font=`${weight} ${size}px ${family}`}
+function txt(s,x,y,size=32,color=colors.ink,weight=400,family=sans){font(size,weight,family);ctx.fillStyle=color;ctx.textBaseline='top';ctx.fillText(display(s),x,y)}
+function lines(s,maxWidth,size,weight=400,family=sans){font(size,weight,family);const out=[];for(const paragraph of display(s).split('\n')){let line='';for(const char of Array.from(paragraph)){if(line&&ctx.measureText(line+char).width>maxWidth){const chars=Array.from(line);if(/[，。！？；：、）】》」』,.!?;:]/.test(char)&&chars.length>1){const last=chars.pop();out.push(chars.join(''));line=last+char}else{out.push(line);line=char}}else line+=char}out.push(line)}return out}
+function wrap(s,x,y,w,size=32,lineHeight=48,color=colors.ink,weight=400,family=sans){const ls=lines(s,w,size,weight,family);ls.forEach((l,i)=>txt(l,x,y+i*lineHeight,size,color,weight,family));return y+ls.length*lineHeight}
+function fit(s,x,y,w,maxLines,size,lineHeight,color=colors.ink,weight=400,family=sans){let n=size;while(n>20&&lines(s,w,n,weight,family).length>maxLines)n-=1;return wrap(s,x,y,w,n,lineHeight*(n/size),color,weight,family)}
+function rect(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function line(x1,y1,x2,y2,color='#bdc9e5'){ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function spark(x,y,r,color,rotation=0){ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,-r);ctx.quadraticCurveTo(r*.18,-r*.18,r,0);ctx.quadraticCurveTo(r*.18,r*.18,0,r);ctx.quadraticCurveTo(-r*.18,r*.18,-r,0);ctx.quadraticCurveTo(-r*.18,-r*.18,0,-r);ctx.fill();ctx.restore()}
+function bubble(x,y,w,h,rotation,color,label,ink){ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-w*.38,-h*.5);ctx.bezierCurveTo(-w*.58,-h*.46,-w*.58,h*.29,-w*.35,h*.4);ctx.lineTo(-w*.4,h*.66);ctx.lineTo(-w*.17,h*.45);ctx.bezierCurveTo(w*.55,h*.61,w*.6,-h*.43,w*.34,-h*.5);ctx.closePath();ctx.fill();txt(label,-w*.28,-h*.14,h*.26,ink,500);ctx.restore()}
+function stamp(x,y,text,angle=-.13){ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.strokeStyle=colors.rose;ctx.lineWidth=5;ctx.strokeRect(-165,-48,330,96);font(55,700);ctx.textAlign='center';txt(text,0,-29,55,colors.rose,700);ctx.textAlign='left';ctx.restore()}
+function art(x,y,scale=1){ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.save();ctx.rotate(-.06);rect(-280,-180,420,320,34,colors.blue);rect(-244,-135,348,205,18,'#e4dcff');line(-70,-180,-70,-231,colors.blue);ctx.fillStyle=colors.rose;ctx.beginPath();ctx.arc(-70,-245,18,0,Math.PI*2);ctx.fill();txt('×',-194,-115,71,colors.ink,600);txt('×',-64,-115,71,colors.ink,600);rect(-175,-1,130,9,3,colors.ink);txt('已理解 · 待理解',-202,94,29,'#ffffff');ctx.restore();bubble(220,-135,370,170,.08,'#f6e680','收到。',colors.ink);rect(35,84,345,175,9,'#fffdf3');line(66,134,343,134,'#ddd4be');line(66,173,288,173,'#ddd4be');txt('整改结果：下次一定',64,204,22,colors.muted);stamp(185,142,'仍需人工');txt('拟人小剧场',-269,239,20,colors.muted);ctx.restore()}
+function base(section){ctx.clearRect(0,0,1080,1440);ctx.fillStyle=colors.pale;ctx.fillRect(0,0,1080,1440);const g=ctx.createLinearGradient(0,0,1080,1440);g.addColorStop(0,'#f3edff');g.addColorStop(.65,'#e9e3fa');g.addColorStop(1,'#f4e4ec');ctx.fillStyle=g;ctx.fillRect(0,0,1080,1440);txt('人工年度报告',70,66,25,colors.ink,550);font(22);const label=modes[report.mode];const w=ctx.measureText(label).width+34;rect(1010-w,58,w,43,21,report.mode==='demo'?'#f9dfdb':'#e0d8f4');txt(label,1027-w,68,22,report.mode==='demo'?'#923744':colors.ink);txt(section,70,136,21,colors.muted)}
+function footer(){line(70,1325,1010,1325);txt(periodText(),70,1347,20,colors.muted);txt(report.mode==='demo'?'虚构人物与情节，仅作样张':report.mode==='excerpt'?'仅基于所选对话，不代表全年记录':report.mode==='self_report'?'基于个人自述，不代表完整使用记录':'基于提供的完整年度资料',70,1380,20,colors.muted);font(19);const word='$puai';txt(word,1010-ctx.measureText(word).width,1380,19,colors.ink)}
+function tags(y){let x=70;report.keywords.forEach(k=>{font(26);const w=ctx.measureText(k).width+42;rect(x,y,w,49,8,'#e2d8f3');txt(k,x+21,y+11,26,colors.ink);x+=w+14})}
+const greens=['#e1e4dd','#b9dfb7','#74bc82','#378e60','#176447'];
+const dateKey = d=>d.toISOString().slice(0,10);
+const utcDate = (month,day)=>new Date(Date.UTC(report.year,month,day));
+function dayState(date){const row=dayMap.get(date);return row?{known:true,count:row.count,highlight:row.highlight}:{known:date>=report.period.start&&date<=report.period.end&&report.activity.coverage==='complete',count:0}}
+function cellColor(count){return greens[count===0?0:count<5?1:count<15?2:count<30?3:4]}
+function calendarCell(x,y,size,state){rect(x,y,size,size,Math.min(4,size/5),state.known?cellColor(state.count):'#eee9f5');if(!state.known){ctx.strokeStyle='#c8c1d1';ctx.lineWidth=size<15?.65:1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);line(x+size*.25,y+size*.75,x+size*.75,y+size*.25,'#c8c1d1')}}
+function drawCalendar(startMonth,endMonth,x,y,step,size,interactive){const first=utcDate(startMonth,1);const last=utcDate(endMonth+1,0);const monday=new Date(first);monday.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){const date=dateKey(d);const col=Math.floor((d-monday)/86400000/7);const row=(d.getUTCDay()+6)%7;const cx=x+col*step,cy=y+row*step;calendarCell(cx,cy,size,dayState(date));if(interactive){calendarCells.push({date,x:cx,y:cy,size});if(date===selectedDate){ctx.strokeStyle=colors.ink;ctx.lineWidth=2.5;ctx.strokeRect(cx-2,cy-2,size+4,size+4)}if(d.getUTCDate()===1)txt((d.getUTCMonth()+1)+'月',cx,y-43,23,colors.muted)}}if(interactive)[[0,'一'],[2,'三'],[4,'五'],[6,'日']].forEach(([row,label])=>txt(label,x-44,y+row*step+1,21,colors.muted))}
+function coverageLabel(){return report.activity.coverage==='complete'?'所选范围完整':'片段记录 · 空白日未覆盖'}
+function activity(){base('AI 出勤表 · '+coverageLabel());txt('你的使用记录。',70,225,68,colors.ink,650);const s=report.activity.summary;[[s.active_days,'活跃天数'],[s.longest_streak,'最长连续天数'],[s.messages,'你发出的消息']].forEach(([n,label],i)=>{const x=70+i*320;fit(n.toLocaleString('zh-CN'),x,342,290,1,71,75,colors.ink,650);txt(label,x+3,427,25,colors.muted)});calendarCells=[];drawCalendar(0,5,145,550,31,25,true);drawCalendar(6,11,145,835,31,25,true);const peak=s.peak_day;const latest=s.latest_message;txt('最忙一天',73,1092,22,colors.muted);txt(peak?peak.date.slice(5).replace('-','月')+'日 · '+peak.count+'条':'暂无记录',73,1133,27,colors.ink,550);txt('常用时段',402,1092,22,colors.muted);txt(s.peak_hour===null?'暂无记录':String(s.peak_hour).padStart(2,'0')+':00–'+String(s.peak_hour).padStart(2,'0')+':59',402,1133,27,colors.ink,550);txt('最晚发送时刻',724,1092,22,colors.muted);txt(latest?latest.time+' · '+latest.date.slice(5).replace('-','/'): '暂无记录',724,1133,27,colors.ink,550);const labels=['0','1–4','5–14','15–29','30+'];labels.forEach((label,i)=>{const x=73+i*138;calendarCell(x,1206,22,{known:true,count:[0,1,5,15,30][i]});txt(label,x+32,1206,20,colors.muted)});calendarCell(807,1206,22,{known:false});txt('未覆盖',839,1206,20,colors.muted);txt('颜色 = 每日用户消息数 · '+report.activity.timezone,73,1252,21,colors.muted);txt('按所选记录统计；最晚按 0–24 时比较，非使用时长。',73,1284,20,colors.muted);footer()}
+function miniCalendar(){drawCalendar(0,11,70,1234,12,9,false);const s=report.activity.summary;txt('活跃 '+s.active_days+' 天',754,1235,21,colors.ink,550);txt('连续 '+s.longest_streak+' 天',754,1264,21,colors.muted);txt('每日消息 · 斜线未覆盖',754,1293,18,colors.muted)}
+function inspectDate(){if(!hasActivity)return;$('activity-date').value=selectedDate;const state=dayState(selectedDate);const title=state.known?selectedDate+' · '+state.count+' 条消息':selectedDate+' · 未覆盖';$('activity-day-title').textContent=title;$('activity-day-text').textContent=display(state.highlight?state.highlight.title+'。'+state.highlight.text:!state.known?'这天不在已提供记录的覆盖范围内，不能判断有没有使用。':state.count?'这天有使用记录，未提供可公开展示的片段。':'在完整覆盖的所选记录中，这天没有用户消息。');$('activity-hint').textContent=(report.mode==='demo'?'此日历与名场面均为虚构演示。':'仅统计你提供的记录。')+'颜色表示用户消息数，不代表使用小时。'}
+function cover(){base('你和 AI');txt(report.year,63,201,195,colors.ink,550);txt('人工年度报告',76,428,59,colors.ink,550);art(520,775,1.06);txt(nameText()+' · '+identityLabel(),72,1086,25,colors.muted);fit(report.identity.title,67,1132,940,1,76,93,colors.ink,700);fit(report.identity.subtitle,72,1233,930,2,29,37);footer()}
+function phraseSource(){return (report.phrase.kind!=='quote'?'创作吐槽 · 非历史原话':report.mode==='demo'?'虚构样例 · 不代表你说过':report.mode==='self_report'?'你的自述原话':'所选对话中的原话')+(censored?' · 粗口已打码':'')}
+function phrase(){base('你的金句');txt('你说过：',70,264,63,colors.ink,550);if(report.phrase.kind==='quote')txt('“',58,398,145,'#b49ace',400,serif);fit(report.phrase.text,80,552,900,5,74,87,colors.ink,650);txt(phraseSource(),78,1105,22,colors.muted);tags(1200);footer()}
+function moments(){base('所选记录');txt('你的人工。',70,264,77,colors.ink,650);let y=489;const count=report.moments.length;const space=count===4?175:count===3?215:265;report.moments.forEach((m,i)=>{txt(String(i+1).padStart(2,'0'),73,y,29,colors.rose,650);fit(m.title,151,y-2,846,1,36,48,colors.ink,550);fit(m.text,151,y+57,830,3,count===4?26:29,count===4?27:36,colors.muted);if(i<count-1)line(151,y+space-32,1006,y+space-32,'#cfc3de');y+=space});if(report.metrics.length){const metricY=1208;report.metrics.forEach((m,i)=>{const x=70+i*318;fit(m.value+(m.unit?' '+m.unit:''),x,metricY,290,2,32,35,colors.ink,550);fit(m.label,x,metricY+78,290,1,22,29,colors.muted)})}footer()}
+function letter(){base('根据所选对话');txt('你的人格关键词',70,255,67,colors.ink,650);report.keywords.forEach((k,i)=>{txt(String(i+1).padStart(2,'0'),76,465+i*240,26,colors.muted);fit(k,72,520+i*240,930,1,88,104,colors.ink,650)});footer()}
+function share(){base('你和 AI');txt(report.year,65,200,157,colors.ink,550);txt('人工年度报告',76,382,55,colors.ink,550);art(505,664,.85);txt(nameText()+' · '+identityLabel(),73,935,24,colors.muted);fit(report.identity.title,67,977,944,1,68,85,colors.ink,700);fit(report.identity.subtitle,73,1055,930,1,21,23,colors.muted);rect(70,1085,940,130,14,'#fffdf6');txt(phraseSource(),96,1098,20,colors.muted);const quote=report.phrase.kind==='quote'?'「'+report.phrase.text+'」':report.phrase.text;fit(quote,94,1136,892,2,34,35,colors.ink,550);if(hasActivity)miniCalendar();else tags(1231);footer()}
+const renderers=hasActivity?[cover,activity,phrase,moments,letter,share]:[cover,phrase,moments,letter,share];
+function render(){renderers[current]();$('page-indicator').textContent=(current+1)+' / '+chapters.length+' · '+chapters[current];$('previous').disabled=current===0;$('next').disabled=current===shareIndex;document.querySelectorAll('#steps button').forEach((b,i)=>{if(i===current)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});canvas.setAttribute('aria-label',chapters[current]+'，'+modes[report.mode]+'。完整内容见下方文字版');$('activity-detail').hidden=!(hasActivity&&current===1);canvas.style.cursor=hasActivity&&current===1?'pointer':'default';inspectDate();updateTranscript()}
+function updateTranscript(){const parts=[report.year+' 人工年度报告',modes[report.mode],periodText(),nameText()+'：'+report.identity.title,report.identity.subtitle,phraseSource(),report.phrase.text,'关键词：'+report.keywords.join('、'),...report.moments.map(m=>m.title+'\n'+m.text),...report.metrics.map(m=>m.label+'：'+m.value+m.unit)];if(hasActivity){const a=report.activity,s=a.summary;parts.push('AI 出勤表 · '+coverageLabel()+' · '+a.timezone,'活跃 '+s.active_days+' 天；最长连续 '+s.longest_streak+' 天；用户消息 '+s.messages+' 条','常用时段：'+(s.peak_hour===null?'暂无记录':s.peak_hour+' 点'),'最晚发送时刻（按 0–24 时比较）：'+(s.latest_message?s.latest_message.date+' '+s.latest_message.time:'暂无记录'),'颜色按每日用户消息数，不表示使用小时。',...a.days.map(d=>d.date+'：'+d.count+' 条'+(d.highlight?'；'+d.highlight.title+'。'+d.highlight.text:'')))}$('transcript').textContent=display(parts.join('\n\n'))}
+function go(n){current=Math.max(0,Math.min(shareIndex,n));render()}
+function save(page){$('status').textContent='正在生成图片…';renderers[page]();canvas.toBlob(blob=>{renderers[current]();if(!blob){$('status').textContent='图片生成失败，请使用浏览器截图保存。';return}const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='year-with-ai-'+report.year+'-'+(page===shareIndex?'share':hasActivity&&page===1?'activity':page+1)+'.png';document.body.appendChild(a);a.click();a.remove();$('status').textContent='图片已生成；若未下载，可长按下方图片保存。';$('download-fallback').replaceChildren();const img=document.createElement('img');img.className='download-fallback';img.alt='可长按保存的'+chapters[page]+'图片';img.src=url;$('download-fallback').appendChild(img);const old=$('download-fallback').dataset.url;if(old)URL.revokeObjectURL(old);$('download-fallback').dataset.url=url},'image/png')}
+$('nickname').value=displayName;
+function clearExport(){const node=$('download-fallback');if(node.dataset.url)URL.revokeObjectURL(node.dataset.url);node.replaceChildren();delete node.dataset.url;$('status').textContent=''}
+$('nickname').addEventListener('input',e=>{displayName=Array.from(e.target.value).slice(0,16).join('');clearExport();render()});
+$('anonymous').addEventListener('change',e=>{anonymous=e.target.checked;$('nickname').disabled=anonymous;clearExport();render()});
+$('safe-language').addEventListener('change',e=>{censored=e.target.checked;clearExport();render()});
+$('previous').addEventListener('click',()=>go(current-1));$('next').addEventListener('click',()=>go(current+1));
+$('save-share').addEventListener('click',()=>save(shareIndex));$('save-current').addEventListener('click',()=>save(current));
+if(hasActivity){$('activity-date').min=report.year+'-01-01';$('activity-date').max=report.year+'-12-31';$('activity-date').addEventListener('change',e=>{if(e.target.validity.valid&&e.target.value){selectedDate=e.target.value;render()}});canvas.addEventListener('click',e=>{if(current!==1)return;const bounds=canvas.getBoundingClientRect();const x=(e.clientX-bounds.left)*1080/bounds.width;const y=(e.clientY-bounds.top)*1440/bounds.height;const cell=calendarCells.find(c=>x>=c.x-3&&x<c.x+c.size+3&&y>=c.y-3&&y<c.y+c.size+3);if(cell){selectedDate=cell.date;render()}})}
+chapters.forEach((label,i)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',()=>go(i));$('steps').appendChild(button)});
+document.addEventListener('keydown',e=>{if(e.target instanceof HTMLInputElement)return;if(e.key==='ArrowRight')go(current+1);if(e.key==='ArrowLeft')go(current-1)});
+$('report-year').textContent=report.year;$('edition').textContent=report.year+' · 你和 AI';
+$('mode-note').textContent=modes[report.mode]+(report.mode==='demo'?' · 可体验导出':'');
+$('coverage').textContent='记录范围：'+periodText()+'。'+(report.mode==='demo'?'当前内容为虚构演示，展示报告的形式与语气。':'仅使用你为这份报告提供的内容。')+'图片在本地生成；页面不发送对话或图片。独立创意项目，非网易云音乐官方产品。';
+document.title=report.year+' 人工年度报告 · 你与 AI';
+render();
+</script>
+</body>
+</html>
