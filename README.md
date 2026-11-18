@@ -2,7 +2,7 @@
 
 [在线入口：填写昵称，复制口令](https://xn--sxrw8m230b.com/PUAI/)
 
-把你的 AI 对话做成一张年度报告：token 用量、开喷比例、发言日历、原话金句和用户人格。默认红白漫画 A 版，导出手机可读的 PNG 长图。
+把你的 AI 对话（主要是，PUA AI）做成一张年度报告：token 用量、开喷比例、发言日历、原话金句和用户人格。
 
 ## 示例
 
@@ -11,16 +11,6 @@
     <img src="docs/preview.png" width="420" alt="不愿透露姓名的唐某的 2026 PUAI 报告：token 用量、开喷比例、发言日历、原话金句和用户人格">
   </a>
 </p>
-
-不愿透露姓名的唐某 · 2026 PUAI 报告。[查看完整报告](https://xn--sxrw8m230b.com/PUAI/sample.html)
-
-**金句示例**
-
-> 不要再拿这么丑的东西来污染我的眼睛了，求你了哥哥
-
-> 浪费我的 token， 赔钱！
-
-**用户人格示例：** 跪式霸凌 · 仅退款财神 · 赛博恶婆婆
 
 ## 分享与使用
 
@@ -56,4 +46,4 @@ node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.
 
 Python 3.9+、Node.js 20+、Playwright 和 Chromium；缺少依赖时见 [PNG 导出说明](references/png-export.md)。输入格式见 [report-schema.md](references/report-schema.md)，无需用户手填。
 
-字体得意黑 Smiley Sans 随包保留 [OFL 许可](assets/SmileySans-OFL.txt)。独立创意项目，非网易云音乐官方产品。
+字体得意黑 Smiley Sans 随包保留 [OFL 许可](assets/SmileySans-OFL.txt)。独立创意项目。
