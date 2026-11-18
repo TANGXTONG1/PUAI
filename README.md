@@ -14,6 +14,8 @@
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
+  <a href="https://xn--sxrw8m230b.com/PUAI/palettes/atlas/">48 款配色样刊</a>
+  &nbsp; · &nbsp;
   <a href="SKILL.md">Skill 说明</a>
 </p>
 
