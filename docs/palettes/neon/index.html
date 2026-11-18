@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#151d21"><link rel="icon" href="data:,"><meta name="description" content="唐某的 2026 PUAI 报告，八套轻赛博配色。"><title>轻赛博配色 · 2026 PUAI 报告</title><style>
+:root{--stone:#edede7;--ink:#262923;--faded:#52594f;--rule:#b5b9ad;--display:"Songti SC","STSong","Noto Serif CJK SC",serif;--body:"Rethink Sans","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;color-scheme:light}
+*{box-sizing:border-box}html{scroll-padding-top:16px}
+body{margin:0;background:var(--stone);color:var(--ink);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.19em}
+a:hover{text-decoration-thickness:2px}a:focus-visible{outline:3px solid #3d5480;outline-offset:4px}
+.shell{width:min(100%,1200px);padding-inline:clamp(16px,5.5vw,72px);margin-inline:auto}
+.mast{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px;border-bottom:1px solid currentColor}
+.mast a{text-decoration:none;display:inline-flex;align-items:center;min-height:36px}
+.wordmark{font:800 26px/.95 var(--body);letter-spacing:-.065em}
+.back{font-size:14px}.back:hover,.back:focus-visible{text-decoration:underline}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding:clamp(26px,4vw,54px) 0 23px}
+h1,h2,h3,p,figure{margin:0}
+h1{font:600 clamp(54px,8vw,96px)/1.03 var(--display);letter-spacing:-.07em}
+.owner{margin-top:13px;font-size:clamp(14px,1.55vw,18px);color:var(--faded)}
+.overview{color:var(--ink);font-weight:650;display:inline-flex;gap:7px;align-items:center;min-height:40px;white-space:nowrap}
+.index{list-style:none;margin:0 0 40px;padding:0;display:grid;grid-template-columns:repeat(var(--columns),minmax(0,1fr));gap:2px}
+.index li{min-width:0}.sample{height:100%;display:flex;align-items:stretch;background:var(--paper);color:var(--print);text-decoration:none;position:relative}
+.sample::before{content:"";width:7px;flex:0 0 7px;background:var(--signal)}
+.sample:hover,.sample:focus-visible{box-shadow:inset 0 -2px currentColor}
+.index-info{padding:10px 10px 10px 13px;display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.series-name{font-size:clamp(14px,1.4vw,17px);font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.index-color{width:22px;height:14px;display:inline-block;position:relative;margin-left:auto;flex:none;background:var(--accent)}
+.index-color:after{content:"";position:absolute;right:4px;top:3px;width:9px;height:8px;background:var(--signal)}
+.group{margin-bottom:55px}.section-top{display:flex;align-items:baseline;gap:15px;margin-bottom:16px}
+h2{font:600 clamp(26px,3.1vw,42px)/1.14 var(--display);letter-spacing:-.035em}.count{font-size:14px;color:var(--faded)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px clamp(20px,4vw,54px)}
+.proof{min-width:0;scroll-margin-top:12px}
+.visual{display:block;background:var(--paper);position:relative}.visual img{display:block;width:100%;height:auto}
+figcaption{padding:11px 0 0}.name-row,.info-row,.tools{display:flex;align-items:baseline;gap:10px}
+.name-row{align-items:center;justify-content:space-between}.title{display:flex;align-items:baseline;gap:10px;min-width:0}
+.code{font:600 14px var(--body);letter-spacing:.01em;white-space:nowrap;text-decoration:none;border-bottom:1px dotted var(--faded)}
+h3{font:650 clamp(20px,2.05vw,26px)/1.25 var(--body);overflow-wrap:anywhere;letter-spacing:-.035em}
+.inks{display:inline-flex;flex:none;align-items:stretch;height:13px;width:70px;border:1px solid #858b80}.inks i{flex:1}
+.credit{color:var(--faded);margin-top:5px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.credit a{text-decoration-style:dotted}.credit a:hover{text-decoration-style:solid}
+.info-row{justify-content:space-between;align-items:flex-start}.info-row .credit{flex:1}
+.full{font-size:14px;min-height:36px;line-height:1.4;flex:none;margin-top:4px}.full span,.overview span{font:400 1em var(--body)}
+footer{padding:0 0 32px;color:var(--faded);font-size:14px}footer p{padding-top:13px;border-top:1px solid var(--rule)}
+@media(max-width:700px){.index{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:28px}.grid{grid-template-columns:1fr;gap:22px}.group{margin-bottom:39px}.hero{gap:10px;padding:24px 0 16px;align-items:center}.overview{font-size:14px;gap:4px}.section-top{margin-bottom:11px}.inks{width:60px}.owner{font-size:13px}.full{padding:4px 0 4px 5px;margin-top:0}.mast{padding-block:6px}.credit{font-size:13px}.grid .proof+ .proof{border-top:1px solid var(--rule);padding-top:17px}.index-info{padding:9px 8px 9px 10px}}
+@media(max-width:359px){.hero{display:block}.overview{min-height:28px;margin-top:4px}.index-color{width:15px}.title{gap:7px}.inks{width:48px}.name-row{gap:5px}}
+@media print{body{background:white}.mast,.overview,.index,.full,footer{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.proof{break-inside:avoid}}
+
+:root{--stone:#151d21;--ink:#eff8f5;--faded:#b1bfc0;--rule:#46545a;--display:"Geist","Arial","PingFang SC","Microsoft YaHei",sans-serif;--ice:#9af2e3;--body:"Geist","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;color-scheme:dark}
+.mast{border-color:var(--rule)}.back{color:var(--faded)}.wordmark{letter-spacing:-.055em}
+.hero{padding-block:30px 18px}.hero h1{font-weight:780;letter-spacing:-.065em;font-size:clamp(49px,7.5vw,88px)}
+.owner{margin-top:7px}.overview{color:var(--ice)}.index{max-width:530px;margin-bottom:28px;gap:3px}
+.index-info{padding-block:9px}.sample:focus-visible,a:focus-visible{outline-color:var(--ice)}
+.group{margin-bottom:44px}.section-top{margin-bottom:10px}.section-top h2{font-size:clamp(24px,2.4vw,33px);font-weight:710;letter-spacing:-.045em}
+.visual{border:1px solid #526264}.name-row,.title{min-width:0}.code{color:var(--ice);border:0}.full{display:inline-flex;align-items:center;min-height:30px;margin:2px 0 0;color:var(--faded)}
+figcaption{padding:9px 0 0}.inks{border-color:#849595}.info-row,.tools,.credit{display:none}
+@media(max-width:700px){.hero{padding-block:18px 14px}.hero h1{font-size:clamp(42px,10.8vw,66px)}.index{margin-bottom:20px}.section-top{margin-bottom:9px}.sample .series-name{font-size:15px}.grid{gap:14px}.grid .proof+.proof{border:0;padding:0}.full{padding:3px 0 4px}}
+@media(max-width:359px){.hero{display:flex}.hero h1{font-size:36px}.owner{font-size:12px;max-width:200px}.overview{font-size:13px}}
+
+</style></head><body>
+<header class="shell"><div class="mast"><a class="wordmark" href="../../" aria-label="PUAI 首页">PUAI</a><a class="back" href="../art/">艺术配色</a></div>
+<div class="hero"><div><h1>轻赛博配色</h1><p class="owner">2026 PUAI 报告　／　不愿透露姓名的唐某</p></div><a class="overview" href="overview.png">整张色卡 <span aria-hidden="true">↗</span></a></div>
+<nav aria-label="按底色浏览"><ul class="index" style="--columns:2"><li><a class="sample" href="#series-N01" style="--paper:#0D1921;--print:#E8F3F2;--signal:#AFE3E4;--accent:#62E5DA"><span class="index-info"><span class="series-name">暗底</span><span class="index-color" aria-hidden="true"></span></span></a></li><li><a class="sample" href="#series-N05" style="--paper:#F3F6F6;--print:#142238;--signal:#C7E1F4;--accent:#E5EE79"><span class="index-info"><span class="series-name">亮底</span><span class="index-color" aria-hidden="true"></span></span></a></li></ul></nav></header>
+<main class="shell"><section class="group" id="series-N01" aria-labelledby="group-N01"><div class="section-top"><h2 id="group-N01">暗底</h2><span class="count">4 款</span></div><div class="grid"><figure class="proof" id="N01" aria-labelledby="title-N01" style="--paper:#0D1921">
+<a class="visual" href="full/N01.png" aria-label="打开 N01 冷青示波 完整长图"><img src="strips/N01.webp" width="900" height="525" decoding="async" loading="eager" alt="唐某报告的两句原话，冷青示波配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N01" class="code" aria-label="N01 固定链接">N01</a><h3 id="title-N01">冷青示波</h3></div><span class="inks" role="img" aria-label="纸 #0D1921，对话框 #163947，划词 #62E5DA，爆炸框 #AFE3E4" title="纸 #0D1921，对话框 #163947，划词 #62E5DA，爆炸框 #AFE3E4"><i style="background:#0D1921"></i><i style="background:#163947"></i><i style="background:#62E5DA"></i><i style="background:#AFE3E4"></i></span></div>
+<a class="full" href="full/N01.png" aria-label="查看 N01 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N02" aria-labelledby="title-N02" style="--paper:#211D18">
+<a class="visual" href="full/N02.png" aria-label="打开 N02 琥珀终端 完整长图"><img src="strips/N02.webp" width="900" height="525" decoding="async" loading="eager" alt="唐某报告的两句原话，琥珀终端配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N02" class="code" aria-label="N02 固定链接">N02</a><h3 id="title-N02">琥珀终端</h3></div><span class="inks" role="img" aria-label="纸 #211D18，对话框 #3F3327，划词 #FFBE54，爆炸框 #2C2823" title="纸 #211D18，对话框 #3F3327，划词 #FFBE54，爆炸框 #2C2823"><i style="background:#211D18"></i><i style="background:#3F3327"></i><i style="background:#FFBE54"></i><i style="background:#2C2823"></i></span></div>
+<a class="full" href="full/N02.png" aria-label="查看 N02 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N03" aria-labelledby="title-N03" style="--paper:#211C30">
+<a class="visual" href="full/N03.png" aria-label="打开 N03 紫外偏振 完整长图"><img src="strips/N03.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，紫外偏振配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N03" class="code" aria-label="N03 固定链接">N03</a><h3 id="title-N03">紫外偏振</h3></div><span class="inks" role="img" aria-label="纸 #211C30，对话框 #392B52，划词 #E3B8FB，爆炸框 #BDC6F6" title="纸 #211C30，对话框 #392B52，划词 #E3B8FB，爆炸框 #BDC6F6"><i style="background:#211C30"></i><i style="background:#392B52"></i><i style="background:#E3B8FB"></i><i style="background:#BDC6F6"></i></span></div>
+<a class="full" href="full/N03.png" aria-label="查看 N03 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N04" aria-labelledby="title-N04" style="--paper:#16231F">
+<a class="visual" href="full/N04.png" aria-label="打开 N04 磷绿夜视 完整长图"><img src="strips/N04.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，磷绿夜视配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N04" class="code" aria-label="N04 固定链接">N04</a><h3 id="title-N04">磷绿夜视</h3></div><span class="inks" role="img" aria-label="纸 #16231F，对话框 #273D31，划词 #C5F37B，爆炸框 #DFE8C8" title="纸 #16231F，对话框 #273D31，划词 #C5F37B，爆炸框 #DFE8C8"><i style="background:#16231F"></i><i style="background:#273D31"></i><i style="background:#C5F37B"></i><i style="background:#DFE8C8"></i></span></div>
+<a class="full" href="full/N04.png" aria-label="查看 N04 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure></div></section><section class="group" id="series-N05" aria-labelledby="group-N05"><div class="section-top"><h2 id="group-N05">亮底</h2><span class="count">4 款</span></div><div class="grid"><figure class="proof" id="N05" aria-labelledby="title-N05" style="--paper:#F3F6F6">
+<a class="visual" href="full/N05.png" aria-label="打开 N05 白瓷钴蓝 完整长图"><img src="strips/N05.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，白瓷钴蓝配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N05" class="code" aria-label="N05 固定链接">N05</a><h3 id="title-N05">白瓷钴蓝</h3></div><span class="inks" role="img" aria-label="纸 #F3F6F6，对话框 #16399A，划词 #E5EE79，爆炸框 #C7E1F4" title="纸 #F3F6F6，对话框 #16399A，划词 #E5EE79，爆炸框 #C7E1F4"><i style="background:#F3F6F6"></i><i style="background:#16399A"></i><i style="background:#E5EE79"></i><i style="background:#C7E1F4"></i></span></div>
+<a class="full" href="full/N05.png" aria-label="查看 N05 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N06" aria-labelledby="title-N06" style="--paper:#EDEDE8">
+<a class="visual" href="full/N06.png" aria-label="打开 N06 铝板信号橙 完整长图"><img src="strips/N06.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，铝板信号橙配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N06" class="code" aria-label="N06 固定链接">N06</a><h3 id="title-N06">铝板信号橙</h3></div><span class="inks" role="img" aria-label="纸 #EDEDE8，对话框 #253039，划词 #FFA460，爆炸框 #FCF5E8" title="纸 #EDEDE8，对话框 #253039，划词 #FFA460，爆炸框 #FCF5E8"><i style="background:#EDEDE8"></i><i style="background:#253039"></i><i style="background:#FFA460"></i><i style="background:#FCF5E8"></i></span></div>
+<a class="full" href="full/N06.png" aria-label="查看 N06 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N07" aria-labelledby="title-N07" style="--paper:#E2F1E8">
+<a class="visual" href="full/N07.png" aria-label="打开 N07 离子薄荷 完整长图"><img src="strips/N07.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，离子薄荷配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N07" class="code" aria-label="N07 固定链接">N07</a><h3 id="title-N07">离子薄荷</h3></div><span class="inks" role="img" aria-label="纸 #E2F1E8，对话框 #17464B，划词 #FFB0D5，爆炸框 #BDDCD4" title="纸 #E2F1E8，对话框 #17464B，划词 #FFB0D5，爆炸框 #BDDCD4"><i style="background:#E2F1E8"></i><i style="background:#17464B"></i><i style="background:#FFB0D5"></i><i style="background:#BDDCD4"></i></span></div>
+<a class="full" href="full/N07.png" aria-label="查看 N07 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure>
+<figure class="proof" id="N08" aria-labelledby="title-N08" style="--paper:#F6E9EF">
+<a class="visual" href="full/N08.png" aria-label="打开 N08 洋红校样 完整长图"><img src="strips/N08.webp" width="900" height="525" decoding="async" loading="lazy" alt="唐某报告的两句原话，洋红校样配色"></a>
+<figcaption><div class="name-row"><div class="title"><a href="#N08" class="code" aria-label="N08 固定链接">N08</a><h3 id="title-N08">洋红校样</h3></div><span class="inks" role="img" aria-label="纸 #F6E9EF，对话框 #4F233D，划词 #FFA6CC，爆炸框 #213E98" title="纸 #F6E9EF，对话框 #4F233D，划词 #FFA6CC，爆炸框 #213E98"><i style="background:#F6E9EF"></i><i style="background:#4F233D"></i><i style="background:#FFA6CC"></i><i style="background:#213E98"></i></span></div>
+<a class="full" href="full/N08.png" aria-label="查看 N08 的完整报告长图">完整长图 <span aria-hidden="true">↗</span></a></figcaption></figure></div></section></main></body></html>

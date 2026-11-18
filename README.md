@@ -49,6 +49,8 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 
 [打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/)
 
+[轻赛博配色 · 8 张高对比报告](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术配色样刊 · 同一张报告的 16 种印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/)
+
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
