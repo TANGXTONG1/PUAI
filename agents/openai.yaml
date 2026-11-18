@@ -1,4 +1,4 @@
 interface:
   display_name: "PUAI"
   short_description: "用指定分享昵称、四条大字金句和犀利短标签，制作手机易读的 PUAI 报告长图"
-  default_prompt: "叫我「XXX」。用 $puai 查查今年到底是谁在伺候谁，生成我的报告长图。"
+  default_prompt: "叫我「XXX」，用 $puai 生成我的年度报告长图。"
