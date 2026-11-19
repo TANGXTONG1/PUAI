@@ -114,14 +114,62 @@ const editions = {
 };
 const selectedKey=Object.hasOwn(editions,report.theme)?report.theme:'puai';
 const edition=editions[selectedKey],isRoast=selectedKey==='puai';
-const ink='#231e1a',muted='#6c5650',red=edition.accent,paper='#fff7ed',pale='#e8dcd2';
-// Large color fields and the smaller type-bearing ink are proofed separately.
-const signalInk=edition.lightOnSignal?paper:ink;
-const footerInk=isRoast?paper:signalInk;
+const story=report.story;
+const storyPalettes = {
+  cobalt: { // 白瓷钴蓝
+    base:'#F3F6F6', ink:'#142238', muted:'#475364', pale:'#B7BDC3', outline:'#78818E', edge:'#666E7A',
+    pull:'#16399A', onPull:'#F3F6F6', accent:'#E5EE79', onAccent:'#142238',
+    signal:'#C7E1F4', onSignal:'#142238', burstHighlight:'#16399A', onBurstHighlight:'#F3F6F6',
+    bubble:'#F7F9F8', tint:'#DFE6F2', onTint:'#142238', calendar:'#2552AC', onCalendar:'#FFFDFC',
+    markerForeground:{"#142238":"#F3F6F6","#F3F6F6":"#142238"},
+  },
+  orange: { // 铝板信号橙
+    base:'#FCFAF6', ink:'#26242A', muted:'#555356', pale:'#CFCDCB', outline:'#8F8D8D', edge:'#747274',
+    pull:'#CEDCE3', onPull:'#212C33', accent:'#FF9D53', onAccent:'#252126',
+    signal:'#FFE3BD', onSignal:'#30261F', burstHighlight:'#923B16', onBurstHighlight:'#FFFFFF',
+    bubble:'#FEFDFC', tint:'#FFE0C4', onTint:'#26242A', calendar:'#90390E', onCalendar:'#FFFFFF',
+    markerForeground:{"#26242A":"#FFFFFF","#212C33":"#FFFFFF","#30261F":"#FFFFFF"},
+  },
+  mint: { // 离子薄荷
+    base:'#F1FCF7', ink:'#142F2D', muted:'#445856', pale:'#C3D1CD', outline:'#82918E', edge:'#667573',
+    pull:'#91E3CD', onPull:'#102E2A', accent:'#FFB4D8', onAccent:'#292129',
+    signal:'#D3F7E0', onSignal:'#10372E', burstHighlight:'#12554B', onBurstHighlight:'#FFFFFF',
+    bubble:'#FAFEFC', tint:'#CFF5E8', onTint:'#142F2D', calendar:'#205955', onCalendar:'#FFFFFF',
+    markerForeground:{"#142F2D":"#FFFFFF","#102E2A":"#FFFFFF","#10372E":"#FFFFFF"},
+  },
+  magenta: { // 洋红校样
+    base:'#FFF5F9', ink:'#301E30', muted:'#5D4E5B', pale:'#D4C8CF', outline:'#968993', edge:'#7A6E77',
+    pull:'#F5B3D1', onPull:'#361829', accent:'#9A2358', onAccent:'#FFFFFF',
+    signal:'#CDDCFF', onSignal:'#1C2950', burstHighlight:'#2944A1', onBurstHighlight:'#FFFFFF',
+    bubble:'#FFFCFD', tint:'#FFE0EB', onTint:'#301E30', calendar:'#912755', onCalendar:'#FFFFFF',
+    markerForeground:{"#301E30":"#FFFFFF","#361829":"#FFFFFF","#1C2950":"#FFFFFF"},
+  },
+};
+const storyInks = {
+  puai:'cobalt', teach:'cobalt', einstein:'cobalt',
+  aicu:'orange', edison:'orange', hush:'mint', free:'mint', all:'magenta', support:'magenta'
+};
+function classicPalette() {
+  const ink='#231e1a', base='#fff7ed', signalText=edition.lightOnSignal?base:ink;
+  return {
+    base,ink,muted:'#6c5650',pale:'#e8dcd2',outline:'#b5a59a',edge:ink,
+    pull:ink,onPull:base,accent:edition.accent,onAccent:base,
+    signal:edition.signal,onSignal:signalText,burstHighlight:edition.lightOnSignal?edition.tint:base,onBurstHighlight:ink,
+    bubble:'#ffffff',tint:edition.tint,onTint:ink,calendar:edition.accent,onCalendar:base,
+    markerForeground:{[base]:ink}
+  };
+}
+const colors=story?storyPalettes[storyInks[selectedKey]]:classicPalette();
+const {ink,muted,accent,pale,base:paper}=colors;
+const footerInk=!story&&isRoast?paper:colors.onSignal;
 const fontFamily='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Smiley Sans",sans-serif';
 const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
+const demoLabel=report.mode==='demo'?(isSpecimen?'演示数据':story?'虚拟人物样例':'虚构演示'):'';
 const reportTitle=report.year+' '+edition.name+' 报告';
+const personaLabel=isSpecimen?'人格示意':'用户人格';
+const tagLabel=isSpecimen?'标签示意':story?'人格标签':'用户人格';
+const extraBottomMargin=24;
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
 const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
@@ -148,9 +196,9 @@ function centered(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,
 function right(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-ctx.measureText(String(str)).width,y,size,color,weight)}
 function nameBadge(){
 ctx.save();font(34,600);ctx.textBaseline='alphabetic';const label=isSpecimen?owner:owner+'的',m=ctx.measureText(label),w=m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44;
-ctx.translate(48,36);box(0,0,w,56,0,red);ctx.fillStyle=paper;ctx.fillText(label,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(56+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()
+ctx.translate(48,36);box(0,0,w,56,0,accent);ctx.fillStyle=colors.onAccent;ctx.fillText(label,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(56+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()
 }
-function marker(q,x,y,color=ink){box(x,y,32,32,16,color);centered(markers.get(q.date),x+16,y+3,24,color===paper?ink:paper,600);text(q.date.slice(5).replace('-','.'),x+44,y,32,color,550)}
+function marker(q,x,y,color=ink){box(x,y,32,32,16,color);centered(markers.get(q.date),x+16,y+3,24,colors.markerForeground[color]||paper,600);text(q.date.slice(5).replace('-','.'),x+44,y,32,color,550)}
 const stickerLayouts=[];
 const wordSegmenter=typeof Intl.Segmenter==='function'?new Intl.Segmenter('zh-CN',{granularity:'word'}):null;
 function richLines(q,width,size,balance=true){const split=(str,strong)=>(wordSegmenter?[...wordSegmenter.segment(str)].map(t=>t.segment):[...str.matchAll(/[A-Za-z0-9]+|./gu)].map(t=>t[0])).map(value=>({value,strong}));const start=q.emphasis?q.text.indexOf(q.emphasis):-1;let tokens;if(start<0)tokens=split(q.text,false);else{font(size,700);const middle=ctx.measureText(q.emphasis).width<=width?[{value:q.emphasis,strong:true}]:split(q.emphasis,true);tokens=[...split(q.text.slice(0,start),false),...middle,...split(q.text.slice(start+q.emphasis.length),false)]}{
@@ -177,7 +225,7 @@ if(balance){
   return balanced
 }return rows}
 const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':'根据你与 AI 的真实对话记录整理。';
-function dots(x,y,w,h,color=red){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
+function dots(x,y,w,h,color=accent){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
 function dayState(date) {
   const entry=dayMap.get(date);
   const known=Boolean(entry || a?.coverage==='complete' && date>=report.period.start && date<=report.period.end);
@@ -196,12 +244,12 @@ function smallMark() {
   if(isRoast) return;
   const glyphs={tick:'✓',plus:'+',copies:'≡',ellipsis:'…',therefore:'∴',asterisk:'＊',heart:'♥',arrow:'↗'};
   const mark=glyphs[edition.mark];
-  if(mark) right(mark,851,82,29,red,650);
+  if(mark) right(mark,851,82,29,story?ink:accent,650);
 }
-function comicTitle(label,x,y){text(label,x,y,type.section,ink,800);font(type.section,800);line(x,y+48,x+ctx.measureText(label).width,y+48,red,7)}
+function comicTitle(label,x,y){text(label,x,y,type.section,ink,800);font(type.section,800);line(x,y+48,x+ctx.measureText(label).width,y+48,accent,7)}
 function comicCell(x,y,size,state){
-ctx.fillStyle=state.roast?red:state.count?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
-if(!state.known){ctx.strokeStyle='#b5a59a';ctx.lineWidth=1.2;ctx.stroke();line(x+5,y+size-5,x+size-5,y+5,'#b5a59a',1)}
+ctx.fillStyle=state.roast?colors.calendar:state.count?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
+if(!state.known){ctx.strokeStyle=colors.outline;ctx.lineWidth=1.2;ctx.stroke();line(x+5,y+size-5,x+size-5,y+5,colors.outline,1)}
 }
 function comicCalendar(m,x,y,w){
 const month=Number(m.month.slice(5)),cx=x+w/2;centered(String(month).padStart(2,'0')+' 月',cx,y,36,ink,800);
@@ -209,12 +257,12 @@ const first=new Date(Date.UTC(report.year,month-1,1)),last=new Date(Date.UTC(rep
 const weeks=Math.floor((last-monday)/86400000/7)+1,step=28,size=23,gx=cx-(weeks*step-5)/2,gy=y+58;
 for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
  const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;comicCell(px,py,size,dayState(date));
- const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,paper,700)}
+ const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,dayState(date).roast?colors.onCalendar:paper,700)}
 }
 const hits=monthHits(m);
 const stats=hits===null ? (isRoast?'未核验':m.messages+' 条') : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
 fitCentered(stats,cx,y+270,w-4,type.meta,ink,700);
-const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,red)
+const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)
 }
 function comicActivity(y){
 comicTitle('发言日历',48,y);
@@ -232,45 +280,91 @@ function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.line
 function comicQuote(q,i,y,draw=true){
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
 const h=rows.length*leading+(burst?116:96),tail=burst?0:22;
-const color=i===1?paper:burst?signalInk:ink,fill=i===1?ink:burst?edition.signal:'#ffffff';
+const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
+const highlight=i===1?accent:burst?colors.burstHighlight:colors.tint;
+const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.onTint;
 if(!draw)return h+tail;
-ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=ink;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
+ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
 const mx=burst?53:pad;marker(q,mx,burst?27:22,color);if(q.kind==='rewrite')text('改写',mx+163,burst?27:22,30,color,650);if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
 rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=(burst?80:78)+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
-for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;if(run.strong){if(i===1){box(xx-2,yy+3,rw+4,size+8,0,red)}else if(burst){box(xx-3,yy+3,rw+6,size+8,0,edition.lightOnSignal?edition.tint:paper)}else{box(xx-3,yy+3,rw+6,size+8,0,edition.tint)}}text(run.value,xx,yy,size,burst&&run.strong?ink:color,run.strong?700:600);xx+=rw}
+for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;if(run.strong){const pad=i===1?2:3;box(xx-pad,yy+3,rw+2*pad,size+8,0,highlight)}text(run.value,xx,yy,size,run.strong?highlightInk:color,run.strong?700:600);xx+=rw}
 });ctx.restore();stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width:w,height:h+tail,fontSize:size,rows:rows.map(row=>row.map(t=>t.value).join(''))});return h+tail
+}
+// Use the same word and grapheme wrapping as the quote stickers for short editorial copy.
+function storyText(value,x,y,width,size,weight,color,draw){
+ const rows=richLines({text:value,emphasis:weight===700?value:undefined},width,size);
+ const leading=Math.round(size*1.4);
+ if(draw)rows.forEach((row,i)=>text(row.map(token=>token.value).join(''),x,y+i*leading,size,color,weight));
+ return rows.length*leading;
+}
+function comicPersona(y,draw){
+ if(draw)text(personaLabel,48,y+4,32,muted,700);
+ return storyText(story.persona,207,y,645,39,700,ink,draw)+26;
+}
+function comicScenes(y,draw){
+ if(draw)comicTitle('经典使用场景',48,y);
+ y+=74;
+ story.scenes.forEach((scene,index)=>{
+   const titleHeight=storyText(scene.title,48,y,224,35,700,ink,draw);
+   const bodyHeight=storyText(scene.text,300,y,552,35,600,ink,draw);
+   y+=Math.max(titleHeight,bodyHeight);
+   if(index<story.scenes.length-1){
+     if(draw)line(48,y+8,852,y+8,pale,2);
+     y+=26;
+   }
+ });
+ return y+38;
 }
 function drawPoster(draw=true){
 if(draw){
- stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);smallMark();nameBadge();
+ stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);smallMark();nameBadge();
  font(type.title,800);const titleWidth=ctx.measureText(reportTitle).width;
  text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
- if(report.mode==='demo')right(isSpecimen?'演示数据':'虚构演示',852,44,type.meta,red,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,red,700);
- box(48,230,514,176,0,ink);text(tokenUsage?'和 AI 对话，烧了':'你向 AI 发出了',74,252,34,paper,600);text(tokenLabel||(s?s.messages.toLocaleString('zh-CN')+' 条指令':'暂无消息统计'),74,314,type.stat,paper,700);
- const cx=730,cy=310,r=72;ctx.strokeStyle=pale;ctx.lineWidth=13;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,1.5*Math.PI);ctx.stroke();if(ratio>0){ctx.strokeStyle=red;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}centered(percent===null?'未核验':'约',cx,cy-42,30,muted,600);centered(percent===null?'—':percent+'%',cx,cy-4,54,ink,800);centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,410,32,ink,600);
- text((tokenUsage&&s?s.messages.toLocaleString('zh-CN')+'条指令 · ':'')+(reviewed!==null?(reviewed===0&&!isRoast?'核验 0':'至少'+reviewed)+'条'+edition.keyword:edition.keyword+'未核验'),48,435,type.meta,ink,600)
+ if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
-let y=508;if(draw)comicActivity(y);y+=months.length?470:190;y+=28;if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
+const personaHeight=story?comicPersona(222,draw):0;
+const showStats=!story||Boolean(s||tokenUsage);
+if(draw&&showStats){
+ ctx.save();ctx.translate(0,personaHeight);
+ box(48,230,514,176,0,colors.pull);text(tokenUsage?'和 AI 对话，烧了':'你向 AI 发出了',74,252,34,colors.onPull,600);text(tokenLabel||(s?s.messages.toLocaleString('zh-CN')+' 条指令':'暂无消息统计'),74,314,type.stat,colors.onPull,700);
+ const cx=730,cy=310,r=72;ctx.strokeStyle=pale;ctx.lineWidth=13;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,1.5*Math.PI);ctx.stroke();if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}centered(percent===null?'未核验':'约',cx,cy-42,30,muted,600);centered(percent===null?'—':percent+'%',cx,cy-4,54,ink,800);centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,410,32,ink,600);
+ text((tokenUsage&&s?s.messages.toLocaleString('zh-CN')+'条指令 · ':'')+(reviewed!==null?(reviewed===0&&!isRoast?'核验 0':'至少'+reviewed)+'条'+edition.keyword:edition.keyword+'未核验'),48,435,type.meta,ink,600)
+ ctx.restore();
+}
+let y=(showStats?508:230)+personaHeight;
+if(!story||months.length){
+ if(draw)comicActivity(y);
+ y+=(months.length?470:190)+28;
+}
+if(story?.scenes.length)y=comicScenes(y,draw);
+if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
 quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
-if(draw){box(0,y-8,900,196,0,edition.signal);text(isSpecimen?'标签示意':'用户人格',48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
-return Math.ceil(y+188)
+if(story&&!report.keywords.length)return Math.ceil(y+16);
+if(draw){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
+return Math.ceil(y+188+extraBottomMargin)
 }
 function render(){
   canvas.height=drawPoster(false);drawPoster(true);
-  document.getElementById('save').style.backgroundColor=red;
+  const saveButton=document.getElementById('save');
+  saveButton.style.backgroundColor=accent;
+  if(story)saveButton.style.color=colors.onAccent;
   document.getElementById('preview').src=canvas.toDataURL('image/png');
 }
-const newline=String.fromCharCode(10);const summary=[owner+'的'+reportTitle,introduction,report.mode==='demo'?'虚构演示':'','最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),'金句：',...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),'用户人格：'+report.keywords.join(' / '),'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
+const newline=String.fromCharCode(10);
+const personaSummary=story?[personaLabel+'：'+story.persona]:[];
+const sceneSummary=story?.scenes.length?['经典使用场景',...story.scenes.map(item=>item.title+'　'+item.text)]:[];
+const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
+const summary=[owner+'的'+reportTitle,...personaSummary,introduction,demoLabel,'最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),...sceneSummary,...(!story||quotes.length?['金句：']:[]),...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),...tagSummary,'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
 const readableSummary=isRoast&&!isSpecimen?summary:[
- owner+'的'+reportTitle,
+ owner+'的'+reportTitle,...personaSummary,demoLabel,
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  s?'指令总数：'+s.messages:'',
  tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+'；覆盖状态：'+tokenUsage.coverage+'。':'',
  reviewed!==null?'主题指令已核验 '+reviewed+' 条。每条用户消息计一次。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
- isSpecimen?'选句示意 · 非原话':'金句',...quotes.map(q=>q.date+' '+(q.kind==='rewrite'?'（改写）':'')+q.text),
- (isSpecimen?'标签示意：':'用户人格：')+report.keywords.join(' / ')
+ ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>q.date+' '+(q.kind==='rewrite'?'（改写）':'')+q.text),
+ ...tagSummary
 ].filter(Boolean).join(newline);
 document.getElementById('transcript').textContent=readableSummary;document.getElementById('preview').alt=readableSummary;
 let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('68px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});

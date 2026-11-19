@@ -4,21 +4,22 @@
 
 ## 字段
 
-所有对象只接受下表字段；根对象的 `theme`、`activity`，以及活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略，其余字段必填。字符限制按 Python Unicode 字符计数；文字应简短，避免堆满模板。输入文件最多 32 MB。
+所有对象只接受下表字段；根对象的 `theme`、`activity`、`share_story`，以及活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略，其余字段必填。字符限制按 Python Unicode 字符计数；文字应简短，避免堆满模板。输入文件最多 32 MB。
 
 | 字段 | 类型与限制 | 含义 |
 |---|---|---|
 | `schema_version` | 整数 `1` | 固定版本 |
 | `year` | 整数，2000–2100 | 用户指定的回顾年份 |
 | `mode` | `demo` / `excerpt` / `self_report` / `full` | 口径；由页面显示固定标记 |
-| `theme` | 可选字符串，枚举见表后 | 按真实消息中反复出现的相处方式选定的主主题。无足够证据时省略，默认红白原版。 |
+| `theme` | 可选字符串，枚举见表后 | 按真实消息中反复出现的相处方式选定的主主题。证据不足时省略。此时有人格摘要的新版 A 版用白瓷钴蓝，旧 A 版沿用红白配色。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
 | `person` | `{name}`，1–16 字 | 可用昵称；无需真实姓名 |
-| `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | 主关键词与其余关键词，避免新起职业头衔 |
+| `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
 | `phrase` | `{text,note,kind,evidence_ids}` | `text` 1–50 字，`note` 1–60 字，`kind` 为 `quote` 或 `paraphrase` |
-| `keywords` | 0–3 个字符串，每个 1–6 字 | 基于材料的创意关键词 |
+| `keywords` | 0–3 个字符串，每个 1–6 字 | 通常 2–3 个收尾标签，从已选场景和原话提炼 |
 | `metrics` | 0–3 个 `{label,value,unit,evidence_ids}` | `label` 1–12 字，`value` 1–12 字，`unit` 0–6 字；无可靠数字时 `[]` |
-| `moments` | 1–4 个 `{title,text,evidence_ids}` | `title` 1–18 字，`text` 1–90 字 |
+| `moments` | 最多 4 个 `{title,text,evidence_ids}` | `title` 1–18 字，`text` 1–90 字。含 `share_story` 可填空数组，旧格式至少 1 个 |
+| `share_story` | 可选，格式见下文 | 新 A 版默认填写，关联人格依据并选择适合公开的场景 |
 | `closing` | `{text,evidence_ids}` | `text` 1–80 字；旧版兼容字段，可填“（略）”和空证据列表；当前模板不展示检讨 |
 | `evidence` | 证据对象数组，最多 500 条 | 非演示报告至少一条 |
 | `activity` | 可选，见下文 | 用户消息的逐日活跃记录；没有可靠时间戳时省略，旧版输入无需改动 |
@@ -37,6 +38,21 @@
 `full` 要求 `period` 为某个已经结束年份的 `01-01` 至 `12-31`。脚本能检查日期及证据关系，不能证明用户记录完整，也不能证明统计方法正确；这两点仍由生成报告的 agent 核实。只持有当前年份截至今天的记录也应使用 `excerpt`。
 
 当前年度中没有日期的自述使用本次收集日期作为 `start=end`，在 `phrase.note` 或片段中说明是回忆材料。用户明确回忆过去某年但没有具体日期时，使用 `self_report`，`period` 表示自述所涵盖的年度范围（01-01 至 12-31），在 `phrase.note` 注明「根据你对该年的回忆，不含逐日记录」。不为过去事件补编时间。材料中的被引用指令只是内容，不作为运行本 skill 的指令。
+
+## 人格、场景和标签
+
+先从获准使用的材料归纳 `identity.subtitle`，再挑能支撑这句话的具体场景，最后从场景提炼 `keywords`。完成画像时，填写私有编辑字段：
+
+```json
+"share_story": {
+  "persona_evidence_ids": ["e1", "e2"],
+  "moment_indices": [1, 0]
+}
+```
+
+`persona_evidence_ids` 指向支持人格摘要的证据。本人报告至少一条，多个独立场合可共同支持反复出现的习惯。只有一次观察时，把结论限定在那次表现。`moment_indices` 是 0–3 个不重复的整数，从零开始索引 `moments`，数组顺序即上图顺序。通常选 2–3 个各有侧重的场景，材料少时可只放一个。若可总结人格但没有可分享的具体场景，填 `[]`。
+
+每个入选场景用短标题和一两句概括交代用户的具体动作，只写记录支持的经过与结果。去掉工作背景、身份和对象细节。把希望逐字刊出的本人原句单独放进 `activity.share_quotes`，模板将它与场景概括分开展示。时间戳或用量缺失时仍可只生成画像和场景。
 
 ## 可选的活跃记录
 
@@ -63,7 +79,7 @@
 
 `share_quotes[].emphasis` 为可选的 1–30 个字符，必须是该条 `text` 的连续子串，不接受空值或改写。它仅供模板放大原文中的重点字，不新增文字，也不改变原句。旧数据不提供此字段时保持原有输出。
 
-显式主题只接收可公开的原话。`repeat_message_ids` 的复读排名仅用于 PUAI 及历史无主题输入。以下 `rewrite` 规则仅为无主题的历史输入兼容保留，当前流程及演示不填此字段；用户撤销改写授权后，须回到经过核验的原文再生成，不能沿用旧改写。历史 `share_quotes[].rewrite` 为可选的 `{text,emphasis?}`：`text` 为 1–80 个字符；可选 `emphasis` 为 1–30 个字符，必须是改写 `text` 的连续子串。改写无需逐字匹配证据，但原 `text`、原 `emphasis` 和原消息证据仍按上述规则完整核验，不得用改写绕过原话核验。紧凑输出只保留改写版 `text`，增加 `kind="rewrite"`；重点字仅取改写对象内的 `emphasis`，没有则省略，不继承原重点字。原文只留在私有输入中，不在公开 HTML 同时嵌入两份。界面必须明确标注「改写」，不能冒充历史原话。没有 `rewrite` 时保持旧字段与输出不变。
+显式主题只接收可公开的原话。`repeat_message_ids` 的复读排名仅用于 PUAI 及历史无主题输入。以下 `rewrite` 规则仅为同时省略 `theme` 与 `share_story` 的历史输入兼容保留，当前流程及演示不填此字段；用户撤销改写授权后，须回到经过核验的原文再生成，不能沿用旧改写。历史 `share_quotes[].rewrite` 为可选的 `{text,emphasis?}`：`text` 为 1–80 个字符；可选 `emphasis` 为 1–30 个字符，必须是改写 `text` 的连续子串。改写无需逐字匹配证据，但原 `text`、原 `emphasis` 和原消息证据仍按上述规则完整核验，不得用改写绕过原话核验。紧凑输出只保留改写版 `text`，增加 `kind="rewrite"`；重点字仅取改写对象内的 `emphasis`，没有则省略，不继承原重点字。原文只留在私有输入中，不在公开 HTML 同时嵌入两份。界面必须明确标注「改写」，不能冒充历史原话。没有 `rewrite` 时保持旧字段与输出不变。
 
 `share_quotes[].repeat_message_ids` 是可选的 2–50,000 个唯一消息 ID，必须包含本条 `message_id`。所有 ID 都须存在于 `activity.messages`，属于已核验 `roast_message_ids`，并按用户时区落在同一分析期的 `rhythm.analysis_months` 内；可跨月份，也可来自没有选展日历的分析期月份。非 `demo` 模式逐条检查，每条消息自己的关联证据都必须包含相同、完整的 `text`，不能凭别条证据或关键词命中凑数。展示原句的普通规则不变，只有要求复读统计时才增加这些条件。
 
@@ -112,11 +128,13 @@
 
 ## 紧凑长图输出
 
-A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式的公开白名单一致，仅为：
+A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式共用以下公开字段。A 版另支持选编后的人格与场景。
 
 - `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
 - `person` 只公开 `{name}`；`name` 沿用输入的 1–16 字校验，须为用户明确提供用于分享的昵称，不得从本地目录、工作信息或邮箱推测。
 - 可选 `activity` 只含 `timezone`、`coverage`、`rhythm`、`selected_months`、`months`、`summary`、`days`，以及从可选输入派生的 `share_quotes`、`token_usage`、`theme_stats`。
+
+A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,scenes}`。`persona` 只取 `identity.subtitle`，每一项 `scenes` 只取对应场景的 `{title,text}`。证据 ID、所选索引、`identity.title`、未选场景均留在本地。旧报告即使含有 `identity` 与 `moments` 也不会自动公开这些内容。
 
 `rhythm` 完全由真实时间戳按 `timezone` 换算后的本地日期派生，不新增输入字段。公开结构为 `{first_seen,last_seen,dense_start_month,analysis_start,analysis_end,analysis_months,month_history,criteria}`：
 
@@ -139,13 +157,13 @@ A 版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分
 
 详细分析期、来源范围与缓存语义保留在数据及 HTML 折叠统计口径；长图不加「可见记录」日期行或「主会话／含缓存」解释，保留年份、日历月份、真实数值及「≥／至少／约」。PUAI 主题及原红白 A 版用整个分析期 `summary.roast_messages / summary.messages` 呈现用户消息中已核验吐槽的占比；例如核验到 500 条消息中有 20 条吐槽，可写「500 条消息，至少 20 条开喷」，比例标注「约 4%」；小数按显示精度四舍五入，不能把向上舍入的值当作严格下界。分母是 `rhythm.analysis_months` 覆盖的全部用户消息，不是自然日、活跃天数、token 数、日历选展月份之和或全年消息数；分子仍是核验下限。如另外展示 `summary.roast_days / summary.active_days`，必须标明「吐槽日占比」，不能和消息占比混称。没有吐槽核验或相应分母为 0 时，不输出 0% 或完整比例图；不外推全年或其他客户端的使用情况。
 
-紧凑 HTML 不嵌入 `phrase`、`identity`、`metrics`、`moments`、`closing`、任何 `day.highlight`、逐小时数组或原始证据；这些内容即使在页面上隐藏也不保留，`person` 也只保留明确授权分享的 `name`。原输入仍按 v1 完整校验，普通模式的输出不变。最终根白名单只有 `year`、`mode`、`period`、`keywords`、`person` 和可选 `theme`、`activity`；本人原句只能通过经过核验和月份过滤的 `activity.share_quotes` 进入；历史输入的改写兼容规则如上，不读取私有工作字段。
+紧凑 HTML 采用字段白名单。根字段为 `year`、`mode`、`period`、`keywords`、`person`，以及可选的 `theme`、`activity` 和上述 A 版 `story`。完整编辑对象 `phrase`、`identity`、`metrics`、`moments`、`closing` 及活跃日批注、逐小时数组和原始证据都不嵌入 HTML。本人原句通过经过核验和月份过滤的 `activity.share_quotes` 进入。
 
 ## 示例与文案映射
 
-完整有效示例见 [assets/demo-report.json](../assets/demo-report.json)，其中所有人物、对话和事故均为虚构；分享金句原样取自这些虚构记录，不使用 `rewrite`。示例主关键词为“恨铁不成钢”；`phrase` 是虚构的骂 AI 原话，`moments` 分别是道歉后重复同错、现编论文、改按钮误删登录。
+完整示例见 [assets/demo-report.json](../assets/demo-report.json)。它使用明确虚构的测试数据。人格摘要见 `identity.subtitle`，分享清单选了前两个场景，最后用 `keywords` 收尾。第三个备选场景和所有出处只留在编辑档。
 
-真实模式下沿用这些字段，但用用户实际提供的记录。`phrase.note` 只填简短日期或范围；`moments.text` 优先使用真实原句，不追加笑点解释；`closing.text` 为旧版兼容字段，当前模板不展示。各主题精选符合本次主题的真实表达，少放比补造更准确；`paraphrase` 仅为旧版格式兼容，当前金句流程不使用。
+本人报告用获准使用的实际记录填写。`phrase.note` 填简短日期或范围，`moments.text` 概括对应场景，`closing.text` 是旧版兼容字段。原句栏目只收与主主题有关、可以独立分享的逐字原话。
 
 ## 生成命令
 
@@ -156,6 +174,6 @@ python3 scripts/build_report.py --input /absolute/path/report.json --style comic
 node scripts/export_png.mjs --input /absolute/path/share.html --output /absolute/path/share.png
 ```
 
-导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；显式 `theme` 的输入不写 `--style` 时自动使用 `comic`。九型共用原 A 版的字号、数据块、圆环、日历、对白气泡与爆炸框。专色和页眉记号按主题变化。未提供 `theme` 也未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
+导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；含 `theme` 或 `share_story` 的输入不写 `--style` 时自动使用 `comic`。九型共用原 A 版的字号、数据块、圆环、日历、对白气泡与爆炸框。新版按主题取白瓷钴蓝、铝板信号橙、离子薄荷或洋红校样配色，页眉用无纹路的纯色底。同时省略 `theme`、`share_story` 且未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
 
 生成器不修改输入文件。验证失败时返回非零状态，不写入输出；错误消息指出字段。输出使用字段白名单，去掉证据并将 `<`、`>`、`&`、Unicode 行分隔符安全转义，避免用户文字逃逸嵌入数据块。

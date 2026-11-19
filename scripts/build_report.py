@@ -147,7 +147,7 @@ def reviewed_message_ids(activity, field, messages_by_id):
     return ids
 
 
-def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None):
+def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False):
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
         optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
     zone = string(activity["timezone"], 100, "activity.timezone")
@@ -202,8 +202,8 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
         for index, quote in enumerate(array(activity["share_quotes"], 0, 6, "activity.share_quotes")):
             path = f"activity.share_quotes[{index}]"
             obj(quote, ["message_id", "text"], path, optional=["emphasis", "repeat_message_ids", "rewrite"])
-            if theme and "rewrite" in quote:
-                raise ReportError(f"{path}.rewrite: themed reports display the user's original words")
+            if (theme or has_story) and "rewrite" in quote:
+                raise ReportError(f"{path}.rewrite: use the user's original words in this report")
             if theme not in (None, "puai") and "repeat_message_ids" in quote:
                 raise ReportError(f"{path}.repeat_message_ids: roast repeat counts belong to the PUAI theme")
             mid = string(quote["message_id"], 128, f"{path}.message_id")
@@ -320,7 +320,7 @@ def validate_report(report, today=None, now=None):
     today = today or date.today()
     obj(report, ["schema_version", "year", "mode", "period", "person", "identity",
                  "phrase", "keywords", "metrics", "moments", "closing", "evidence"], "report",
-        optional=["activity", "theme"])
+        optional=["activity", "theme", "share_story"])
     if "theme" in report and report["theme"] not in THEMES:
         raise ReportError(f"report.theme: expected one of {', '.join(THEMES)}")
     if type(report["schema_version"]) is not int or report["schema_version"] != 1:
@@ -392,18 +392,28 @@ def validate_report(report, today=None, now=None):
         string(metric["value"], 12, f"{path}.value")
         string(metric["unit"], 6, f"{path}.unit", minimum=0)
         refs(metric["evidence_ids"], f"{path}.evidence_ids", required=True)
-    for index, moment in enumerate(array(report["moments"], 1, 4, "moments")):
+    for index, moment in enumerate(array(report["moments"], 0 if "share_story" in report else 1, 4, "moments")):
         path = f"moments[{index}]"
         obj(moment, ["title", "text", "evidence_ids"], path)
         string(moment["title"], 18, f"{path}.title")
         string(moment["text"], 90, f"{path}.text")
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
+    if "share_story" in report:
+        story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story")
+        refs(story["persona_evidence_ids"], "share_story.persona_evidence_ids", required=True)
+        selected = array(story["moment_indices"], 0, 3, "share_story.moment_indices")
+        for pos, index in enumerate(selected):
+            if type(index) is not int or not 0 <= index < len(report["moments"]):
+                raise ReportError(f"share_story.moment_indices[{pos}]: expected a valid zero-based moment index")
+        if len(set(selected)) != len(selected):
+            raise ReportError("share_story.moment_indices: duplicate moment indices")
     closing = obj(report["closing"], ["text", "evidence_ids"], "closing")
     string(closing["text"], 80, "closing.text")
     refs(closing["evidence_ids"], "closing.evidence_ids")
     if "activity" in report:
         validate_activity(report["activity"], start, end, mode, evidence, refs,
-                          now or datetime.now(timezone.utc), theme=report.get("theme"))
+                          now or datetime.now(timezone.utc), theme=report.get("theme"),
+                          has_story="share_story" in report)
     return report
 
 
@@ -484,13 +494,21 @@ def compact_activity(activity):
     return result
 
 
-def public_report(report, compact=False):
+def public_report(report, compact=False, include_story=True):
     """Whitelist display fields; never put private provenance in the HTML."""
+    if not compact and "share_story" in report:
+        raise ReportError("share_story: select compact mode to preserve the sharing selection")
     if compact:
         public = {key: copy.deepcopy(report[key]) for key in ("year", "mode", "period", "keywords")}
         public["person"] = {"name": report["person"]["name"]}
         if "theme" in report:
             public["theme"] = report["theme"]
+        if include_story and "share_story" in report:
+            selected = report["share_story"]["moment_indices"]
+            public["story"] = {
+                "persona": report["identity"]["subtitle"],
+                "scenes": [{key: report["moments"][index][key] for key in ("title", "text")} for index in selected],
+            }
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])
         return public
@@ -520,7 +538,8 @@ def render_report(report, template, compact=False, style=None):
         except OSError as exc:
             raise ReportError("font: could not read required assets/SmileySans-Oblique.woff2") from exc
         template = template.replace(font_marker, base64.b64encode(font_bytes).decode("ascii"))
-    payload = json.dumps(public_report(report, compact=compact), ensure_ascii=False, separators=(",", ":"))
+    public = public_report(report, compact=compact, include_story=style in ("comic", "print"))
+    payload = json.dumps(public, ensure_ascii=False, separators=(",", ":"))
     for char, escaped in [("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
                           ("\u2028", "\\u2028"), ("\u2029", "\\u2029")]:
         payload = payload.replace(char, escaped)
@@ -546,9 +565,9 @@ def main(argv=None):
             raise ReportError("input exceeds 32 MB; keep only evidence and timestamps needed for this report")
         report = json.loads(input_path.read_text(encoding="utf-8"))
         style = args.style
-        if isinstance(report, dict) and "theme" in report:
+        if isinstance(report, dict) and ("theme" in report or "share_story" in report):
             style = style or "comic"
-            if report["theme"] != "puai" and style not in {"print", "comic"}:
+            if "theme" in report and report["theme"] != "puai" and style not in {"print", "comic"}:
                 raise ReportError("report.theme: themed posters require --style print or comic")
         compact = args.compact or style is not None
         if style == "print":
