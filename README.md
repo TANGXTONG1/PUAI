@@ -1,79 +1,71 @@
 <p align="center">
-  <img src="docs/readme-header.svg" width="960" alt="PUAI · 2026 AI 年度报告">
-</p>
-
-<p align="center">
-  从你和 AI 的聊天里挑出金句，做一张带人格标签的年度报告。<br>
-  你是给 AI 上课，给 AI 挂急诊，还是花会员费给 AI 提供情绪价值？
-</p>
-
-<p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>复制口令做同款</strong></a>
-  &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=87f27a577d">下载 skill</a>
-  &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
-  &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/palettes/atlas/">48 款配色样刊</a>
-  &nbsp; · &nbsp;
-  <a href="SKILL.md">Skill 说明</a>
-</p>
-
-## 开始使用
-
-扫长图底部的二维码，或打开首页点「复制给 ChatGPT」。把口令粘贴到一段已有聊天里，点它回的「打开我的报告」，就能保存一张带本人原话和人格标签的 PNG。新对话里贴几句自己的原话也可以。[复制生成口令](https://xn--sxrw8m230b.com/PUAI/) · [查看文字口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
-
-如果聊天软件把链接显示成了普通文字，把回复里的备用报告码粘到生成页即可。[粘贴报告码](https://xn--sxrw8m230b.com/PUAI/make/)
-
-<details>
-<summary>用完整版 skill 生成发言日历和用量统计</summary>
-
-把下面这句发给能访问仓库、运行代码的 Agent：
-
-```text
-用 PUAI 把我和 AI 的聊天做成一张年度报告长图。 https://github.com/TANGXTONG1/PUAI
-```
-
-也可以运行 `npx skills add TANGXTONG1/PUAI` 安装。用量和日历按你授权提供的聊天及日志生成。
-
-</details>
-
-## 你的年度人机关系
-
-先看你反复怎么用 AI，再挑最能体现这种人格的原话。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
-
-[![九种 A 版长图的标题与金句](docs/themes/overview.png?v=ffef27aa57)](https://xn--sxrw8m230b.com/PUAI/themes/)
-
-[打开图鉴，查看并保存九张完整长图](https://xn--sxrw8m230b.com/PUAI/themes/) · [九种人机关系的亮底轻赛博色样](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/)
-
-[轻赛博配色 · 8 张高对比报告](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术配色样刊 · 同一张报告的 16 种印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/)
-
-## 不愿透露姓名的唐某的 PUAI 报告
-
-<p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=b57d3efa3e">
-    <img src="docs/persona-report.png?v=b57d3efa3e" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签">
+  <a href="https://xn--sxrw8m230b.com/PUAI/">
+    <img src="docs/readme-header.svg?v=5a0709019b" width="1000" alt="PUAI · 2026 你和 AI 的年度相处报告">
   </a>
 </p>
 
-<p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">查看完整报告</a>
-</p>
+有人拿到答案先找反例，有人付了会员费还要哄模型开心。PUAI 从你和 AI 的聊天里找出反复出现的习惯，用你的原话和人格标签做成一张年度长图。
 
-原话只精选，不改写；没有记录不编数字；私人工作背景不上图。每个人的金句和标签都取自自己的记录。
+**[复制给 ChatGPT，生成我的报告 →](https://xn--sxrw8m230b.com/PUAI/)**
+
+把口令粘进平时聊天的那段对话，点它回复的「打开我的报告」即可保存 PNG。新对话里也可以贴几句自己的原话。如果链接打不开，把回复里的备用码粘到生成页。[粘贴报告码](https://xn--sxrw8m230b.com/PUAI/make/) · [查看文字口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
+
+## 九种年度相处方式
+
+| 主题样张 | 聊天里常见的动作 |
+| --- | --- |
+| [AI因斯坦](https://xn--sxrw8m230b.com/PUAI/themes/#einstein) | 问完出处问反例，一个回答得过两轮答辩。 |
+| [AI迪生](https://xn--sxrw8m230b.com/PUAI/themes/#edison) | 第一个点子还没取名，第三个已经通电。 |
+| [AI的教育](https://xn--sxrw8m230b.com/PUAI/themes/#teach) | AI 答错一道题，你补一页教案。 |
+| [AI特全体](https://xn--sxrw8m230b.com/PUAI/themes/#all) | 一道题发给三家，顺手让它们互相批改。 |
+| [AICU](https://xn--sxrw8m230b.com/PUAI/themes/#aicu) | 截止时间按分钟倒数，轮到 AI 值急诊。 |
+| [AI在心口难开](https://xn--sxrw8m230b.com/PUAI/themes/#hush) | 心里有八百字，发出去得像随口一说。 |
+| [AI的供养](https://xn--sxrw8m230b.com/PUAI/themes/#support) | 会员费你付，情绪价值也你给。 |
+| [AI咋咋地](https://xn--sxrw8m230b.com/PUAI/themes/#free) | 连「要不要问我」这件事，也交给 AI 拍板。 |
+| [PUAI](https://xn--sxrw8m230b.com/PUAI/themes/#puai) | 愿意给 AI 花 token，也随时准备找它退款。 |
+
+唐某这份用了本人原话，其余八份是场景样例。做你的报告时，金句取自你自己的聊天，按原文上图。[打开九份报告图鉴](https://xn--sxrw8m230b.com/PUAI/themes/)
 
 <details>
-<summary>给 Agent：运行环境与生成流程</summary>
+<summary>看唐某的完整长图</summary>
 
-读取 [SKILL.md](SKILL.md)，按其中流程整理用户授权的记录，再运行：
+<p>
+  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html">
+    <img src="docs/persona-report.png?v=b57d3efa3e" width="440" alt="不愿透露姓名的唐某的 2026 PUAI 报告，含发言日历、本人原话和人格标签">
+  </a>
+</p>
 
-```bash
+[查看与下载原图](https://xn--sxrw8m230b.com/PUAI/sample.html)
+
+</details>
+
+## 用完整版 skill 加上日历和用量
+
+能读取聊天记录并运行代码的 Agent，可从你授权的记录生成发言日历。有可靠的用量日志时，报告还会显示 token 用量。[下载 PUAI skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=87f27a577d)
+
+```sh
+npx skills add TANGXTONG1/PUAI
+```
+
+装好后说一句「用 PUAI，把我和 AI 的聊天做成年度报告」。能读取仓库链接的 Agent 也可以直接使用 [SKILL.md](SKILL.md)。
+
+<details>
+<summary>生成命令与运行环境</summary>
+
+```sh
 python3 scripts/build_report.py --input /path/to/report.json --style comic --output /path/to/share.html
 node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.png
 ```
 
-Python 3.9+、Node.js 20+、Playwright 和 Chromium；缺少依赖时见 [PNG 导出说明](references/png-export.md)。输入格式见 [report-schema.md](references/report-schema.md)，无需用户手填。
+需要 Python 3.9+、Node.js 20+、Playwright 和 Chromium。Agent 按说明整理输入，自行生成长图。[输入格式](references/report-schema.md) · [PNG 导出](references/png-export.md)
 
-字体得意黑 Smiley Sans 随包保留 [OFL 许可](assets/SmileySans-OFL.txt)。独立创意项目。
+</details>
+
+<details>
+<summary>配色与字体</summary>
+
+[九种主题色样](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/) · [亮底霓虹](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/) · [48 款配色样刊](https://xn--sxrw8m230b.com/PUAI/palettes/atlas/)
+
+标题使用得意黑 Smiley Sans。[字体许可](assets/SmileySans-OFL.txt)
 
 </details>

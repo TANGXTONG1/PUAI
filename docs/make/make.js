@@ -130,7 +130,7 @@ function clearResult() {
   save.removeAttribute('href');
   image.removeAttribute('src');
   heading.textContent = '生成我的年度报告';
-  document.title = '生成我的 PUAI 报告';
+  document.title = '生成我的 AI 年度相处报告 · PUAI';
 }
 
 async function generate(value, fromAddress = false) {
@@ -158,7 +158,7 @@ async function generate(value, fromAddress = false) {
     save.hidden = false;
     result.hidden = false;
     heading.textContent = '你的年度报告';
-    document.title = report.person.name + '的 PUAI 报告';
+    document.title = report.person.name + '的 AI 年度相处报告 · PUAI';
     status.textContent = '';
   } catch (error) {
     if (attempt.signal.aborted) return;
