@@ -95,8 +95,12 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 --><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PUAI 报告</title>
-<style>@font-face{font-family:"Smiley Sans";src:url(data:font/woff2;base64,__DISPLAY_FONT_BASE64__) format("woff2");font-weight:400;font-style:normal;font-display:block}*{box-sizing:border-box}body{margin:0;padding:24px 18px 36px;background:#efede8;color:#231e1a;font-family:"PingFang SC","Microsoft YaHei",sans-serif}main{max-width:480px;margin:auto}#preview{display:block;width:100%;height:auto;box-shadow:0 12px 40px #29224418}button{display:block;width:100%;margin-top:16px;border:0;border-radius:8px;padding:15px;background:#ff3d32;color:#fff;font:inherit;font-weight:600;cursor:pointer}button:focus-visible{outline:3px solid #c13059;outline-offset:4px}#status{font-size:12px;text-align:center;min-height:18px;color:#696680}details{font-size:12px;color:#696680;line-height:1.8;margin-top:12px}summary{cursor:pointer}#transcript{white-space:pre-wrap}canvas[hidden]{display:none}</style></head>
-<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><button id="save" type="button">保存长图</button><p id="status" role="status"></p><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
+<style>@font-face{font-family:"Smiley Sans";src:url(data:font/woff2;base64,__DISPLAY_FONT_BASE64__) format("woff2");font-weight:400;font-style:normal;font-display:block}*{box-sizing:border-box}body{margin:0;padding:24px 18px 36px;background:#efede8;color:#231e1a;font-family:"PingFang SC","Microsoft YaHei",sans-serif}main{max-width:480px;margin:auto}#preview{display:block;width:100%;height:auto;box-shadow:0 12px 40px #29224418}button{display:block;width:100%;margin-top:16px;border:0;border-radius:8px;padding:15px;background:#ff3d32;color:#fff;font:inherit;font-weight:600;cursor:pointer}button:focus-visible{outline:3px solid #c13059;outline-offset:4px}#status{font-size:12px;text-align:center;min-height:18px;color:#696680}details{font-size:12px;color:#696680;line-height:1.8;margin-top:12px}summary{cursor:pointer}#transcript{white-space:pre-wrap}canvas[hidden]{display:none}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#copy-prompt{background:transparent;color:#231e1a;border:1px solid currentColor}
+#manual-copy{width:100%;padding:8px;font:inherit}
+</style></head>
+<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制同款口令</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
 <script id="report-data" type="application/json">__REPORT_JSON__</script><script>
 'use strict';
 const report=JSON.parse(document.getElementById('report-data').textContent);
@@ -170,6 +174,42 @@ const reportTitle=report.year+' '+edition.name+' 报告';
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
+const shareFooterHeight=216;
+const skillAddress='github.com/TANGXTONG1/PUAI';
+const shareInstruction='拿我的聊天也整一张';
+// Static QR for https://xn--sxrw8m230b.com/PUAI/ (version 3, correction level Q).
+// Keep it local so exporting a private report never contacts a QR service.
+const shareQr=[
+ '11111110001000101001001111111',
+ '10000010100101110001001000001',
+ '10111010010110100000101011101',
+ '10111010110001101111101011101',
+ '10111010110100101111101011101',
+ '10000010000110011110001000001',
+ '11111110101010101010101111111',
+ '00000000111100001010000000000',
+ '01011110110110111000011011010',
+ '01111101011110101101100011010',
+ '00101110000001110100011101100',
+ '10111101001101101100100110001',
+ '11000010001010101000111000010',
+ '11011000010101010000001010101',
+ '01110011010101011001000101001',
+ '00010001100101011000100011101',
+ '01101010011010100101100101011',
+ '11001101000011101111100010000',
+ '11110110010101010011000111001',
+ '11010101100110011000011011100',
+ '11110011101010100100111110111',
+ '00000000101111010001100011110',
+ '11111110000111110111101010110',
+ '10000010101001011101100011010',
+ '10111010101010111101111110001',
+ '10111010110100010110000101101',
+ '10111010000000010010110110111',
+ '10000010110111001010001010101',
+ '11111110010111001001101111000'
+];
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
 const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
@@ -315,6 +355,23 @@ function comicScenes(y,draw){
  });
  return y+38;
 }
+function drawShareFooter(y){
+ const shareInk='#182437';
+ box(0,y,900,shareFooterHeight,0,'#FBFBF8');
+ text('把图发给你的 Agent，说',48,y+34,32,shareInk,550);
+ text('「'+shareInstruction+'」',30,y+82,40,shareInk,750);
+ text(skillAddress,48,y+150,33,shareInk,600,'Arial,sans-serif');
+
+ const cell=5,quiet=4,qrSize=(shareQr.length+quiet*2)*cell;
+ const x=852-qrSize,top=y+Math.floor((shareFooterHeight-qrSize)/2);
+ box(x,top,qrSize,qrSize,0,'#FFFFFF');
+ ctx.fillStyle='#102030';
+ shareQr.forEach((row,r)=>{
+   for(let c=0;c<row.length;c++){
+     if(row[c]==='1')ctx.fillRect(x+(quiet+c)*cell,top+(quiet+r)*cell,cell,cell);
+   }
+ });
+}
 function drawPoster(draw=true){
 if(draw){
  stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);smallMark();nameBadge();
@@ -339,9 +396,11 @@ if(!story||months.length){
 if(story?.scenes.length)y=comicScenes(y,draw);
 if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
 quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
-if(story&&!report.keywords.length)return Math.ceil(y+16);
-if(draw){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
-return Math.ceil(y+188+extraBottomMargin)
+const showTags=!story||report.keywords.length>0;
+if(draw&&showTags){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
+const footerTop=Math.ceil(y+(showTags?188+extraBottomMargin:16));
+if(draw)drawShareFooter(footerTop);
+return footerTop+shareFooterHeight;
 }
 function render(){
   canvas.height=drawPoster(false);drawPoster(true);
@@ -366,6 +425,23 @@ const readableSummary=isRoast&&!isSpecimen?summary:[
  ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>q.date+' '+(q.kind==='rewrite'?'（改写）':'')+q.text),
  ...tagSummary
 ].filter(Boolean).join(newline);
-document.getElementById('transcript').textContent=readableSummary;document.getElementById('preview').alt=readableSummary;
+const accessibleSummary=readableSummary+newline+'把图发给你的 Agent，说「'+shareInstruction+'」。PUAI skill：'+skillAddress+'。';
+document.getElementById('transcript').textContent=accessibleSummary;document.getElementById('preview').alt=accessibleSummary;
+document.getElementById('copy-prompt').addEventListener('click',async()=>{
+  const prompt='用 PUAI 把我和 AI 的聊天做成一张年度报告长图。 https://'+skillAddress;
+  const status=document.getElementById('status');
+  const manual=document.getElementById('manual-copy');
+  try{
+    await navigator.clipboard.writeText(prompt);
+    manual.hidden=true;
+    status.textContent='已复制，粘贴给你的 Agent 即可。';
+  }catch{
+    manual.value=prompt;
+    manual.hidden=false;
+    manual.focus();
+    manual.select();
+    status.textContent='口令已选中，复制后发给你的 Agent。';
+  }
+});
 let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('68px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});
 </script></body></html>

@@ -13,7 +13,7 @@
 | `mode` | `demo` / `excerpt` / `self_report` / `full` | 口径；由页面显示固定标记 |
 | `theme` | 可选字符串，枚举见表后 | 按真实消息中反复出现的相处方式选定的主主题。证据不足时省略。此时有人格摘要的新版 A 版用白瓷钴蓝，旧 A 版沿用红白配色。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
-| `person` | `{name}`，1–16 字 | 可用昵称；无需真实姓名 |
+| `person` | `{name}`，1–16 字 | 分享昵称；未指定填“我” |
 | `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
 | `phrase` | `{text,note,kind,evidence_ids}` | `text` 1–50 字，`note` 1–60 字，`kind` 为 `quote` 或 `paraphrase` |
 | `keywords` | 0–3 个字符串，每个 1–6 字 | 通常 2–3 个收尾标签，从已选场景和原话提炼 |
@@ -131,7 +131,7 @@
 A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式共用以下公开字段。A 版另支持选编后的人格与场景。
 
 - `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
-- `person` 只公开 `{name}`；`name` 沿用输入的 1–16 字校验，须为用户明确提供用于分享的昵称，不得从本地目录、工作信息或邮箱推测。
+- `person` 只公开 `{name}`；用用户明确提供的分享昵称，未提供则填“我”。保留 1–16 字校验。不要从转发图、本地目录、工作信息或邮箱推测姓名。
 - 可选 `activity` 只含 `timezone`、`coverage`、`rhythm`、`selected_months`、`months`、`summary`、`days`，以及从可选输入派生的 `share_quotes`、`token_usage`、`theme_stats`。
 
 A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,scenes}`。`persona` 只取 `identity.subtitle`，每一项 `scenes` 只取对应场景的 `{title,text}`。证据 ID、所选索引、`identity.title`、未选场景均留在本地。旧报告即使含有 `identity` 与 `moments` 也不会自动公开这些内容。

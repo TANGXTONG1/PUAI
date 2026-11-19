@@ -8,9 +8,9 @@
 </p>
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>在线入口</strong></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>复制口令做同款</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=16999c8d26">下载 skill</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=aedc0bdb7f">下载 skill</a>
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
@@ -21,11 +21,10 @@
 
 ## 开始使用
 
-把 `XXX` 换成你的昵称，复制给能读取链接、运行代码的 Agent：
+收到长图？把图发给你的 Agent，说「也给我整一张」。也可以扫图底的码复制口令，或直接把下面这句发给它。
 
 ```text
-叫我「XXX」，用 PUAI 生成我的 AI 年度报告长图。
-参考该 skill：https://github.com/TANGXTONG1/PUAI
+用 PUAI 把我和 AI 的聊天做成一张年度报告长图。 https://github.com/TANGXTONG1/PUAI
 ```
 
 <details>
@@ -35,7 +34,7 @@
 npx skills add TANGXTONG1/PUAI
 ```
 
-已安装时：`叫我「XXX」，用 PUAI 生成我的年度报告长图。`
+已安装时可以直接说「用 PUAI 给我做张年报」。要指定署名，再加一句「叫我某某」。
 
 </details>
 
@@ -54,8 +53,8 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png">
-    <img src="docs/persona-report.png" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、经典使用场景、原话和标签">
+  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=share1">
+    <img src="docs/persona-report.png?v=share1" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、经典使用场景、原话和标签">
   </a>
 </p>
 
