@@ -15,7 +15,7 @@
   },
   "share_story": {
     "persona_evidence_ids": ["demo-1", "demo-2", "demo-3"],
-    "moment_indices": [0, 1]
+    "moment_indices": [2]
   },
   "phrase": {
     "text": "你他妈是大语言模型，还是大概语言模型？",
@@ -33,22 +33,22 @@
   "metrics": [],
   "moments": [
     {
-      "title": "道歉先放一边",
-      "text": "你指出答案有错，又追问怎么还是原答案。模型道过歉，同一个错照交。",
+      "title": "改错",
+      "text": "道歉更新了，答案没动。",
       "evidence_ids": [
         "demo-1"
       ]
     },
     {
-      "title": "论文和作者一起失踪",
-      "text": "你去查论文和作者，两个都搜不到。模型这才承认，论文是它编的。",
+      "title": "查论文",
+      "text": "查无此文，也查无此人。",
       "evidence_ids": [
         "demo-2"
       ]
     },
     {
-      "title": "改的是按钮，没的是登录",
-      "text": "你说「别动其他地方」。它准确识别了「动其他地方」。按钮变圆了，用户进不去了。",
+      "title": "改按钮",
+      "text": "按钮圆了，登录没了。",
       "evidence_ids": [
         "demo-3"
       ]

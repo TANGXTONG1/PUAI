@@ -3,14 +3,14 @@
 </p>
 
 <p align="center">
-  从聊天里看出你和 AI 怎么相处，把经典场景、你的原话和人格标签做成一张长图。<br>
+  从你和 AI 的聊天里挑出金句，做一张带人格标签的年度报告。<br>
   你是给 AI 上课，给 AI 挂急诊，还是花会员费给 AI 提供情绪价值？
 </p>
 
 <p align="center">
   <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>复制口令做同款</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=aedc0bdb7f">下载 skill</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=6b0be4883d">下载 skill</a>
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
@@ -42,7 +42,7 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 
 ## 你的年度人机关系
 
-先看你反复怎么用 AI，再挑两三个最能说明这种人格的场景。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
+先看你反复怎么用 AI，再挑最能体现这种人格的原话。PUAI 看你怎样给 AI 施压，「AI 的教育」看你怎样举例让它学会，「AI 特全体」看你怎样让几个模型互评。
 
 [![九种 A 版长图的标题与金句](docs/themes/overview.png?v=ffef27aa57)](https://xn--sxrw8m230b.com/PUAI/themes/)
 
@@ -53,8 +53,8 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=share1">
-    <img src="docs/persona-report.png?v=share1" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、经典使用场景、原话和标签">
+  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=02065f3932">
+    <img src="docs/persona-report.png?v=02065f3932" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签">
   </a>
 </p>
 

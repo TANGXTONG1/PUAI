@@ -342,18 +342,13 @@ function comicPersona(y,draw){
  return storyText(story.persona,207,y,645,39,700,ink,draw)+26;
 }
 function comicScenes(y,draw){
- if(draw)comicTitle('经典使用场景',48,y);
- y+=74;
+ if(draw)comicTitle('经典场景',48,y);
+ y+=67;
  story.scenes.forEach((scene,index)=>{
-   const titleHeight=storyText(scene.title,48,y,224,35,700,ink,draw);
-   const bodyHeight=storyText(scene.text,300,y,552,35,600,ink,draw);
-   y+=Math.max(titleHeight,bodyHeight);
-   if(index<story.scenes.length-1){
-     if(draw)line(48,y+8,852,y+8,pale,2);
-     y+=26;
-   }
+   if(index)y+=12;
+   y+=storyText(scene.text,48,y,804,37,600,ink,draw);
  });
- return y+38;
+ return y+32;
 }
 function drawShareFooter(y){
  const shareInk='#182437';
@@ -411,7 +406,7 @@ function render(){
 }
 const newline=String.fromCharCode(10);
 const personaSummary=story?[personaLabel+'：'+story.persona]:[];
-const sceneSummary=story?.scenes.length?['经典使用场景',...story.scenes.map(item=>item.title+'　'+item.text)]:[];
+const sceneSummary=story?.scenes.length?['经典场景',...story.scenes.map(item=>item.text)]:[];
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const summary=[owner+'的'+reportTitle,...personaSummary,introduction,demoLabel,'最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),...sceneSummary,...(!story||quotes.length?['金句：']:[]),...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),...tagSummary,'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
 const readableSummary=isRoast&&!isSpecimen?summary:[

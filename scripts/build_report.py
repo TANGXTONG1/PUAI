@@ -392,10 +392,15 @@ def validate_report(report, today=None, now=None):
         string(metric["value"], 12, f"{path}.value")
         string(metric["unit"], 6, f"{path}.unit", minimum=0)
         refs(metric["evidence_ids"], f"{path}.evidence_ids", required=True)
-    for index, moment in enumerate(array(report["moments"], 0 if "share_story" in report else 1, 4, "moments")):
+    has_share_story = "share_story" in report
+    for index, moment in enumerate(array(report["moments"], 0 if has_share_story else 1, 4, "moments")):
         path = f"moments[{index}]"
-        obj(moment, ["title", "text", "evidence_ids"], path)
-        string(moment["title"], 18, f"{path}.title")
+        if has_share_story:
+            obj(moment, ["text", "evidence_ids"], path, optional=["title"])
+        else:
+            obj(moment, ["title", "text", "evidence_ids"], path)
+        if "title" in moment:
+            string(moment["title"], 18, f"{path}.title")
         string(moment["text"], 90, f"{path}.text")
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
     if "share_story" in report:
@@ -505,9 +510,10 @@ def public_report(report, compact=False, include_story=True):
             public["theme"] = report["theme"]
         if include_story and "share_story" in report:
             selected = report["share_story"]["moment_indices"]
+            scene_lines = [report["moments"][index]["text"] for index in selected]
             public["story"] = {
                 "persona": report["identity"]["subtitle"],
-                "scenes": [{key: report["moments"][index][key] for key in ("title", "text")} for index in selected],
+                "scenes": [{"text": line} for line in scene_lines if len(line) <= 24][:2],
             }
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])

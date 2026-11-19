@@ -4,7 +4,7 @@
 
 ## 字段
 
-所有对象只接受下表字段；根对象的 `theme`、`activity`、`share_story`，以及活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略，其余字段必填。字符限制按 Python Unicode 字符计数；文字应简短，避免堆满模板。输入文件最多 32 MB。
+所有对象只接受下表字段。根对象的 `theme`、`activity`、`share_story`，活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略。`moments[].title` 仅在旧格式必填。字符限制按 Python Unicode 字符计数。输入文件最多 32 MB。
 
 | 字段 | 类型与限制 | 含义 |
 |---|---|---|
@@ -16,9 +16,9 @@
 | `person` | `{name}`，1–16 字 | 分享昵称；未指定填“我” |
 | `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
 | `phrase` | `{text,note,kind,evidence_ids}` | `text` 1–50 字，`note` 1–60 字，`kind` 为 `quote` 或 `paraphrase` |
-| `keywords` | 0–3 个字符串，每个 1–6 字 | 通常 2–3 个收尾标签，从已选场景和原话提炼 |
+| `keywords` | 0–3 个字符串，每个 1–6 字 | 通常 2–3 个收尾标签，从实际动作和原话提炼 |
 | `metrics` | 0–3 个 `{label,value,unit,evidence_ids}` | `label` 1–12 字，`value` 1–12 字，`unit` 0–6 字；无可靠数字时 `[]` |
-| `moments` | 最多 4 个 `{title,text,evidence_ids}` | `title` 1–18 字，`text` 1–90 字。含 `share_story` 可填空数组，旧格式至少 1 个 |
+| `moments` | 最多 4 个 `{text,evidence_ids,title?}` | 含 `share_story` 时默认用空数组，可省标题；上图的短句最多 24 字。旧输入可存 1–90 字正文。不含 `share_story` 时至少 1 项，标题必填，1–18 字 |
 | `share_story` | 可选，格式见下文 | 新 A 版默认填写，关联人格依据并选择适合公开的场景 |
 | `closing` | `{text,evidence_ids}` | `text` 1–80 字；旧版兼容字段，可填“（略）”和空证据列表；当前模板不展示检讨 |
 | `evidence` | 证据对象数组，最多 500 条 | 非演示报告至少一条 |
@@ -41,18 +41,18 @@
 
 ## 人格、场景和标签
 
-先从获准使用的材料归纳 `identity.subtitle`，再挑能支撑这句话的具体场景，最后从场景提炼 `keywords`。完成画像时，填写私有编辑字段：
+从获准使用的材料归纳 `identity.subtitle`，精选本人原话，提炼 `keywords`。默认只有人格摘要上图时，私有选择清单可写成：
 
 ```json
 "share_story": {
   "persona_evidence_ids": ["e1", "e2"],
-  "moment_indices": [1, 0]
+  "moment_indices": []
 }
 ```
 
-`persona_evidence_ids` 指向支持人格摘要的证据。本人报告至少一条，多个独立场合可共同支持反复出现的习惯。只有一次观察时，把结论限定在那次表现。`moment_indices` 是 0–3 个不重复的整数，从零开始索引 `moments`，数组顺序即上图顺序。通常选 2–3 个各有侧重的场景，材料少时可只放一个。若可总结人格但没有可分享的具体场景，填 `[]`。
+`persona_evidence_ids` 指向支持人格摘要的证据。本人报告至少一条；只有一次观察时，把结论限定在那次表现。`moment_indices` 从零开始索引 `moments`。默认填 `[]`，无场景时整栏消失。有独立笑点才选，按希望显示的顺序填写。为兼容旧输入，最多可读 3 个不重复索引。
 
-每个入选场景用短标题和一两句概括交代用户的具体动作，只写记录支持的经过与结果。去掉工作背景、身份和对象细节。把希望逐字刊出的本人原句单独放进 `activity.share_quotes`，模板将它与场景概括分开展示。时间戳或用量缺失时仍可只生成画像和场景。
+每条场景用一句短话点出有证据的反差，去掉工作和身份细节。转述一遍原话、预告下一句或解释笑点的都删掉。新 A 版按所选顺序跳过超过 24 个字符的正文，取最前面两条合格短句；整句刊出。本人原话另走 `activity.share_quotes`，不受场景字数限制。
 
 ## 可选的活跃记录
 
@@ -134,7 +134,7 @@ A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-te
 - `person` 只公开 `{name}`；用用户明确提供的分享昵称，未提供则填“我”。保留 1–16 字校验。不要从转发图、本地目录、工作信息或邮箱推测姓名。
 - 可选 `activity` 只含 `timezone`、`coverage`、`rhythm`、`selected_months`、`months`、`summary`、`days`，以及从可选输入派生的 `share_quotes`、`token_usage`、`theme_stats`。
 
-A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,scenes}`。`persona` 只取 `identity.subtitle`，每一项 `scenes` 只取对应场景的 `{title,text}`。证据 ID、所选索引、`identity.title`、未选场景均留在本地。旧报告即使含有 `identity` 与 `moments` 也不会自动公开这些内容。
+A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,scenes}`。`persona` 取 `identity.subtitle`，`scenes` 是含 0–2 项的数组，每项只有 `{"text":"一句短评"}`。场景标题、证据 ID、所选索引、`identity.title`、未选场景均留在本地。旧报告即使含有 `identity` 与 `moments` 也不会自动公开这些内容。
 
 `rhythm` 完全由真实时间戳按 `timezone` 换算后的本地日期派生，不新增输入字段。公开结构为 `{first_seen,last_seen,dense_start_month,analysis_start,analysis_end,analysis_months,month_history,criteria}`：
 
