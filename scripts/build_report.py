@@ -529,6 +529,23 @@ def public_report(report, compact=False, include_story=True):
     return public
 
 
+def embed_template_assets(template):
+    """Inline the local assets used by both the downloadable report and the web renderer."""
+    assets = Path(__file__).resolve().parents[1] / "assets"
+    font_marker = "__DISPLAY_FONT_BASE64__"
+    prompt_marker = "__PORTABLE_PROMPT_JS__"
+    try:
+        if font_marker in template:
+            font_bytes = (assets / "SmileySans-Oblique.woff2").read_bytes()
+            template = template.replace(font_marker, base64.b64encode(font_bytes).decode("ascii"))
+        if prompt_marker in template:
+            prompt_js = (assets / "portable-prompt.js").read_text(encoding="utf-8")
+            template = template.replace(prompt_marker, prompt_js)
+    except OSError as exc:
+        raise ReportError(f"could not read template asset: {exc.filename}") from exc
+    return template
+
+
 def render_report(report, template, compact=False, style=None):
     validate_report(report)
     if style == "print" and any("rewrite" in quote for quote in report.get("activity", {}).get("share_quotes", [])):
@@ -536,14 +553,7 @@ def render_report(report, template, compact=False, style=None):
     marker = "__REPORT_JSON__"
     if template.count(marker) != 1:
         raise ReportError("template: expected exactly one __REPORT_JSON__ marker")
-    font_marker = "__DISPLAY_FONT_BASE64__"
-    if font_marker in template:
-        font_path = Path(__file__).resolve().parents[1] / "assets" / "SmileySans-Oblique.woff2"
-        try:
-            font_bytes = font_path.read_bytes()
-        except OSError as exc:
-            raise ReportError("font: could not read required assets/SmileySans-Oblique.woff2") from exc
-        template = template.replace(font_marker, base64.b64encode(font_bytes).decode("ascii"))
+    template = embed_template_assets(template)
     public = public_report(report, compact=compact, include_story=style in ("comic", "print"))
     payload = json.dumps(public, ensure_ascii=False, separators=(",", ":"))
     for char, escaped in [("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),

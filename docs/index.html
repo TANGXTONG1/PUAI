@@ -3,43 +3,21 @@
 <style>
 :root{--ink:#231e1a;--paper:#fff7ed;--red:#ff3d32;--muted:#78665e;--line:#e8dcd2}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",sans-serif}a{color:inherit}button,input{font:inherit}button,a,input{outline-offset:5px}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--red)}header{max-width:1180px;margin:auto;padding:30px 28px;display:flex;justify-content:space-between;align-items:center}.wordmark{font-size:30px;font-weight:900;letter-spacing:-1px;background:var(--red);color:white;padding:8px 18px;transform:rotate(-2deg);text-decoration:none}nav{display:flex;gap:22px;font-size:15px;font-weight:650}.layout{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,.76fr);gap:72px;padding:38px 28px 68px;align-items:start}.intro{padding-top:24px}h1{font-size:clamp(38px,4.5vw,62px);line-height:1.22;letter-spacing:-2px;margin:0 0 25px;font-weight:900}.lead{font-size:19px;line-height:1.7;max-width:520px;margin:0 0 36px}.lead strong{box-shadow:inset 0 -.48em 0 #ffd7cf}label{display:block;font-size:15px;font-weight:700;margin-bottom:10px}.name-row{display:flex;align-items:center;border:2px solid var(--ink);background:white;margin-bottom:16px}.name-row span{padding-left:16px;white-space:nowrap;font-size:16px}.name-row input{min-width:0;flex:1;width:100%;padding:15px 16px;border:0;background:transparent;font-size:20px;font-weight:700}.prompt{border-left:5px solid var(--red);padding:12px 18px;margin:0 0 20px;background:#fff;line-height:1.75;font-size:16px;overflow-wrap:anywhere;white-space:pre-wrap}.actions{display:flex;gap:12px;flex-wrap:wrap}.copy{border:2px solid var(--ink);background:var(--ink);color:white;padding:16px 24px;font-size:18px;font-weight:750;cursor:pointer;flex:1}.download{border:2px solid var(--ink);text-decoration:none;padding:16px 22px;font-size:18px;font-weight:750;display:flex;justify-content:center;align-items:center}.status{min-height:25px;color:var(--red);font-size:14px;margin:10px 0 2px}.how{font-size:14px;line-height:1.8;color:var(--muted);margin:0 0 28px}.how a{text-underline-offset:4px}.content-list{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px;padding:0;list-style:none}.content-list li{font-weight:600;border-bottom:2px solid var(--ink);padding:5px 0;margin-right:12px}.note{font-size:14px;line-height:1.8;color:var(--muted);border-top:1px solid var(--line);padding-top:20px}figure{margin:0;position:relative;padding-top:16px}figure::before{content:"就长这样";position:absolute;top:-9px;right:12px;background:var(--red);color:white;padding:8px 18px;font-weight:750;font-size:16px;transform:rotate(5deg);z-index:1}.preview-link{display:block;border:2px solid var(--ink);background:var(--paper)}figure img{display:block;width:100%;height:auto}figcaption{font-size:13px;line-height:1.6;color:var(--muted);padding:14px 0}footer{border-top:1px solid var(--line);max-width:1124px;margin:0 auto;padding:24px 0 40px;display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}footer a{text-underline-offset:4px}@media(max-width:760px){header{padding:20px}.layout{grid-template-columns:1fr;gap:40px;padding:20px 20px 40px}.intro{padding-top:8px}h1{font-size:clamp(29px,8.6vw,36px);letter-spacing:-1px}.lead{font-size:18px;margin-bottom:26px}nav{font-size:14px;gap:14px}.copy,.download{font-size:17px;padding:15px 18px}figure{max-width:460px;margin:auto}footer{margin:0 20px;display:block;line-height:2}footer a{display:block;margin-top:4px}.note{margin-bottom:0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 .prompt{margin:16px 0}.status:empty{display:none}.signature{margin:0 0 18px}.signature summary{font-size:15px;font-weight:650;cursor:pointer;width:fit-content}.signature .name-row{max-width:410px;margin:12px 0}.signature .name-row label{margin:0;padding-left:14px;white-space:nowrap}.signature summary:focus-visible{outline:3px solid var(--red);outline-offset:4px}
-</style></head><body>
+.prompt{width:100%;font:inherit;resize:vertical}.actions+.how{margin:12px 0 18px}.status+.prompt{margin-top:8px}</style></head><body>
 <header><a class="wordmark" href="./" aria-label="PUAI 首页">PUAI</a><nav><a href="https://github.com/TANGXTONG1/PUAI">GitHub</a><a href="themes/">九型图鉴</a><a href="palettes/atlas/">配色样刊</a></nav></header>
 <main class="layout"><section class="intro"><h1>2026<br>PUAI 报告</h1><p class="lead">给 AI 上课，找 AI 急救，还是让几个模型互评？<br>用你的<strong>聊天原话</strong>做一张带人格标签的年度报告。</p>
-<div class="actions"><button class="copy" id="copy" type="button">复制口令给 Agent</button><a class="download" href="PUAI-skill.zip?v=6b0be4883d" download>下载 skill</a></div>
+<div class="actions"><button class="copy" id="copy" type="button">复制给 ChatGPT</button></div>
+<p class="how">发到你平时和 AI 聊天的对话里，点它回的链接就能保存长图。</p>
 <p class="status" id="status" role="status" aria-live="polite"></p>
-<div class="prompt" id="prompt"><span id="instruction">用 PUAI 把我和 AI 的聊天做成一张年度报告长图。</span> <a href="https://github.com/TANGXTONG1/PUAI">https://github.com/TANGXTONG1/PUAI</a></div>
-<details class="signature"><summary>自定义报告署名</summary><div class="name-row"><label for="nickname">叫我</label><input id="nickname" maxlength="16" placeholder="不愿透露姓名的某某" autocomplete="off"></div></details>
-<p class="how">把口令发给能读取链接、运行 skill 的 Agent。它需要聊天记录时，把导出文件发给它。</p>
-<ul class="content-list"><li>用户人格</li><li>发言日历</li><li>原话金句</li><li>人格标签</li></ul>
-<p class="note"><a href="themes/">看九种年度人格</a>，每张都能保存为 PNG 长图。<br>安装命令：<code>npx skills add TANGXTONG1/PUAI</code><br>完整生成要求都在 <a href="https://github.com/TANGXTONG1/PUAI/blob/main/SKILL.md">PUAI skill</a> 里。</p></section>
-<figure><a class="preview-link" href="sample.html" aria-label="打开唐某的完整报告并保存长图"><img src="persona-report.png?v=02065f3932" width="900" height="2466" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签"></a><figcaption>不愿透露姓名的唐某 · 2026 PUAI 报告。<a href="sample.html">查看完整报告</a></figcaption></figure></main>
+<textarea class="prompt" id="prompt" aria-label="完整生成口令" rows="5" readonly hidden></textarea>
+<details class="signature"><summary>自定义报告署名</summary><div class="name-row"><label for="nickname">叫我</label><input id="nickname" maxlength="16" placeholder="我" autocomplete="off"></div></details>
+<p class="how"><a href="make/">已有报告码？粘贴出图</a> · <a href="go.txt">查看文字口令</a></p>
+<ul class="content-list"><li>用户人格</li><li>原话金句</li><li>人格标签</li></ul>
+<p class="note">要做带发言日历和用量统计的完整版，可以把聊天记录交给能运行代码的 Agent。<a href="PUAI-skill.zip?v=87f27a577d" download>下载 skill</a> · <a href="https://github.com/TANGXTONG1/PUAI">使用说明</a></p></section>
+<figure><a class="preview-link" href="sample.html" aria-label="打开唐某的完整报告并保存长图"><img src="persona-report.png?v=b57d3efa3e" width="900" height="2466" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签"></a><figcaption>不愿透露姓名的唐某 · 2026 PUAI 报告。<a href="sample.html">查看完整报告</a></figcaption></figure></main>
 <footer><span>PUAI · 你的 AI 年度报告</span><a href="https://github.com/TANGXTONG1/PUAI">代码与 skill 托管在 GitHub</a></footer>
+<script src="portable-prompt.js?v=1"></script>
 <script>
-const nickname = document.querySelector('#nickname');
-const prompt = document.querySelector('#prompt');
-const instruction = document.querySelector('#instruction');
-const status = document.querySelector('#status');
-const baseInstruction = instruction.textContent;
-
-function updateInstruction() {
-  const name = nickname.value.trim();
-  instruction.textContent = (name ? '叫我「' + name + '」。' : '') + baseInstruction;
-  status.textContent = '';
-}
-nickname.addEventListener('input', updateInstruction);
-window.addEventListener('pageshow', updateInstruction);
-document.querySelector('#copy').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(prompt.textContent);
-    status.textContent = '已复制，粘贴给你的 Agent 即可。';
-  } catch {
-    const range = document.createRange();
-    range.selectNodeContents(prompt);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    status.textContent = '口令已选中，点「复制」后发给你的 Agent。';
-  }
-});
+bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'),
+  document.querySelector('#status'), document.querySelector('#nickname'));
 </script></body></html>

@@ -20,7 +20,7 @@ with others.
 
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
-fonts, including any derivative works, can be bundled, embedded, 
+fonts, including any derivative works, can be bundled, embedded,
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The
@@ -100,7 +100,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 #copy-prompt{background:transparent;color:#231e1a;border:1px solid currentColor}
 #manual-copy{width:100%;padding:8px;font:inherit}
 </style></head>
-<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制同款口令</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
+<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制给 ChatGPT</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
+<script>__PORTABLE_PROMPT_JS__</script>
 <script id="report-data" type="application/json">__REPORT_JSON__</script><script>
 'use strict';
 const report=JSON.parse(document.getElementById('report-data').textContent);
@@ -175,8 +176,8 @@ const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
 const shareFooterHeight=216;
-const skillAddress='github.com/TANGXTONG1/PUAI';
-const shareInstruction='拿我的聊天也整一张';
+const shareInstruction='按图底网址，用我的聊天生成';
+const sharePage='唐苑容.com/PUAI/go.txt';
 // Static QR for https://xn--sxrw8m230b.com/PUAI/ (version 3, correction level Q).
 // Keep it local so exporting a private report never contacts a QR service.
 const shareQr=[
@@ -216,7 +217,7 @@ const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes
 const shortDate=d=>d?Number(d.slice(5,7))+'.'+d.slice(8):'暂无';
 const analysisRange=rhythm?.analysis_start?shortDate(rhythm.analysis_start)+'—'+shortDate(rhythm.analysis_end):'暂无可计算记录';
 const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
-const markers=new Map([...new Set(quotes.map(q=>q.date))].sort().map((d,i)=>[d,i+1]));
+const markers=new Map([...new Set(quotes.map(q=>q.date).filter(Boolean))].sort().map((d,i)=>[d,i+1]));
 const roastKnown=Boolean(s&&Object.hasOwn(s,'roast_messages'));
 const reviewed=isRoast?(roastKnown?s.roast_messages:null):(a?.theme_stats?.messages??null);
 const ratio=reviewed!==null&&s?.messages>0?reviewed/s.messages:null;
@@ -319,14 +320,16 @@ const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,
 function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
 function comicQuote(q,i,y,draw=true){
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
-const h=rows.length*leading+(burst?116:96),tail=burst?0:22;
+const hasHeader=Boolean(q.date||q.kind==='rewrite'||q.repeat_count);
+const textTop=(burst?80:78)-(hasHeader?0:49);
+const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
 const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
 const highlight=i===1?accent:burst?colors.burstHighlight:colors.tint;
 const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.onTint;
 if(!draw)return h+tail;
 ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
-const mx=burst?53:pad;marker(q,mx,burst?27:22,color);if(q.kind==='rewrite')text('改写',mx+163,burst?27:22,30,color,650);if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
-rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=(burst?80:78)+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
+const mx=burst?53:pad;if(q.date)marker(q,mx,burst?27:22,color);if(q.kind==='rewrite')text('改写',mx+163,burst?27:22,30,color,650);if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
+rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=textTop+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
 for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;if(run.strong){const pad=i===1?2:3;box(xx-pad,yy+3,rw+2*pad,size+8,0,highlight)}text(run.value,xx,yy,size,run.strong?highlightInk:color,run.strong?700:600);xx+=rw}
 });ctx.restore();stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width:w,height:h+tail,fontSize:size,rows:rows.map(row=>row.map(t=>t.value).join(''))});return h+tail
 }
@@ -353,9 +356,9 @@ function comicScenes(y,draw){
 function drawShareFooter(y){
  const shareInk='#182437';
  box(0,y,900,shareFooterHeight,0,'#FBFBF8');
- text('把图发给你的 Agent，说',48,y+34,32,shareInk,550);
- text('「'+shareInstruction+'」',30,y+82,40,shareInk,750);
- text(skillAddress,48,y+150,33,shareInk,600,'Arial,sans-serif');
+ text('扫码复制 → 发到你常聊的 GPT',48,y+31,40,shareInk,750);
+ text('发图说「'+shareInstruction+'」',48,y+94,32,shareInk,550);
+ text(sharePage,48,y+149,34,shareInk,600,'Menlo,"DejaVu Sans Mono","Courier New","PingFang SC","Microsoft YaHei",monospace');
 
  const cell=5,quiet=4,qrSize=(shareQr.length+quiet*2)*cell;
  const x=852-qrSize,top=y+Math.floor((shareFooterHeight-qrSize)/2);
@@ -409,7 +412,7 @@ const personaSummary=story?[personaLabel+'：'+story.persona]:[];
 const sceneSummary=story?.scenes.length?['经典场景',...story.scenes.map(item=>item.text)]:[];
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const summary=[owner+'的'+reportTitle,...personaSummary,introduction,demoLabel,'最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),...sceneSummary,...(!story||quotes.length?['金句：']:[]),...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),...tagSummary,'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
-const readableSummary=isRoast&&!isSpecimen?summary:[
+const readableSummary=isRoast&&!isSpecimen&&rhythm?summary:[
  owner+'的'+reportTitle,...personaSummary,demoLabel,
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
@@ -417,26 +420,11 @@ const readableSummary=isRoast&&!isSpecimen?summary:[
  tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+'；覆盖状态：'+tokenUsage.coverage+'。':'',
  reviewed!==null?'主题指令已核验 '+reviewed+' 条。每条用户消息计一次。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
- ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>q.date+' '+(q.kind==='rewrite'?'（改写）':'')+q.text),
+ ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text),
  ...tagSummary
 ].filter(Boolean).join(newline);
-const accessibleSummary=readableSummary+newline+'把图发给你的 Agent，说「'+shareInstruction+'」。PUAI skill：'+skillAddress+'。';
+const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
 document.getElementById('transcript').textContent=accessibleSummary;document.getElementById('preview').alt=accessibleSummary;
-document.getElementById('copy-prompt').addEventListener('click',async()=>{
-  const prompt='用 PUAI 把我和 AI 的聊天做成一张年度报告长图。 https://'+skillAddress;
-  const status=document.getElementById('status');
-  const manual=document.getElementById('manual-copy');
-  try{
-    await navigator.clipboard.writeText(prompt);
-    manual.hidden=true;
-    status.textContent='已复制，粘贴给你的 Agent 即可。';
-  }catch{
-    manual.value=prompt;
-    manual.hidden=false;
-    manual.focus();
-    manual.select();
-    status.textContent='口令已选中，复制后发给你的 Agent。';
-  }
-});
+bindPuaiPromptCopy(document.getElementById('copy-prompt'),document.getElementById('manual-copy'),document.getElementById('status'));
 let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('68px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});
 </script></body></html>

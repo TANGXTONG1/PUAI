@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://xn--sxrw8m230b.com/PUAI/"><strong>复制口令做同款</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=6b0be4883d">下载 skill</a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=87f27a577d">下载 skill</a>
   &nbsp; · &nbsp;
   <a href="https://xn--sxrw8m230b.com/PUAI/themes/">九种报告图鉴</a>
   &nbsp; · &nbsp;
@@ -21,24 +21,22 @@
 
 ## 开始使用
 
-收到长图？把图发给你的 Agent，说「也给我整一张」。也可以扫图底的码复制口令，或直接把下面这句发给它。
+扫长图底部的二维码，或打开首页点「复制给 ChatGPT」。把口令粘贴到一段已有聊天里，点它回的「打开我的报告」，就能保存一张带本人原话和人格标签的 PNG。新对话里贴几句自己的原话也可以。[复制生成口令](https://xn--sxrw8m230b.com/PUAI/) · [查看文字口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
+
+如果聊天软件把链接显示成了普通文字，把回复里的备用报告码粘到生成页即可。[粘贴报告码](https://xn--sxrw8m230b.com/PUAI/make/)
+
+<details>
+<summary>用完整版 skill 生成发言日历和用量统计</summary>
+
+把下面这句发给能访问仓库、运行代码的 Agent：
 
 ```text
 用 PUAI 把我和 AI 的聊天做成一张年度报告长图。 https://github.com/TANGXTONG1/PUAI
 ```
 
-<details>
-<summary>通过命令行安装</summary>
-
-```bash
-npx skills add TANGXTONG1/PUAI
-```
-
-已安装时可以直接说「用 PUAI 给我做张年报」。要指定署名，再加一句「叫我某某」。
+也可以运行 `npx skills add TANGXTONG1/PUAI` 安装。用量和日历按你授权提供的聊天及日志生成。
 
 </details>
-
-Agent 无法访问你的历史时，上传聊天导出文件即可。生成在你的 Agent 环境中完成。
 
 ## 你的年度人机关系
 
@@ -53,8 +51,8 @@ Agent 无法访问你的历史时，上传聊天导出文件即可。生成在�
 ## 不愿透露姓名的唐某的 PUAI 报告
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=02065f3932">
-    <img src="docs/persona-report.png?v=02065f3932" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签">
+  <a href="https://xn--sxrw8m230b.com/PUAI/persona-report.png?v=b57d3efa3e">
+    <img src="docs/persona-report.png?v=b57d3efa3e" width="520" alt="不愿透露姓名的唐某的 2026 PUAI 报告：用户人格、开喷比例、发言日历、原话和标签">
   </a>
 </p>
 
