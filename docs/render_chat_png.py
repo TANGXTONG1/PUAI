@@ -235,16 +235,19 @@ def draw_report(r, font):
     text(48+badge_w/2, 66, badge, 34, on_accent, True, "mm")
     text(48, 118, f"{year} {name}报告" if not theme else f"{year} {name} 报告", 64, bold=True)
     y = 226
-    if r["lead"]:
+    def draw_lead(y):
         y = heading(y, "年度现场")
         rows = wrap(r["lead"], 720, 45)
         height = len(rows)*62+60
         rect(48, y, 804, height, pull)
         rect(48, y, 10, height, accent)
         paragraph(82, y+30, rows, 45, on_pull, True)
-        y += height+38
+        return y + height + 38
 
     quotes = r["quotes"]
+    quote_first = theme == "puai" and bool(quotes)
+    if r["lead"] and not quote_first:
+        y = draw_lead(y)
     if quotes:
         y = heading(y, "对话现场" if r["reply"] else "本人原话")
         if r["setup"]:
@@ -271,6 +274,8 @@ def draw_report(r, font):
                 paragraph(186,y+20,rows,36)
                 y += height+21
 
+    if r["lead"] and quote_first:
+        y = draw_lead(y)
     if not quotes and not r["lead"] and r["short"] and not r["habits"]:
         y = paragraph(48,y,wrap(r["short"],800,41),41,bold=True)+28
     if r["total"] or r["tokens"] is not None:
@@ -339,6 +344,8 @@ def draw_report(r, font):
 
         y += 61
     habits = r["habits"][:2] if r["lead"] or quotes else r["habits"]
+    if quote_first:
+        habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
     if habits:
         y = heading(y,"日常用法")
         for habit in habits:

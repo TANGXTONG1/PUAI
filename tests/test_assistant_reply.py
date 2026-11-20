@@ -84,6 +84,11 @@ class AssistantReplyTests(unittest.TestCase):
         scene = builder.public_report(self.report, compact=True)
         thin = {"year": 2026, "mode": "excerpt", "theme": None, "person": {"name": "试读"}, "keywords": [],
                 "story": {"persona": "", "scenes": []}, "activity": {"daily_profile": {"habits": ["给清单补漏"]}}}
+        scene_with_lead = dict(scene, story={**scene["story"], "lead": "这次评委也参赛。"})
+        long_habit = "还逐个检查了杯子、碟子和每一把勺子上有没有相同的花纹。"
+        short_habit = "用茶匙补投一票"
+        scene_with_lead["activity"] = dict(scene["activity"], daily_profile={"habits": [long_habit, short_habit]})
+        scenes = [scene, thin, dict(scene_with_lead, theme="puai"), dict(scene_with_lead, theme="teach")]
         with sync_playwright() as engine, tempfile.TemporaryDirectory() as tmp:
             try:
                 browser = engine.chromium.launch(channel="chrome")
@@ -98,7 +103,7 @@ class AssistantReplyTests(unittest.TestCase):
                 return original.call(this, label, ...args);
               };
             }""")
-            for index, data in enumerate([scene, thin]):
+            for index, data in enumerate(scenes):
                 path = Path(tmp) / f"poster-{index}.html"
                 path.write_text(html.replace("__REPORT_JSON__", json.dumps(data, ensure_ascii=False)))
                 page.goto(path.as_uri())
@@ -110,10 +115,18 @@ class AssistantReplyTests(unittest.TestCase):
                     turns = [labels.index(s) for s in ["挑个顺眼的。", "第二张。", "那是你刚做的。", "发言日历"]]
                     self.assertEqual(turns, sorted(turns))
                     self.assertLess(alt.index("AI：第二张。"), alt.index("那是你刚做的。"))
-                else:
+                elif index == 1:
                     self.assertEqual(labels[2:4], ["日常用法", "给清单补漏"])
                     self.assertEqual(alt.count("给清单补漏"), 1)
                     self.assertNotIn("人格", alt)
+                else:
+                    quote_first = data["theme"] == "puai"
+                    self.assertIn(short_habit, alt)
+                    self.assertEqual(long_habit in alt, not quote_first)
+                    for painted in (labels, alt):
+                        self.assertEqual(
+                            painted.index("挑个顺眼的。") < painted.index("这次评委也参赛。"),
+                            quote_first)
             browser.close()
 
 

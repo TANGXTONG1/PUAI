@@ -5,9 +5,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/render_chat_png.py"
@@ -57,6 +58,42 @@ class ChatPngTest(unittest.TestCase):
             "PUAI 2026\n原话：11-06~后来的问题。\nAI：不在其间。\n原话：11-01~早来的问题。")["reply"])
         with self.assertRaises(ValueError):
             renderer.parse_receipt("PUAI 2026\n署名：我\n标签：教学")
+
+    def test_roast_leads_with_the_verified_exchange_before_the_scene_and_stats(self):
+        receipt = """PUAI 2026
+主题：puai
+主场景：自带红笔。
+前情：表里少一行。
+原话：11-04~你再数数。
+AI：四行。
+原话：11-04~三行半吗？
+日期账：11-04:2:2
+"""
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        draw_text = ImageDraw.ImageDraw.text
+
+        def positions(source):
+            ys = {}
+
+            def record(draw, xy, text, *args, **kwargs):
+                ys[text] = xy[1]
+                return draw_text(draw, xy, text, *args, **kwargs)
+
+            with patch.object(ImageDraw.ImageDraw, "text", record):
+                renderer.draw_report(renderer.parse_receipt(source), font)
+            return ys
+
+        for theme, order in [
+            ("puai", ["对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "年度现场", "自带红笔。", "对话用量"]),
+            ("teach", ["年度现场", "自带红笔。", "对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "对话用量"]),
+        ]:
+            with self.subTest(theme=theme):
+                ys = positions(receipt.replace("主题：puai", f"主题：{theme}"))
+                actual = [ys[text] for text in order]
+                self.assertEqual(actual, sorted(set(actual)))
+        lead_only = positions("PUAI 2026\n主题：puai\n主场景：自带红笔。")
+        self.assertLess(lead_only["年度现场"], lead_only["自带红笔。"])
+        self.assertNotIn("本人原话", lead_only)
 
     def test_standalone_png_without_node_browser_templates_or_network(self):
         with tempfile.TemporaryDirectory() as folder:

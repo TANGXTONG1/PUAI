@@ -222,8 +222,10 @@ const profile=a?.daily_profile;
 const habits=profile?.habits??story?.habits??[];
 const scenes=story?.scenes??[];
 const lead=story?.lead?.trim()||'';
+const puaiQuotesFirst=report.theme==='puai'&&quotes.length>0;
 const distinctHabits=habits.filter(habit=>habit!==lead);
-const posterHabits=quotes.length||lead?distinctHabits.slice(0,2):distinctHabits;
+const posterHabits=puaiQuotesFirst?distinctHabits.filter(habit=>Array.from(habit).length<=24).slice(0,1):
+  quotes.length||lead?distinctHabits.slice(0,2):distinctHabits;
 const posterScenes=quotes.length?(posterHabits.length?[]:scenes.slice(0,1)):scenes;
 const hasPersona=Boolean(story?.persona?.trim());
 const leadWithHabits=!lead&&!quotes.length&&!hasPersona&&posterHabits.length>0;
@@ -501,10 +503,11 @@ if(draw){
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
 let y=230;
-if(lead)y=comicLead(y,draw);
+if(lead&&!puaiQuotesFirst)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
 else if(!lead&&hasPersona)y+=comicPersona(222,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
+if(lead&&puaiQuotesFirst)y=comicLead(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
 if(months.length)y=comicActivity(y,draw);
 if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
@@ -541,7 +544,8 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,demoLabel,lead,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),
+ owner+'的'+reportTitle,demoLabel,puaiQuotesFirst?'':lead,
+ ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),puaiQuotesFirst?lead:'',
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
@@ -556,7 +560,7 @@ const readableSummary=[
  ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
-const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
+const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.filter(habit=>!posterHabits.includes(habit)),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
 document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
 document.getElementById('preview').alt=accessibleSummary;
 bindPuaiPromptCopy(document.getElementById('copy-prompt'),document.getElementById('manual-copy'),document.getElementById('status'));
