@@ -1,0 +1,71 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readDirectFields } from '../docs/make/plain-report.mjs';
+import { parseReport } from '../docs/make/report-code.mjs';
+
+function report(link) {
+  return parseReport(readDirectFields(link), { allowExcerptsWithoutLedger: true });
+}
+
+test('named links carry a readable scene, preserve speaker turns, and retain the real daily ledger', () => {
+  const source = new URLSearchParams([
+    ['theme', 'teach'], ['name', '画圈人'], ['lead', '同一只杯子被要求画三次把手。'],
+    ['q', '10-08~先画把手。'], ['use', '先把草图翻了个面'], ['ai', '杯子有两个把手。'],
+    ['tag', '双耳杯'], ['q', '10-08~那你挑一边喝。'], ['days', '10-08:2:1'], ['token', '100']
+  ]);
+  const path = 'https://example.org/make/?utm_source=chatgpt.com#p?' + source;
+  const card = report(path);
+  assert.equal(card.person.name, '画圈人');
+  assert.equal(card.story.lead, '同一只杯子被要求画三次把手。');
+  assert.deepEqual(card.story.assistant_reply, { after_quote: 1, text: '杯子有两个把手。' });
+  assert.deepEqual(card.activity.share_quotes.map(q => q.text), ['先画把手。', '那你挑一边喝。']);
+  assert.deepEqual(card.activity.daily_profile.habits, ['先把草图翻了个面']);
+  assert.equal(card.activity.summary.messages, 2);
+  assert.equal(card.activity.token_usage.total_tokens, 100);
+  assert.deepEqual(report('[打开图](<' + path + '>)'), card);
+});
+
+test('only the named values are encoded; original special characters survive the URL round-trip', () => {
+  const quote = 'C++ &= #1 [100%] (%20) | ｜ 🫖';
+  const fragment = '#p?' + new URLSearchParams([['q',quote],['tag','代码茶']]);
+  const card = report(fragment);
+  assert.equal(card.activity.share_quotes[0].text, quote);
+  assert.deepEqual(report(fragment.replace('&tag=', '&amp;tag=')), card);
+  assert.equal(report('#p?q=走，去喝茶。').activity.share_quotes[0].text, '走，去喝茶。');
+  assert.equal(card.activity.summary, undefined);
+});
+
+test('a stand-alone lead or verified excerpt renders without invented activity or duplicated habits', () => {
+  const card = report('#p?lead=把杯盖当计时器。&use=把杯盖当计时器。&use=用茶匙拨响。');
+  assert.deepEqual(card.story, { persona: '', scenes: [], lead: '把杯盖当计时器。' });
+  assert.deepEqual(card.activity.daily_profile.habits, ['用茶匙拨响。']);
+  assert.equal(card.activity.summary, undefined);
+  assert.equal(card.activity.share_quotes.length, 0);
+  assert.equal(report('#p?lead=比较两把茶匙。').story.lead, '比较两把茶匙。');
+  assert.equal(report('#p?q=11-04~谁把茶倒给了盖子？').activity.share_quotes[0].date, '2026-11-04');
+});
+
+test('private diagnosis, injected fields and unsupported totals cannot become report content', () => {
+  assert.equal(readDirectFields('https://example.org/make/?q=无私人片段'), null);
+  assert.equal(readDirectFields('#v2｜old'), null);
+  assert.throws(() => report('#p?theme=teach'));
+  assert.throws(() => report('#p?q=有问题%0A原话：多一句'));
+  assert.throws(() => report('#p?theme=teach&q=只有一条&other=不应展示'));
+  assert.throws(() => report('#p?days=11-10:1:1&q=真话&theme=teach&q=第二条'));
+});
+
+test('an explicitly selected final AI line belongs after the last visible user quote', () => {
+  const close = '我没法确认自己的型号。';
+  const card = report('#p?q=第三次问了，你是谁？&endai=' + close);
+  assert.equal(card.story.final_reply, close);
+  assert.equal(card.story.assistant_reply, undefined);
+  assert.equal(report('#p?q=谁？&ai=' + close).story.final_reply, undefined);
+  assert.equal(report('#p?endai=' + close + '&q=谁？').story.final_reply, undefined);
+  const misplaced = report('#p?q=第一句&endai=提前的结尾&q=真正的最后一问');
+  assert.equal(misplaced.story.final_reply, undefined);
+  const unselected = report('#p?q=一&q=二&q=三&q=四&endai=只答第四问');
+  assert.equal(unselected.story.final_reply, undefined);
+  const both = report('#p?q=第一句&ai=中间的答复&q=第二句&endai=再答一句');
+  assert.equal(both.story.assistant_reply.text, '中间的答复');
+  assert.equal(both.story.final_reply, undefined);
+});

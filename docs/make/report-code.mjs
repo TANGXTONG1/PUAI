@@ -106,10 +106,11 @@ function readQuote(value, days, excerptsOnly = false) {
   return { date, text: checkText(value.slice(header[0].length), '原话', 80) };
 }
 
-function richActivity(fields, theme, allowExcerptsWithoutLedger) {
+function richActivity(fields, theme, allowExcerptsWithoutLedger, lead) {
   const days = readDays(fields[4]);
   const undated = fields[5].trim() ? readCounts(fields[5].trim()) : null;
-  const habits = fields.slice(7, 10).map(habit => editorialText(habit, 120)).filter(Boolean);
+  const habits = fields.slice(7, 10).filter(habit => !lead || habit !== fields[18])
+    .map(habit => editorialText(habit, 120)).filter(habit => habit && habit !== lead);
   const peak = days.reduce((best, day) => !best || day.count > best.count ? day : best, null);
   const countedRows = undated ? [...days, undated] : days;
   if (theme === null && countedRows.some(row => row.hits !== null)) {
@@ -132,7 +133,7 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger) {
       undated_messages: undated?.count || 0
     });
   }
-  if (!totals.count && !habits.length && !(excerptsOnly && activity.share_quotes.length)) {
+  if (!totals.count && !habits.length && !lead && !(excerptsOnly && activity.share_quotes.length)) {
     throw new Error('请从可读的聊天里补充具体使用习惯或可核实的本人原话；有可核账目时再填发言数。');
   }
   if (!excerptsOnly && activity.share_quotes.length > totals.count) {
@@ -201,10 +202,14 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
   const keywords = fields.slice(isRich ? 13 : 6, isRich ? 16 : 8).map((tag, index) =>
     isRich ? editorialText(tag, 6) : checkText(tag.trim(), '标签', 6, index > 0)
   ).filter(Boolean);
-  const activity = isRich ? richActivity(fields, theme, allowExcerptsWithoutLedger) : {
+  // Only named links and clipboard receipts may supply a lead. The original
+  // positional share-code format stays unchanged.
+  const lead = isRich && allowExcerptsWithoutLedger ? editorialText(fields[18] || '', 90) : '';
+  const activity = isRich ? richActivity(fields, theme, allowExcerptsWithoutLedger, lead) : {
     share_quotes: fields.slice(4, 6).filter(value => value.trim()).map(value => readQuote(value))
   };
   const story = { persona: isRich ? editorialText(persona, 100) : checkText(persona.trim(), '人格短评', 60), scenes: [] };
+  if (lead) story.lead = lead;
   if (isRich && fields[16]) {
     const setup = checkText(fields[16], '前情', 24);
     if (!activity.share_quotes.length) throw new Error('前情须配有至少一条入选原话。');
@@ -219,6 +224,10 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
       throw new Error('AI 回复须夹在同一对话中按时间排列的两条本人发言之间。');
     }
     story.assistant_reply = { after_quote: pos, text: checkText(match[2], 'AI 回复', 80) };
+  }
+  if (isRich && allowExcerptsWithoutLedger && fields[19]) {
+    if (!activity.share_quotes.length || story.assistant_reply) throw new Error('AI 收尾须接在本人原话后，同一段只选一条 AI 回复。');
+    story.final_reply = checkText(fields[19], 'AI 收尾', 80);
   }
   return {
     // Both URL formats belong to this edition, including when reopened later.

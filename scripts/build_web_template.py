@@ -4,6 +4,7 @@
 from hashlib import sha256
 from pathlib import Path
 import re
+import shutil
 import subprocess
 
 from build_report import embed_template_assets
@@ -34,6 +35,7 @@ def main():
     (root / "docs" / "portable-prompt.js").write_text(prompt_js, encoding="utf-8")
     (root / "docs" / "go.txt").write_text(prompt, encoding="utf-8")
     docs = root / "docs"
+    shutil.copyfile(root / "scripts" / "render_chat_png.py", docs / "render_chat_png.py")
     make = docs / "make"
     for page in ("index.html", "sample.html"):
         update_asset_version(docs / page, docs / "portable-prompt.js")

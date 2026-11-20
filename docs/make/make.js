@@ -1,6 +1,6 @@
-import { readFields, parseReport } from './report-code.mjs?v=dd2ced4faa';
+import { readFields, parseReport } from './report-code.mjs?v=68ad05395a';
 
-import { readPlainFields } from './plain-report.mjs?v=6b2d9b07f0';
+import { readDirectFields, readPlainFields } from './plain-report.mjs?v=55171fd789';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');
@@ -26,7 +26,7 @@ let retryRequest;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=2a842b3dbc', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=5c74062b9d', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -122,6 +122,7 @@ function resetPasteOptions() {
 function publicReceipt(fields, report) {
   const clean = fields.slice();
   clean[3] = report.story.persona;
+  if (clean.length >= 19) clean[18] = report.story.lead || '';
   for (let i = 0; i < 3; i++) {
     clean[7 + i] = report.activity.daily_profile.habits[i] ?? '';
     clean[13 + i] = report.keywords[i] ?? '';
@@ -142,7 +143,7 @@ async function generate(value, fromAddress = false, restored = null) {
   let reportParsed = false;
   try {
     if (value.length > 48000) throw new Error('请只复制助手生成的这一份报告。');
-    const receipt = restored || (!fromAddress && readPlainFields(value));
+    const receipt = restored || readDirectFields(value) || (!fromAddress && readPlainFields(value));
     let fields;
     if (receipt) {
       fields = receipt;
@@ -214,7 +215,7 @@ function openFragment() {
     generate(location.hash, true);
   } else {
     const saved = history.state?.puaiReceipt;
-    if (Array.isArray(saved) && [16, 17, 18].includes(saved.length) && saved[0] === 'v2'
+    if (Array.isArray(saved) && [16, 17, 18, 19, 20].includes(saved.length) && saved[0] === 'v2'
         && saved.every(field => typeof field === 'string') && saved.join('').length <= 48000) {
       generate('', false, saved);
       return;

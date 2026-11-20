@@ -33,8 +33,10 @@ test('report links open the PNG; manual recovery requires a tap', {
     };
     let failFrame = false;
     let inspectLoading = false;
+    const requested = [];
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
+      requested.push(url.pathname + url.search);
       const name = url.pathname.split('/').pop() || 'index.html';
       if (url.origin !== new URL(base).origin ||
           !['index.html', 'report-code.mjs', 'plain-report.mjs', 'make.js', 'poster-frame.txt'].includes(name)) {
@@ -57,6 +59,27 @@ test('report links open the PNG; manual recovery requires a tap', {
     const alt = await preview.getAttribute('alt');
     assert.ok(alt.includes('原来这套杯子还自带打击乐。'));
     inspectLoading = false;
+
+    // A regular chat can put just the visible fields in a fragment. Opening
+    // it in a fresh tab needs no clipboard, server record or previous visit.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: {
+        readText: () => { window.__readClipboard = true; throw new Error('clipboard is off'); }
+      } });
+    });
+    const named = new URLSearchParams([['q','是盖子高了？'],['ai','是杯子矮了。'],
+      ['q','这两件事在茶几上有区别吗？'],['theme','einstein'],['tag','量杯师']]);
+    const directURL = base + '?utm_source=chatgpt.com#p?' + named;
+    await page.goto(directURL);
+    await ready();
+    const turns = await preview.getAttribute('alt');
+    const positions = ['是盖子高了？','是杯子矮了。','这两件事在茶几上有区别吗？'].map(q => turns.indexOf(q));
+    assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])));
+    assert.equal(await page.evaluate(() => window.__readClipboard), undefined);
+    assert.ok(requested.every(url => !decodeURIComponent(url).includes('杯子矮')));
+    await page.reload();
+    await ready();
+    assert.equal(await preview.getAttribute('alt'), turns);
 
     await page.goto(base+'#v2%EF%BD%9C');
     await page.locator('#status.error').waitFor();

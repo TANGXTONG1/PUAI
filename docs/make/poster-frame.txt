@@ -105,16 +105,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 function puaiPortablePrompt(nickname = '') {
   const owner = Array.from(String(nickname).trim().replace(/[|｜]/g, '·').replace(/\s+/g, ' ')).slice(0, 16).join('') || '我';
   return [
-    '生成我的 2026 AI 年度报告，署名' + JSON.stringify(owner) + '。我授权你在已有访问范围里主动检索本人的历史聊天、项目互动、记忆和脱敏摘要。先实际用能用的历史检索，按不同时期和密集月份找线索。如果结果只是标题、摘句或记忆，就用会话定位打开原线程。没有跨会话检索时就读当前可见历史。无需我粘贴记录。排除生成报告的口令、示例、工具、重放、他人和代拟稿。按内容先在处理环境内去除工作和身份信息。',
-    '分两遍读：统计只看去重后的本人消息；选材同时看用户和 AI 在同一回合实际说了什么。先从跨对话的反复动作定1–3个特征并看反例，再循着典型和例外各找具体现场。对“还、又、那你、第二个、算了”之类依赖上文的句子，回读触发它的可见 AI 答复及用户下一步。必要时沿同一话题再往前找起因。只有用户摘句且查不到相邻答复，就挑独立能懂的原话；只有摘要就限于确知的用法。严禁把 AI 承诺、用户转述或工具状态写成事情真的办成了。只按实际读到的范围写。',
-    '选一段朋友手机上滑到就能看懂的对话。试着遮住所有人格分析、标签和编辑短评，剩下的原话还能独立让人想回一句或转给谁？优先让现场本身出彩：小反问、认真护短、模型给自己打分、AI 会检讨却没动手，都要看当事人原来怎么说。去掉项目、工具名和术语后只剩普通工作请求，就继续找别的候选。可以保留公开模型名；只有平常用法就如实写短。不要把需要专业背景的研究题直接端上分享图。没有可分享的引语时就留下具体用法。无需输出检索过程。',
-    '按证据选主主题：puai 当场抓 AI 答应和交付的落差；teach 自己出题验收；aicu 限时求救时非要保哪一件；all 让不同模型当场互评仲裁；hush 斟酌哪句话怕被听歪；einstein 追问到朋友也想答的反例；edison 让一件东西改行；support 明明能重来还给 AI 留一票；free 都交给 AI 却保留一条条件。都不合适就让主题ID为空、各组H填?。礼貌致谢和日常返工照常计入分母。',
-    '优先选同一回合两条本人原话，若真正的转折在中间 AI 说的那一句，再摘一条可独立公开、面向用户的 AI 原文，插回原来的位置，标明 AI。摘自真实单条发言的连续原文，核准回复对象和先后。不把谁粘贴的文案或他人对话当本人发言。用户每句≤80字、最多3条，AI ≤80字、最多1条，不计入本人统计。只留一条本人原话也成立；另一起事件不可剪成接话。编辑前情≤24字，只交代原话缺的一个事实。若本人句子足够，不补旁白。',
-    '人格短评最多一句，1–3个标签（各≤6字）。日常0–3条，只补独立的新事实（各尽量≤24字）。有原话时让读者先听见人说话，不在文案开头解释一遍笑点。仅有记忆时至少留下一个具体行为；计数和引语都留空。所有来源都无具体内容时，建议在平时常用的旧对话发同一口令。',
-    '有可复核分母时才出统计。以实际能逐条核对的 2026 本人消息为范围，每条只计一次，同一原消息在多个来源出现只计一次。相邻消息的间隔、同一句跨会话的实际复现次数也是有用素材，须有原记录再用，不把间隔当使用时长。按同一时区把消息逐日合并，日期账格式 MM-DD:N:H，多日用英文逗号连接（格式示意 03-08:4:1,03-09:2:?，不用这组示意数）。N 是当天全部可核对的本人发言数，H 是其中符合主主题的条数；整组逐条复核后才写 H（可以为 0），未核全写 ?。可确定属于当年但无具体日期的其余原消息单列为 N:H。记忆和摘要只支撑习惯；不把片段、标签、选句数量当作发言数。token 仅填同范围真实用量日志核准的整数，没有就留空。',
-    '交付规则：如果确实导出了可打开的 PUAI 漫画 A 版 PNG，直接附图。其余任何文字客户端都把报告内容直接写在回复里，使用下面的中文清单。即使没有跨会话原线程、没有完整日期账，也要交付有证据的内容。只有记忆写「用法」；能与本人消息核对的原句可单独写「原话」，不要求用引语数量反推发言总数。已有局部可数原记录就填与本报告同范围的账；有引语但无可靠分母时，整个统计部分留掉。助手转述的问句只能写作用法。若全无本人材料，直说把这条口令发到常用旧对话，到此结束。',
-    '文字版先给一个可一键复制的纯文本代码块。第一行固定为 PUAI 2026。后面每项独占一行，用「字段：内容」写实际材料。没有的整行省略，不写示例、占位符、表格或空值。可用字段：署名、主题（上述英文 ID）、短评、前情、原话、AI、用法、标签、日期账、无日期账、Token。原话、用法可重复；有双方原文时按「原话 / AI / 原话」真实顺序逐行写。已核对日期可在原话前写 MM-DD~；标签可用顿号隔开。至少有一条具体用法、可核原话或可靠的发言账。少量片段不强定人格。这个代码块本身就要能读，复制整条回复也能制图。',
-    '代码块以外最后写「复制上面的报告，打开下面的网址，点『粘贴并生成长图』。」再把这个固定网址原样单独写一行：https://xn--sxrw8m230b.com/PUAI/make/ 。不要给网址加括号、句号、Markdown 链接文字、# 或报告数据。即使客户端不能生成链接，也必须留下可读清单和这段完整网址；不要把入口当成已生成的图片。'
+    '请现在生成并交付我的 2026 AI 年度报告长图，署名' + JSON.stringify(owner) + '。能用 Python、文件或制图工具就实际调用，把生成的图片放进这条回复。仅能发文字时，给一个点开就出现这张图的完整网址。正常流程到此为止，不让我复制清单、填表、搬历史或自己运行代码。',
+    '取材只在宿主已经能读取、本人授权的历史对话、项目互动和脱敏记忆内进行。可检索时看不同时段和线程，索引有定位就回看触发这句话的 AI 回复及用户下一步。排除别人的话、代拟稿、工具过程、系统提示和做报告的指令；工作只保留互动方式及不涉密的证据。用户原话必须是给 AI 说的连续逐字原文；摘要能证明一件事发生过，只能编辑成纪事。别把 AI 的承诺写成已完成。什么材料都没有时才提示去常用的旧对话重试。',
+    '先看不同聊天里重复与例外的动作，再定主题。除了语气，更要找用户真的出了什么人工：翻出凭证、把东西数一遍、给模型出同一题、自己接手、坚持为某一笔小细节留位置。笑点也可能是温柔或脑洞。把普通原话、被埋在摘要里的一次具体事件、跨次重复或变调并列比较。哪个最想当场发朋友，拿哪个开场。若一张截图能推翻一个结论，就写双方各做了什么；不要选“希望更简洁”当金句再贴“精准纠偏”。若用户平时放手、偏偏为某个小东西破例，就去查那件东西的命运。别借这些示例编故事。',
+    '开场两种任选：双方原声自己就有戏，直接从原话进场；事实比台词更出彩，则写一句主场景（≤90字，有具体物件、动作和落点）。当事人后来又做了什么？能查到就找回来。几个月都在做一件古怪的事，可按真实日期并排，让最后一次自己收尾。没有逐字原文一样可以只靠事实成图。最多再留两个不同且有新东西的现场。无关原话单列，勿拼成当场接话。标签1–3个，每个≤6字，从那件物品或那条古怪规矩里起外号；选不出就不贴。不要再用短评解释同一个笑点。',
+    '九型选有证据的一种：puai 追责或讽刺 AI；teach 自己示范和验收；aicu 限时求救；all 模型互评；hush 怕一句话被听歪；einstein 追问原理与反例；edison 给物件开发新用法；support 替 AI 留住做对的部分；free 把决定权交给 AI。无依据就不分类。本人原话最多3条（各≤80字）。真实 AI 台词最多1条，只能是夹在连续两次本人发言中间，或者确实接在最后一个问题后、值得当结局的原话。原话逐字，日期与角色核准，不能编对话、次数、因果或心理。',
+    '能数则保留统计。按可逐条复核的 2026 本人消息去重并逐日计数，日期账 MM-DD:N:H，多日用逗号分隔。N 为消息数，H 为逐条审完的主主题命中，未知写 ?，未分类也写 ?。整批已知年而无日期的本人消息另记 N:H。如果只有孤立片段，保留片段，省略无依据的统计。token 只用同范围真实日志。两条消息相隔多久不能折成工时。',
+    '优先在对话出图。有已装 PUAI 和浏览器的环境，用其 A 版生成 PNG。仅有 Python 工具时也当场画。先查工作目录和已装 skill 的 scripts/render_chat_png.py；本地存在就直接运行，否则下载标准脚本 https://xn--sxrw8m230b.com/PUAI/render_chat_png.py ，用 Python 执行 render_chat_png.py report.txt 输出.png。report.txt 私下写首行 PUAI 2026，然后按需逐行填 署名、主题、主场景、原话、AI、AI收尾、用法、标签、前情、日期账、无日期账、Token，格式“字段：内容”，按人/AI真实次序。系统缺中文字体可取同站 /PUAI/PUAI-skill.zip 内的字体。只有标准脚本确实无法取得或运行、但可运行 Python 时，直接用 Pillow、可用中文字体做900像素宽漫画海报：标题、主场景、署名气泡、可核统计、标签与图尾可读的网址 唐苑容.com/PUAI/。逐日账要画成日历或活跃日、发言数等数字，绝不刊登内部字段串。长句按像素折行。打开成品核实是 PNG 且中文可读，再用当前宿主的附件方式在回复中展示。ChatGPT 文件工具可将文件保存在 /mnt/data/PUAI-2026.png 后用图片语法附上。只有内置画图工具时可直接出图并核对原话；若没有真实图片或排字不可靠，宿主支持网页成品时也可直接创建能点开预览的独立 HTML 附件或画布，内嵌数据，页面自动画出报告并提供保存 PNG。只有真实附件或可打开的预览才算完成，聊天里贴 HTML 源码不算。再没有此能力才用下面的网址。',
+    '无可附图片时，把已经选好的分享内容放进这一条直接出图的网址。回复只写一句最有意思的细节和一个含数据的完整 URL；用这个完整网址作为 Markdown 链接「查看并保存长图」的实际目标，括号内必须有包含本人内容的地址。若宿主只支持裸网址，单独一行写完整地址。若是会把动态外链改成搜索的 Gemini 文字访客界面，保留完整可复制网址供浏览器打开，不声称链接能直接跳转。不要给空的 Markdown 链接、裸的 /make/ 首页、清单、代码块或粘贴步骤。URL 始终以 https://xn--sxrw8m230b.com/PUAI/make/#p? 开头，后接有值的 key=value，用 & 分隔，留空的字段整个省略。最短可用的是 lead=已核实的一件事 或 q=本人原话。下面只是语法示范，不能套给用户：<https://xn--sxrw8m230b.com/PUAI/make/#p?theme=free&lead=你授权它决定晚饭，却专门给香菜写了否决条款。&tag=香菜一票否决>。生成前检查 #p? 后确有这位用户的内容。',
+    '网址字段：name=署名，theme=主题ID，lead=独立主场景，q=本人逐字原话（可用已核日期 MM-DD~ 前缀），ai=两条 q 中间的 AI 原话，endai=最后一条 q 之后真实的 AI 收尾，setup=首句引语必要且可核的前情（≤24字），use=另一个具体动作，tag=短标签，days=日期账，undated=无日期账，token=用量。q、use、tag 可重复；值里不要写字段名。能用代码时以有序键值对交给 urllib.parse.urlencode；没有编码工具时直接写中文，不要猜中文字节，数值内的 %、&、+、#、空格、半角括号和尖括号须按 URL 百分号转义（如 %25、%26、%2B、%23、%20、%28、%29、%3C、%3E），保留原话不改字。所有报告数据只放 # 后。只有零散摘句、摘要或记忆时，网址只用 name、lead、q、use、tag，省略 days、undated、token；一次偶然的表现也不足以定全年主题。'
   ].join('\n');
 }
 
@@ -260,12 +259,16 @@ const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
 const profile=a?.daily_profile;
 const habits=profile?.habits??story?.habits??[];
 const scenes=story?.scenes??[];
-const posterHabits=quotes.length?habits.slice(0,1):habits;
+const lead=story?.lead?.trim()||'';
+const distinctHabits=habits.filter(habit=>habit!==lead);
+const posterHabits=quotes.length||lead?distinctHabits.slice(0,2):distinctHabits;
 const posterScenes=quotes.length?(posterHabits.length?[]:scenes.slice(0,1)):scenes;
 const hasPersona=Boolean(story?.persona?.trim());
-const leadWithHabits=!quotes.length&&!hasPersona&&posterHabits.length>0;
+const leadWithHabits=!lead&&!quotes.length&&!hasPersona&&posterHabits.length>0;
 const assistantReply=story?.assistant_reply;
-const quoteTitle=isSpecimen?'选句示意 · 非原话':assistantReply?'对话现场':quotes.some(q=>q.kind==='rewrite')?'金句':'本人原话';
+const finalReply=story?.final_reply;
+const hasAiReply=Boolean(assistantReply||finalReply);
+const quoteTitle=isSpecimen?'选句示意 · 非原话':finalReply?'原话回放':assistantReply?'对话现场':quotes.some(q=>q.kind==='rewrite')?'金句':'本人原话';
 // Both the native and web data contain every observed day in the counted period,
 // including months outside the three calendars selected for display.
 const activeDays=profile?.active_days??s?.active_days;
@@ -431,7 +434,7 @@ const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,
 function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
 function comicQuote(q,i,y,draw=true){
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
-const hasHeader=Boolean(assistantReply||q.date||q.kind==='rewrite'||q.repeat_count);
+const hasHeader=Boolean(hasAiReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);
 const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
 const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
@@ -440,8 +443,8 @@ const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.on
 if(!draw)return h+tail;
 ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
 const mx=burst?53:pad,metaY=burst?27:22;
-if(assistantReply)text('本人',mx,metaY,32,color,700);
-if(q.date)marker(q,mx+(assistantReply?92:0),metaY,color);
+if(hasAiReply)text('本人',mx,metaY,32,color,700);
+if(q.date)marker(q,mx+(hasAiReply?92:0),metaY,color);
 if(q.kind==='rewrite')text('改写',mx+163,metaY,30,color,650);
 if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
 rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=textTop+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
@@ -455,13 +458,22 @@ function storyText(value,x,y,width,size,weight,color,draw){
  if(draw)rows.forEach((row,i)=>text(row.map(token=>token.value).join(''),x,y+i*leading,size,color,weight));
  return rows.length*leading;
 }
-function comicAssistant(y,draw){
- const height=storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,false)+40;
+function comicLead(y,draw){
+ const height=storyText(lead,80,y+22,740,46,700,ink,false)+44;
+ if(draw){
+   box(48,y,804,height,0,colors.tint);
+   box(48,y,8,height,0,colors.accent);
+   storyText(lead,80,y+22,740,46,700,colors.onTint,true);
+ }
+ return y+height+30;
+}
+function comicAssistant(y,draw,reply){
+ const height=storyText(reply,191,y+21,586,38,600,colors.onTint,false)+40;
  if(draw){
    box(92,y,716,height,16,colors.tint);
    text('AI',116,y+24,36,colors.onTint,800);
    line(166,y+18,166,y+height-18,colors.onTint,2);
-   storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,true);
+   storyText(reply,191,y+21,586,38,600,colors.onTint,true);
  }
  return y+height+22;
 }
@@ -473,8 +485,10 @@ function comicConversation(y,draw){
    y+=storyText(story.quote_setup,140,y,712,34,550,ink,draw)+18;
  }
  quotes.forEach((q,i)=>{
-   y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?48:24);
-   if(assistantReply?.after_quote===i+1)y=comicAssistant(y,draw);
+   const last=i===quotes.length-1;
+   y+=comicQuote(q,i,y,draw)+(last&&!finalReply?48:24);
+   const reply=last?finalReply:assistantReply?.after_quote===i+1?assistantReply.text:null;
+   if(reply)y=comicAssistant(y,draw,reply);
  });
  return y;
 }
@@ -525,8 +539,9 @@ if(draw){
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
 let y=230;
+if(lead)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
-else if(hasPersona)y+=comicPersona(222,draw);
+else if(!lead&&hasPersona)y+=comicPersona(222,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
 if(months.length)y=comicActivity(y,draw);
@@ -551,8 +566,9 @@ const sceneSummary=posterScenes.length?['经典场景',...posterScenes.map(item=
 const conversationSummary=quotes.length?[quoteTitle]:[];
 if(quotes.length&&story?.quote_setup)conversationSummary.push('前情：'+story.quote_setup);
 quotes.forEach((q,i)=>{
- conversationSummary.push((assistantReply?'本人：':'')+(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':''));
+ conversationSummary.push((hasAiReply?'本人：':'')+(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':''));
  if(assistantReply?.after_quote===i+1)conversationSummary.push('AI：'+assistantReply.text);
+ if(finalReply&&i===quotes.length-1)conversationSummary.push('AI：'+finalReply);
 });
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const dailySummary=[];
@@ -563,7 +579,7 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,demoLabel,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:personaSummary),
+ owner+'的'+reportTitle,demoLabel,lead,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
@@ -578,7 +594,7 @@ const readableSummary=[
  ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
-const extraNotes=quotes.length?[...personaSummary,...habits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
+const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
 document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
 document.getElementById('preview').alt=accessibleSummary;
 bindPuaiPromptCopy(document.getElementById('copy-prompt'),document.getElementById('manual-copy'),document.getElementById('status'));

@@ -37,6 +37,24 @@ class AssistantReplyTests(unittest.TestCase):
         self.assertEqual(public["story"]["assistant_reply"], {"after_quote": 1, "text": "第二张。"})
         self.assertEqual(public["activity"]["summary"]["messages"], 2)
 
+    def test_lead_and_last_reply_publish_only_selected_text(self):
+        story = self.report["share_story"]
+        del story["assistant_reply"]
+        story["lead"] = {"text": "评委选中了自己的图。", "evidence_ids": ["thread"]}
+        story["final_reply"] = {"text": "这就有点尴尬了。", "evidence_ids": ["thread"]}
+        self.report["evidence"][0]["excerpt"] += "\nAI：这就有点尴尬了。"
+        public = builder.public_report(builder.validate_report(self.report), compact=True)
+        self.assertEqual(public["story"]["lead"], "评委选中了自己的图。")
+        self.assertEqual(public["story"]["final_reply"], "这就有点尴尬了。")
+        self.assertNotIn("evidence_ids", json.dumps(public["story"]))
+
+    def test_last_reply_cannot_borrow_another_turn(self):
+        story = self.report["share_story"]
+        del story["assistant_reply"]
+        story["final_reply"] = {"text": "第二张。", "evidence_ids": ["thread"]}
+        with self.assertRaisesRegex(builder.ReportError, "final_reply"):
+            builder.validate_report(self.report)
+
     def test_source_must_situate_reply_in_the_selected_exchange(self):
         evidence = self.report["evidence"][0]
         for evidence_text in [

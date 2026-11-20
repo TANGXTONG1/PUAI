@@ -268,15 +268,17 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
     return quote_instants
 
 
-def contains_exchange(excerpt, before, answer, after):
-    """Match the three selected excerpts inside the ordered, speaker-marked source."""
+def contains_exchange(excerpt, before, answer, after=None):
+    """Match adjacent speaker-marked turns without treating quoted prose as a reply."""
     rows = re.split(r"^(用户|AI|user|assistant)[：:][ \t]*", excerpt, flags=re.M | re.I)
     turns = [("user" if role.lower() in {"用户", "user"} else "assistant", body)
              for role, body in zip(rows[1::2], rows[2::2])]
-    return any(
-        left[0] == right[0] == "user" and middle[0] == "assistant"
-        and before in left[1] and answer in middle[1] and after in right[1]
-        for left, middle, right in zip(turns, turns[1:], turns[2:]))
+    for index, (user, assistant) in enumerate(zip(turns, turns[1:])):
+        if user[0] != "user" or assistant[0] != "assistant" or before not in user[1] or answer not in assistant[1]:
+            continue
+        if after is None or (index + 2 < len(turns) and turns[index + 2][0] == "user" and after in turns[index + 2][1]):
+            return True
+    return False
 
 
 def validate_assistant_reply(reply, quotes, instants, evidence, refs, mode):
@@ -443,8 +445,12 @@ def validate_report(report, today=None, now=None):
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
     if "share_story" in report:
         story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story",
-                    optional=["habits", "quote_setup", "assistant_reply"])
+                    optional=["habits", "lead", "quote_setup", "assistant_reply", "final_reply"])
         refs(story["persona_evidence_ids"], "share_story.persona_evidence_ids", required=True)
+        if "lead" in story:
+            item = obj(story["lead"], ["text", "evidence_ids"], "share_story.lead")
+            string(item["text"], 90, "share_story.lead.text")
+            refs(item["evidence_ids"], "share_story.lead.evidence_ids", required=True)
         if "quote_setup" in story:
             path = "share_story.quote_setup"
             setup = obj(story["quote_setup"], ["text", "evidence_ids"], path)
@@ -482,6 +488,19 @@ def validate_report(report, today=None, now=None):
     if "assistant_reply" in report.get("share_story", {}):
         validate_assistant_reply(report["share_story"]["assistant_reply"], report.get("activity", {}).get("share_quotes", []),
                                  quote_instants, evidence, refs, mode)
+    story = report.get("share_story", {})
+    if "final_reply" in story:
+        path = "share_story.final_reply"
+        item = obj(story["final_reply"], ["text", "evidence_ids"], path)
+        answer = string(item["text"], 80, f"{path}.text")
+        ids = refs(item["evidence_ids"], f"{path}.evidence_ids", required=True)
+        if not quote_instants or not quote_instants[-1] or "assistant_reply" in story:
+            raise ReportError(f"{path}: select one AI reply after the last visible user quote")
+        last = report["activity"]["share_quotes"][-1]
+        types = {"provided", "demo"} if mode == "demo" else {"provided"}
+        if "rewrite" in last or not any(evidence[eid]["type"] in types and
+                contains_exchange(evidence[eid]["excerpt"], last["text"], answer) for eid in ids):
+            raise ReportError(f"{path}: cite the last user quote and its actual AI reply in order")
     return report
 
 
@@ -582,6 +601,9 @@ def public_report(report, compact=False, include_story=True):
                 public["story"]["habits"] = [item["text"].strip() for item in report["share_story"]["habits"]]
             if "quote_setup" in report["share_story"]:
                 public["story"]["quote_setup"] = report["share_story"]["quote_setup"]["text"].strip()
+            for key in ("lead", "final_reply"):
+                if key in report["share_story"]:
+                    public["story"][key] = report["share_story"][key]["text"].strip()
             if "assistant_reply" in report["share_story"]:
                 reply = report["share_story"]["assistant_reply"]
                 public["story"]["assistant_reply"] = {key: reply[key] for key in ("after_quote", "text")}

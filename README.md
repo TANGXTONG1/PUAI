@@ -6,7 +6,7 @@
   <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
-把口令发到常用的 AI 对话。能附图的 Agent 直接给 PNG。只收到了文字？复制助手的整条回复，到出图页点「粘贴并生成长图」。片段里的原话也可以单独做图，有逐日记录再画日历。[打开出图页](https://xn--sxrw8m230b.com/PUAI/make/) · [获取口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
+把口令发到常用的 AI 对话。可以生成附件的助手会把长图直接发在聊天里；文字助手可以给你一条带有报告内容的直达链接，浏览器会自动画图。部分客户端会把动态网址改成搜索链接，这时可以打开回复中显示的完整网址。它会翻一翻你说过的话，也会找你究竟为 AI 举过什么证、补过什么课。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
 
 ## 翻三张场景样刊
 
@@ -35,7 +35,7 @@
 npx skills add TANGXTONG1/PUAI
 ```
 
-装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=7ecaa46fc3) · [阅读 SKILL.md](SKILL.md)
+装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=43255fedb3) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>
@@ -45,7 +45,7 @@ python3 scripts/build_report.py --input /path/to/report.json --style comic --out
 node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.png
 ```
 
-需要 Python 3.9+、Node.js 20+、Playwright 和 Chromium。[输入格式](references/report-schema.md) · [PNG 导出](references/png-export.md)
+以上命令使用 Python、Node.js、Playwright 与 Chromium。有 Python、Pillow 和中文字体的文件环境还可以独立运行 `python scripts/render_chat_png.py report.txt PUAI-2026.png`。[输入格式](references/report-schema.md) · [PNG 导出](references/png-export.md)
 
 </details>
 

@@ -221,12 +221,16 @@ const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
 const profile=a?.daily_profile;
 const habits=profile?.habits??story?.habits??[];
 const scenes=story?.scenes??[];
-const posterHabits=quotes.length?habits.slice(0,1):habits;
+const lead=story?.lead?.trim()||'';
+const distinctHabits=habits.filter(habit=>habit!==lead);
+const posterHabits=quotes.length||lead?distinctHabits.slice(0,2):distinctHabits;
 const posterScenes=quotes.length?(posterHabits.length?[]:scenes.slice(0,1)):scenes;
 const hasPersona=Boolean(story?.persona?.trim());
-const leadWithHabits=!quotes.length&&!hasPersona&&posterHabits.length>0;
+const leadWithHabits=!lead&&!quotes.length&&!hasPersona&&posterHabits.length>0;
 const assistantReply=story?.assistant_reply;
-const quoteTitle=isSpecimen?'选句示意 · 非原话':assistantReply?'对话现场':quotes.some(q=>q.kind==='rewrite')?'金句':'本人原话';
+const finalReply=story?.final_reply;
+const hasAiReply=Boolean(assistantReply||finalReply);
+const quoteTitle=isSpecimen?'选句示意 · 非原话':finalReply?'原话回放':assistantReply?'对话现场':quotes.some(q=>q.kind==='rewrite')?'金句':'本人原话';
 // Both the native and web data contain every observed day in the counted period,
 // including months outside the three calendars selected for display.
 const activeDays=profile?.active_days??s?.active_days;
@@ -392,7 +396,7 @@ const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,
 function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
 function comicQuote(q,i,y,draw=true){
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
-const hasHeader=Boolean(assistantReply||q.date||q.kind==='rewrite'||q.repeat_count);
+const hasHeader=Boolean(hasAiReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);
 const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
 const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
@@ -401,8 +405,8 @@ const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.on
 if(!draw)return h+tail;
 ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
 const mx=burst?53:pad,metaY=burst?27:22;
-if(assistantReply)text('本人',mx,metaY,32,color,700);
-if(q.date)marker(q,mx+(assistantReply?92:0),metaY,color);
+if(hasAiReply)text('本人',mx,metaY,32,color,700);
+if(q.date)marker(q,mx+(hasAiReply?92:0),metaY,color);
 if(q.kind==='rewrite')text('改写',mx+163,metaY,30,color,650);
 if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
 rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=textTop+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
@@ -416,13 +420,22 @@ function storyText(value,x,y,width,size,weight,color,draw){
  if(draw)rows.forEach((row,i)=>text(row.map(token=>token.value).join(''),x,y+i*leading,size,color,weight));
  return rows.length*leading;
 }
-function comicAssistant(y,draw){
- const height=storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,false)+40;
+function comicLead(y,draw){
+ const height=storyText(lead,80,y+22,740,46,700,ink,false)+44;
+ if(draw){
+   box(48,y,804,height,0,colors.tint);
+   box(48,y,8,height,0,colors.accent);
+   storyText(lead,80,y+22,740,46,700,colors.onTint,true);
+ }
+ return y+height+30;
+}
+function comicAssistant(y,draw,reply){
+ const height=storyText(reply,191,y+21,586,38,600,colors.onTint,false)+40;
  if(draw){
    box(92,y,716,height,16,colors.tint);
    text('AI',116,y+24,36,colors.onTint,800);
    line(166,y+18,166,y+height-18,colors.onTint,2);
-   storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,true);
+   storyText(reply,191,y+21,586,38,600,colors.onTint,true);
  }
  return y+height+22;
 }
@@ -434,8 +447,10 @@ function comicConversation(y,draw){
    y+=storyText(story.quote_setup,140,y,712,34,550,ink,draw)+18;
  }
  quotes.forEach((q,i)=>{
-   y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?48:24);
-   if(assistantReply?.after_quote===i+1)y=comicAssistant(y,draw);
+   const last=i===quotes.length-1;
+   y+=comicQuote(q,i,y,draw)+(last&&!finalReply?48:24);
+   const reply=last?finalReply:assistantReply?.after_quote===i+1?assistantReply.text:null;
+   if(reply)y=comicAssistant(y,draw,reply);
  });
  return y;
 }
@@ -486,8 +501,9 @@ if(draw){
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
 let y=230;
+if(lead)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
-else if(hasPersona)y+=comicPersona(222,draw);
+else if(!lead&&hasPersona)y+=comicPersona(222,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
 if(months.length)y=comicActivity(y,draw);
@@ -512,8 +528,9 @@ const sceneSummary=posterScenes.length?['经典场景',...posterScenes.map(item=
 const conversationSummary=quotes.length?[quoteTitle]:[];
 if(quotes.length&&story?.quote_setup)conversationSummary.push('前情：'+story.quote_setup);
 quotes.forEach((q,i)=>{
- conversationSummary.push((assistantReply?'本人：':'')+(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':''));
+ conversationSummary.push((hasAiReply?'本人：':'')+(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':''));
  if(assistantReply?.after_quote===i+1)conversationSummary.push('AI：'+assistantReply.text);
+ if(finalReply&&i===quotes.length-1)conversationSummary.push('AI：'+finalReply);
 });
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const dailySummary=[];
@@ -524,7 +541,7 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,demoLabel,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:personaSummary),
+ owner+'的'+reportTitle,demoLabel,lead,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
@@ -539,7 +556,7 @@ const readableSummary=[
  ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
-const extraNotes=quotes.length?[...personaSummary,...habits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
+const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
 document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
 document.getElementById('preview').alt=accessibleSummary;
 bindPuaiPromptCopy(document.getElementById('copy-prompt'),document.getElementById('manual-copy'),document.getElementById('status'));
