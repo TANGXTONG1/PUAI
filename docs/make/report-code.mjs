@@ -76,32 +76,37 @@ function summarizeRows(rows) {
   return { count, hits };
 }
 
+function reportDate(monthAndDay) {
+  const date = '2026-' + monthAndDay;
+  const time = Date.parse(date + 'T00:00:00Z');
+  if (!Number.isFinite(time) || new Date(time).toISOString().slice(0, 10) !== date) {
+    throw new Error('报告含有无效的 2026 年日期。');
+  }
+  return date;
+}
+
 function readDays(value) {
   if (!value.trim()) return [];
   const dates = new Set();
   return value.trim().split(/[,，]/).map(entry => {
     const match = /^(\d{2}-\d{2}):(.+)$/.exec(entry.trim());
     if (!match) throw new Error('逐日记录请写成 MM-DD:发言数:命中数，多天用逗号隔开。');
-    const date = '2026-' + match[1];
-    const time = Date.parse(date + 'T00:00:00Z');
-    if (!Number.isFinite(time) || new Date(time).toISOString().slice(0, 10) !== date) {
-      throw new Error('逐日记录含有无效的 2026 年日期。');
-    }
+    const date = reportDate(match[1]);
     if (dates.has(date)) throw new Error('逐日记录中同一日期出现两次，请每个日期只统计一次。');
     dates.add(date);
     return { date, ...readCounts(match[2]) };
   }).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function readQuote(value, days) {
+function readQuote(value, days, excerptsOnly = false) {
   const header = days && /^(\d{2}-\d{2})~/.exec(value);
   if (!header) return { text: checkText(value, '原话', 80) };
-  const date = '2026-' + header[1];
-  if (!days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
+  const date = reportDate(header[1]);
+  if (!excerptsOnly && !days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
   return { date, text: checkText(value.slice(header[0].length), '原话', 80) };
 }
 
-function richActivity(fields, theme) {
+function richActivity(fields, theme, allowExcerptsWithoutLedger) {
   const days = readDays(fields[4]);
   const undated = fields[5].trim() ? readCounts(fields[5].trim()) : null;
   const habits = fields.slice(7, 10).map(habit => editorialText(habit, 120)).filter(Boolean);
@@ -111,21 +116,26 @@ function richActivity(fields, theme) {
     throw new Error('未归类的报告请把每组主题命中数填为 ?。');
   }
   const totals = summarizeRows(countedRows);
+  const excerptsOnly = allowExcerptsWithoutLedger && countedRows.length === 0;
   const activity = {
     coverage: 'partial',
     daily_profile: {
       habits: [...new Set(habits)],
+    },
+    share_quotes: fields.slice(10, 13).filter(value => value.trim()).map(value => readQuote(value, days, excerptsOnly))
+  };
+  if (!excerptsOnly) {
+    Object.assign(activity.daily_profile, {
       active_days: days.length,
       dated_messages: totals.count - (undated?.count || 0),
       peak: peak ? { date: peak.date, count: peak.count } : null,
       undated_messages: undated?.count || 0
-    },
-    share_quotes: fields.slice(10, 13).filter(value => value.trim()).map(value => readQuote(value, days))
-  };
-  if (!totals.count && !habits.length) {
-    throw new Error('请让 GPT 从可读的聊天或记忆里补上一条具体使用习惯；能核对发言时，也请填入计数。');
+    });
   }
-  if (activity.share_quotes.length > totals.count) {
+  if (!totals.count && !habits.length && !(excerptsOnly && activity.share_quotes.length)) {
+    throw new Error('请从可读的聊天里补充具体使用习惯或可核实的本人原话；有可核账目时再填发言数。');
+  }
+  if (!excerptsOnly && activity.share_quotes.length > totals.count) {
     throw new Error('每条原话要来自一条不同的已统计发言，请让 GPT 补全逐日或无日期计数。');
   }
   for (const { date, count } of days) {
@@ -182,7 +192,7 @@ function richActivity(fields, theme) {
   return activity;
 }
 
-export function parseReport(fields) {
+export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {}) {
   const [version, rawTheme, rawName, persona] = fields;
   const isRich = version === 'v2';
   const theme = rawTheme.trim().toLowerCase() || null;
@@ -191,7 +201,7 @@ export function parseReport(fields) {
   const keywords = fields.slice(isRich ? 13 : 6, isRich ? 16 : 8).map((tag, index) =>
     isRich ? editorialText(tag, 6) : checkText(tag.trim(), '标签', 6, index > 0)
   ).filter(Boolean);
-  const activity = isRich ? richActivity(fields, theme) : {
+  const activity = isRich ? richActivity(fields, theme, allowExcerptsWithoutLedger) : {
     share_quotes: fields.slice(4, 6).filter(value => value.trim()).map(value => readQuote(value))
   };
   const story = { persona: isRich ? editorialText(persona, 100) : checkText(persona.trim(), '人格短评', 60), scenes: [] };

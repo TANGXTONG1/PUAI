@@ -37,7 +37,9 @@ def main():
     make = docs / "make"
     for page in ("index.html", "sample.html"):
         update_asset_version(docs / page, docs / "portable-prompt.js")
+    update_asset_version(make / "plain-report.mjs", make / "report-code.mjs")
     update_asset_version(make / "make.js", make / "report-code.mjs")
+    update_asset_version(make / "make.js", make / "plain-report.mjs")
     update_asset_version(make / "make.js", path)
     update_asset_version(make / "index.html", make / "make.js")
 

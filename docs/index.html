@@ -31,9 +31,9 @@
         <p class="lead">这一年，有人找 AI 挂急诊，有人给 AI 当导师，还有人花会员费给它提供情绪价值。</p>
         <div class="action-row">
           <button class="copy" id="copy" type="button"><i aria-hidden="true" class="copy-icon"></i>复制给 ChatGPT</button>
-          <a class="secondary" href="make/">粘贴报告码</a>
+          <a class="secondary" href="make/">已有回复，去出图</a>
         </div>
-        <p class="instruction">发给 ChatGPT，翻翻哪天聊得最猛、你又说了什么。点回复里的链接保存长图。</p>
+        <p class="instruction">发给常用的对话。收到图片就保存；收到文字就复制回复，点「已有回复，去出图」。</p>
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <textarea id="prompt" aria-label="完整生成口令" rows="5" readonly hidden></textarea>
         <details class="signature"><summary>自定义署名</summary><label for="nickname">报告上叫我</label><input id="nickname" maxlength="16" placeholder="我" autocomplete="off"></details>
@@ -69,9 +69,9 @@
   </main>
   <footer class="foot wrap">
     <div><strong>在自己的 Agent 里用</strong><p>在本地读取聊天和用量日志，直接导出年度长图。</p></div>
-    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=5dba7079df" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
+    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=7ecaa46fc3" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
   </footer>
-  <script src="portable-prompt.js?v=b2d6dd3550"></script>
+  <script src="portable-prompt.js?v=2341467e65"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>
 </body>
 </html>

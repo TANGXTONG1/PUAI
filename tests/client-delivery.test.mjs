@@ -37,7 +37,7 @@ test('report links open the PNG; manual recovery requires a tap', {
       const url = new URL(route.request().url());
       const name = url.pathname.split('/').pop() || 'index.html';
       if (url.origin !== new URL(base).origin ||
-          !['index.html', 'report-code.mjs', 'make.js', 'poster-frame.txt'].includes(name)) {
+          !['index.html', 'report-code.mjs', 'plain-report.mjs', 'make.js', 'poster-frame.txt'].includes(name)) {
         return route.abort();
       }
       if (name === 'make.js' || name === 'poster-frame.txt') {

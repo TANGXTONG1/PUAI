@@ -18,7 +18,15 @@
     .home{font-size:15px}
     h1{font-size:clamp(25px,6vw,34px);line-height:1.18;letter-spacing:-.045em;margin:0}
     .heading{margin:22px 0 14px}
-    #form{margin-top:24px}
+    #form{margin-top:22px}
+    #how{margin:0 0 12px;color:var(--muted)}
+    #paste{width:100%;text-align:center;margin:0 0 20px}
+    #manual label{font-size:15px}
+    #repair{margin:14px 0}
+    #repair-text{margin-top:10px}
+    #partial{margin:14px 0;padding:14px 16px;border-left:3px solid var(--ink);background:#fffdf8}
+    #partial p{margin:0 0 8px}
+    #partial-text{font-weight:650;overflow-wrap:anywhere}
     label{display:block;font-size:17px;font-weight:650;margin-bottom:8px}
     textarea{display:block;width:100%;border:1px solid var(--ink);border-radius:3px;font:inherit;padding:12px;color:var(--ink);resize:vertical;background:#fffdf8}
     .action{display:inline-block;cursor:pointer;color:#fff;background:var(--ink);padding:11px 16px;font-family:inherit;font-size:16px;line-height:1.3;font-weight:650;border:1px solid var(--ink);border-radius:3px;text-decoration:none;white-space:nowrap}
@@ -41,19 +49,32 @@
   <p id="status" role="status" aria-live="polite"></p>
   <div id="recovery" hidden>
     <button class="action" id="retry" type="button" hidden>重新加载</button>
-    <button class="link-button" id="recover" type="button" aria-controls="form" aria-expanded="false">使用备用报告码</button>
+    <button class="link-button" id="recover" type="button" aria-controls="form" aria-expanded="false">粘贴助手回复</button>
   </div>
   <form id="form" hidden>
-    <label for="code">粘贴 GPT 给你的报告码或完整链接</label>
-    <textarea id="code" rows="4" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="v2｜…" maxlength="48000" required></textarea>
-    <button class="action" type="submit">生成长图</button>
+    <p id="how">先在聊天里复制助手的报告，回到这里出图。</p>
+    <button class="action" id="paste" type="button">粘贴并生成长图</button>
+    <div id="manual">
+      <label for="code">或在这里粘贴助手的回复</label>
+      <textarea id="code" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="也支持旧报告码和完整链接" maxlength="48000" required></textarea>
+      <button class="link-button" type="submit">生成长图</button>
+    </div>
   </form>
+  <div id="partial" hidden>
+    <p>这条旧回复里能还原的用法</p>
+    <p id="partial-text"></p>
+    <button id="use-partial" class="action" type="button">用这条做图</button>
+  </div>
+  <div id="repair" hidden>
+    <button id="repair-copy" class="link-button" type="button">复制指令，回原聊天补全报告</button>
+    <textarea id="repair-text" aria-label="回原聊天补全报告的指令" rows="4" readonly hidden></textarea>
+  </div>
   <section id="result" hidden>
     <p id="fallback-copy">也可以长按图片保存。</p>
     <img id="preview" alt="">
   </section>
   <noscript>请用启用了 JavaScript 的浏览器打开页面生成长图。</noscript>
 </main>
-<script type="module" src="./make.js?v=ca0c085a78"></script>
+<script type="module" src="./make.js?v=af9e8bd3d2"></script>
 </body>
 </html>
