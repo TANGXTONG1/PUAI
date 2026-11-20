@@ -47,11 +47,12 @@
     #share{color:var(--ink);background:transparent;padding:7px 12px}
     [hidden]{display:none!important}
   </style>
+<link rel="stylesheet" href="../metrics-consent.css">
 </head>
-<body>
+<body data-puai-surface="make">
 <main>
   <nav aria-label="PUAI"><a class="brand" href="../">PUAI</a><a class="home" href="../#go">领取生成口令</a></nav>
-  <div class="heading"><h1 id="title">我的年度报告</h1><a class="action" id="save" hidden>保存长图</a></div>
+  <div class="heading"><h1 id="title">我的年度报告</h1><a class="action" id="save" data-puai-action="save_report" hidden>保存长图</a></div>
   <p id="status" role="status" aria-live="polite"></p>
   <div id="recovery" hidden>
     <button class="action" id="retry" type="button" hidden>重新加载</button>
@@ -59,17 +60,17 @@
   </div>
   <form id="form" hidden>
     <p id="how">先在聊天里复制助手的报告，回到这里出图。</p>
-    <button class="action" id="paste" type="button">粘贴并生成长图</button>
+    <button class="action" id="paste" data-puai-action="generate_report" type="button">粘贴并生成长图</button>
     <div id="manual">
       <label for="code">或在这里粘贴助手的回复</label>
       <textarea id="code" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="也支持旧报告码和完整链接" maxlength="48000" required></textarea>
-      <button class="link-button" type="submit">生成长图</button>
+      <button class="link-button" type="submit" data-puai-action="generate_report">生成长图</button>
     </div>
   </form>
   <div id="partial" hidden>
     <p>这条旧回复里能还原的用法</p>
     <p id="partial-text"></p>
-    <button id="use-partial" class="action" type="button">用这条做图</button>
+    <button id="use-partial" data-puai-action="generate_report" class="action" type="button">用这条做图</button>
   </div>
   <div id="repair" hidden>
     <button id="repair-copy" class="link-button" type="button">复制指令，回原聊天补全报告</button>
@@ -77,7 +78,7 @@
   </div>
   <section id="result" hidden>
     <div id="preview-actions">
-      <button class="action" id="share" type="button">复制转发语</button>
+      <button class="action" id="share" data-puai-action="share_report" type="button">复制转发语</button>
       <p id="fallback-copy">也可以长按图片保存。</p>
       <button type="button" class="link-button" id="dates-copy" data-skill="https://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=11" hidden>复制补日期口令</button>
     </div>
@@ -89,7 +90,10 @@
     </div>
   </section>
   <noscript>请用启用了 JavaScript 的浏览器打开页面生成长图。</noscript>
+<footer class="puai-privacy-foot"><button type="button" data-puai-privacy>统计设置</button></footer>
 </main>
 <script type="module" src="./make.js?v=cf0204d276"></script>
+<script src="../metrics-consent.js"></script>
+<script src="../metrics.js"></script>
 </body>
 </html>

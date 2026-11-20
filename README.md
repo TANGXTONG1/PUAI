@@ -67,3 +67,20 @@ node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.
 报告标题使用得意黑 Smiley Sans。[字体许可](assets/SmileySans-OFL.txt)
 
 </details>
+
+<details>
+<summary>查看按钮点击人数</summary>
+
+在主站的 [Google Analytics](https://analytics.google.com/) 打开「事件」报告，按事件名称搜索 `puai_`。看「总用户数」了解所选日期内点过该按钮的去重人数，「事件数」是总点击次数。想知道多少人领过口令，看 `puai_copy_prompt`。
+
+| 按钮 | 事件 |
+| --- | --- |
+| 复制生成口令 | `puai_copy_prompt` |
+| 下载 skill | `puai_download_skill` |
+| 手动生成长图 | `puai_generate_report` |
+| 保存长图 | `puai_save_report` |
+| 转发长图或复制转发语 | `puai_share_report` |
+
+统计覆盖同意统计的网页访客。同一人换浏览器或设备可能分别计数，同一人点多个按钮也会出现在多行。Agent 内直接出图、长按存图均在网页统计范围外。
+
+</details>

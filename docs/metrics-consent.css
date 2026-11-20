@@ -1,0 +1,26 @@
+.puai-privacy-foot { margin: 24px auto 16px; padding: 0 16px; text-align: center; font-size: 14px; }
+[data-puai-privacy] {
+  appearance: none; padding: 0; border: 0; border-radius: 0; background: transparent;
+  color: inherit; font: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer;
+}
+[data-puai-consent-panel] {
+  position: fixed; z-index: 10; bottom: max(12px, env(safe-area-inset-bottom)); right: 12px;
+  box-sizing: border-box; width: min(335px, calc(100% - 24px)); padding: 16px;
+  background: #fffdf7; color: #24211c; border: 1px solid #39352e;
+  box-shadow: 3px 3px 0 #39352e; font: 15px/1.45 system-ui, sans-serif;
+}
+[data-puai-consent-panel][hidden], [data-puai-consent-panel] [hidden] { display: none; }
+[data-puai-consent-panel] h2 { margin: 0 24px 6px 0; font: 700 18px/1.4 system-ui, sans-serif; }
+[data-puai-consent-panel] p { margin: 0; color: #454138; font: inherit; }
+[data-puai-consent-panel] div { display: flex; gap: 8px; }
+[data-puai-consent-panel] button {
+  margin: 12px 0 0; padding: 7px 14px; min-height: 36px; border: 1px solid #39352e; border-radius: 2px;
+  background: #fffdf7; color: inherit; font: 600 15px/1.35 system-ui, sans-serif; cursor: pointer;
+}
+[data-puai-consent-panel] [data-close] {
+  position: absolute; top: 2px; right: 2px; width: 36px; padding: 0; margin: 0;
+  font-size: 22px; font-weight: 400; border: 0; background: transparent;
+}
+[data-puai-consent-panel] button:focus-visible, [data-puai-privacy]:focus-visible {
+  outline: 2px solid #183ba1; outline-offset: 2px;
+}

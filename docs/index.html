@@ -17,8 +17,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="home.css?v=b4e279fee4">
   <link rel="preload" href="home-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./metrics-consent.css">
 </head>
-<body>
+<body data-puai-surface="home">
   <header class="mast wrap">
     <a class="brand" href="./" aria-label="PUAI 首页">PUAI<span aria-hidden="true" class="brand-dot"></span></a>
     <nav aria-label="主导航"><a href="#themes">九型图鉴</a><a href="https://github.com/TANGXTONG1/PUAI">GitHub <span aria-hidden="true">↗</span></a></nav>
@@ -35,7 +36,7 @@
             <input id="nickname" maxlength="16" placeholder="留空沿用聊天里的称呼" autocomplete="off">
           </div>
           <div class="action-row">
-            <button class="copy" id="copy" type="button"><i aria-hidden="true" class="copy-icon"></i>复制生成口令</button>
+            <button class="copy" id="copy" data-puai-action="copy_prompt" type="button"><i aria-hidden="true" class="copy-icon"></i>复制生成口令</button>
             <a class="secondary" href="make/">恢复旧回复</a>
           </div>
           <p class="instruction">把口令粘贴到你的 Agent 并发送。</p>
@@ -74,9 +75,11 @@
   </main>
   <footer class="foot wrap">
     <div><strong>在自己的 Agent 里用</strong><p>在本地读取聊天和用量日志，直接导出年度长图。</p></div>
-    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=94274d8d11" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="palettes/atlas/">配色样刊</a></nav>
+    <nav aria-label="更多资源"><a data-puai-action="download_skill" href="PUAI-skill.zip?v=94274d8d11" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="palettes/atlas/">配色样刊</a><button type="button" data-puai-privacy>统计设置</button></nav>
   </footer>
   <script src="portable-prompt.js?v=a61853868d"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>
+<script src="./metrics-consent.js"></script>
+<script src="./metrics.js"></script>
 </body>
 </html>

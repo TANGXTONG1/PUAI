@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>PUAI 点击统计</title>
+</head><body>
+<script>
+(() => {
+  const origin = 'https://xn--sxrw8m230b.com';
+  if (location.origin !== origin || parent === window || location.search || location.hash) return;
+  const id = 'G-G826FL7DY2';
+  const actions = {
+    home: ['copy_prompt', 'download_skill'],
+    sample: ['copy_prompt', 'save_report'],
+    gallery: ['save_report'],
+    make: ['generate_report', 'save_report', 'share_report'],
+  };
+  let initialized = false;
+  function gtag() { window.dataLayer.push(arguments); }
+
+  function initialize() {
+    window.dataLayer = [];
+    window.gtag = gtag;
+    gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied',
+      ad_user_data: 'denied', ad_personalization: 'denied' });
+    gtag('set', { page_location: origin + '/PUAI/', page_referrer: '', page_title: 'PUAI',
+      allow_google_signals: false, allow_ad_personalization_signals: false, ads_data_redaction: true });
+    gtag('js', new Date());
+    gtag('config', id, { send_page_view: false, cookie_domain: 'none', cookie_path: '/',
+      cookie_expires: 90 * 24 * 60 * 60, cookie_update: false, cookie_flags: 'SameSite=Lax;Secure' });
+    const tag = document.createElement('script');
+    tag.async = true;
+    tag.referrerPolicy = 'no-referrer';
+    tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+    document.head.append(tag);
+    initialized = true;
+  }
+
+  window.addEventListener('message', event => {
+    if (event.origin !== origin || event.source !== parent || !parent.puaiMetricsAllowed?.()) return;
+    const message = event.data;
+    if (message?.type !== 'puai-click' || !Object.hasOwn(actions, message.surface) ||
+        !actions[message.surface].includes(message.action)) return;
+    if (!initialized) initialize();
+    gtag('event', 'puai_' + message.action, { send_to: id, puai_surface: message.surface });
+  });
+  parent.postMessage({ type: 'puai-ready' }, origin);
+})();
+</script>
+</body></html>
