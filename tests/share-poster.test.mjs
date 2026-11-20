@@ -65,9 +65,7 @@ test('转发按钮只在点按时交出当前 PNG，取消或缺少分享能力�
         const payload=output.shared[0];
         assert.deepEqual([payload.name,payload.mime,payload.active,output.sameImage],['小橘-2026-PUAI.png','image/png',true,true]);
         invite=payload.text;
-        assert.match(invite,/二维码.*口令/);
-        assert.ok(invite.includes('我也想做一张，图里说怎么做？'));
-        assert.ok(invite.endsWith('https://xn--sxrw8m230b.com/PUAI/#go'));
+        assert.equal(invite,'扫码获取口令，复制给你的 Agent。\nhttps://xn--sxrw8m230b.com/PUAI/#go');
         assert.ok(!invite.includes('连果核') && !invite.includes('小橘'));
       } else if(mode==='cancel'){
         assert.deepEqual([output.shared.length,output.copied.length,output.status],[1,0,'']);
@@ -76,9 +74,10 @@ test('转发按钮只在点按时交出当前 PNG，取消或缺少分享能力�
         const selected=await page.locator('#share-text').evaluate(t=>({
           shown:!t.hidden,selected:t.value.slice(t.selectionStart,t.selectionEnd),focused:document.activeElement===t}));
         assert.deepEqual(selected,{shown:true,selected:invite,focused:true});
-        assert.match(output.status,/长按复制这段转发语/);
+        assert.equal(output.status,'长按复制这段转发语。');
       } else {
         assert.deepEqual(output.copied,[invite]);
+        assert.equal(output.status,'已复制转发语。');
         assert.equal(output.shared.length,mode==='reject'?1:0);
         assert.equal(await button.innerText(),'复制转发语');
       }

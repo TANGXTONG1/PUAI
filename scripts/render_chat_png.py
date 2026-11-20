@@ -296,7 +296,7 @@ def draw_report(r, font):
     title = scope_title or (f"{name} 报告" if theme else f"{name}报告")
     title = f"{year} {title}"
     text(48, 115, title, fitted(title, 804, 68), bold=True)
-    text(852, 202, "做同款？扫图底二维码获取口令 ↓", 28, align="rt")
+    text(852, 202, "扫图底二维码获取口令 ↓", 28, align="rt")
     y = 260
 
     quotes = r["quotes"]
@@ -551,10 +551,9 @@ def draw_report(r, font):
         y += 170
     footer_height = 228
     rect(0,y,900,footer_height,"#FBFBF8")
-    text(48,y+17,"扫码获取口令",46,bold=True)
-    text(48,y+79,"复制口令，发到你常聊的 AI。",34)
-    text(48,y+129,"随图问「我也想做一张，图里说怎么做？」",29)
-    text(48,y+175,"也可打开 唐苑容.com/PUAI/#go",30)
+    text(48,y+31,"扫码获取口令",46,bold=True)
+    text(48,y+98,"复制给你的 Agent。",34)
+    text(48,y+160,"唐苑容.com/PUAI/#go",30)
     cell = 5
     modules = len(QR_ROWS)
     qr_size = (modules+8)*cell

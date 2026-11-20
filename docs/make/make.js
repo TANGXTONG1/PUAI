@@ -11,7 +11,7 @@ const image = document.getElementById('preview');
 const save = document.getElementById('save');
 const shareButton = document.getElementById('share');
 const shareText = document.getElementById('share-text');
-const shareInvite = '想做同款？把图发给 AI 时问「我也想做一张，图里说怎么做？」。也可以扫图底二维码获取口令，或点下面的链接。复制口令，发到你常聊的 AI。\nhttps://xn--sxrw8m230b.com/PUAI/#go';
+const shareInvite = '扫码获取口令，复制给你的 Agent。\nhttps://xn--sxrw8m230b.com/PUAI/#go';
 const datesCopy = document.getElementById('dates-copy');
 const datesText = document.getElementById('dates-text');
 const recovery = document.getElementById('recovery');
@@ -32,7 +32,7 @@ let sharePayload;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=8a47a11fcb', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=de6aba9907', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -333,7 +333,7 @@ shareButton.addEventListener('click', async () => {
         shareButton.textContent = '复制转发语';
       }
     }
-    await copyFollowup(shareText, shareInvite, '已复制转发语，和长图一起发给朋友。', '长按复制这段转发语，和长图一起发给朋友。');
+    await copyFollowup(shareText, shareInvite, '已复制转发语。', '长按复制这段转发语。');
   } finally {
     if (attempt === pending) shareButton.disabled = false;
   }

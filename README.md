@@ -6,7 +6,7 @@
   <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
-收到一张报告图？扫图底二维码，点「复制生成口令」，粘贴到你常聊的 AI 对话并发送。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[领取生成口令](https://xn--sxrw8m230b.com/PUAI/#go)
+扫码获取口令，复制给你的 Agent。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[领取生成口令](https://xn--sxrw8m230b.com/PUAI/#go)
 
 署名旁会亮出九种人物类型中的一种，比如 **PUAI** 或 **AI因斯坦**。只看一段对话时，类型章写「本次类型」；个性标签另贴在图尾。
 
@@ -45,7 +45,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 调用 $puai，从我的聊天原话生成 2026 年度长图，署名「小栗」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=6e1317a33f) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=e1cbe5d9a4) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>
@@ -62,7 +62,7 @@ node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.
 <details>
 <summary>样刊、配色与字体</summary>
 
-[九份完整报告](https://xn--sxrw8m230b.com/PUAI/themes/) · [九型配色总览](https://xn--sxrw8m230b.com/PUAI/themes/overview.png?v=94c9dc6309) · [历次试色](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/) · [亮底霓虹](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/) · [48 款配色](https://xn--sxrw8m230b.com/PUAI/palettes/atlas/)
+[九份完整报告](https://xn--sxrw8m230b.com/PUAI/themes/) · [九型配色总览](https://xn--sxrw8m230b.com/PUAI/themes/overview.png?v=18a2f278d1) · [历次试色](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/) · [亮底霓虹](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/) · [48 款配色](https://xn--sxrw8m230b.com/PUAI/palettes/atlas/)
 
 报告标题使用得意黑 Smiley Sans。[字体许可](assets/SmileySans-OFL.txt)
 
