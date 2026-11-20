@@ -45,6 +45,14 @@ def main():
     for script in ("render_chat_png.py", "collect_history.py", "read_context.py"):
         shutil.copyfile(root / "scripts" / script, docs / script)
     make = docs / "make"
+    # The date-recovery button sends the originating chat to the same skill as go.txt.
+    page = make / "index.html"
+    html, changed = re.subn(r'(id="dates-copy" data-skill=")[^"]*(")',
+                            lambda m: m[1] + prompt.strip().splitlines()[-1] + m[2],
+                            page.read_text(encoding="utf-8"))
+    if changed != 1:
+        raise ValueError("Missing date-recovery skill address")
+    page.write_text(html, encoding="utf-8")
     for page in ("index.html", "sample.html"):
         update_asset_version(docs / page, docs / "portable-prompt.js")
     update_asset_version(make / "plain-report.mjs", make / "report-code.mjs")

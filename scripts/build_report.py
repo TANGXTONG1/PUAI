@@ -150,7 +150,7 @@ def reviewed_message_ids(activity, field, messages_by_id):
 def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False, include_early_quotes=False):
     """Return the selected quotes' instants, with None for quotes outside the analysis period."""
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
-        optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
+        optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage", "observed_dates"])
     zone = string(activity["timezone"], 100, "activity.timezone")
     try:
         target_zone = ZoneInfo(zone)
@@ -182,6 +182,19 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
             raise ReportError(f"{path}: precise activity needs provided records, not memory alone")
         message_months[mid] = local_date.isoformat()[:7]
         active_dates.add(local_date)
+    # Evidence of a day alone cannot supply a message count, theme denominator or peak.
+    for index, row in enumerate(array(activity.get("observed_dates", []), 0, 366, "activity.observed_dates")):
+        path = f"activity.observed_dates[{index}]"
+        obj(row, ["date", "evidence_ids"], path)
+        day = iso_date(row["date"], f"{path}.date")
+        if not start <= day <= end or day > now.astimezone(target_zone).date():
+            raise ReportError(f"{path}.date: expected a past or current date within report.period")
+        ids = refs(row["evidence_ids"], f"{path}.evidence_ids", required=True)
+        allowed = {"provided", "demo"} if mode == "demo" else {"provided"}
+        pattern = rf"(?<![0-9])(?:{day.isoformat()}(?![0-9])|{day.year}年0?{day.month}月0?{day.day}日)"
+        if not any(evidence[eid]["type"] in allowed and re.search(pattern, evidence[eid]["excerpt"])
+                   for eid in ids):
+            raise ReportError(f"{path}: cite a provided record with the exact local date")
     if "token_usage" in activity:
         validate_token_usage(activity["token_usage"], active_dates, mode, evidence, refs)
     roast_ids = set()
@@ -557,6 +570,8 @@ def compact_activity(activity, include_early_quotes=False):
             for day in aggregate["days"] if day["date"][:7] in analysis_months
         ],
     }
+    if activity.get("observed_dates"):
+        result["observed_dates"] = sorted({item["date"] for item in activity["observed_dates"]})
     if "token_usage" in activity:
         result["token_usage"] = {key: activity["token_usage"][key] for key in (
             "total_tokens", "cached_input_tokens", "coverage", "scope")}

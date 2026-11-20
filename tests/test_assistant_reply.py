@@ -37,6 +37,26 @@ class AssistantReplyTests(unittest.TestCase):
         self.assertEqual(public["story"]["assistant_reply"], {"after_quote": 1, "text": "第二张。"})
         self.assertEqual(public["activity"]["summary"]["messages"], 2)
 
+    def test_partial_date_evidence_is_projected_without_creating_messages(self):
+        r = self.report
+        activity = r["activity"]
+        activity["observed_dates"] = [{"date": "2026-01-02", "evidence_ids": ["day"]}]
+        r["evidence"].append({"id": "day", "type": "provided", "source": "private",
+                              "excerpt": "2026-01-02 · 本人发言。"})
+        public = builder.public_report(builder.validate_report(r), compact=True)["activity"]
+        self.assertEqual(public["observed_dates"], ["2026-01-02"])
+        self.assertEqual(public["summary"]["messages"], 2)
+        self.assertEqual(public["summary"]["active_days"], 1)
+        self.assertNotIn('"day"', json.dumps(public))
+        for bad in ["2026-01-01", "2026-01-03"]:
+            activity["observed_dates"][0]["date"] = bad
+            with self.assertRaisesRegex(builder.ReportError, "observed_dates"):
+                builder.validate_report(r)
+        activity["observed_dates"][0]["date"] = "2026-01-02"
+        r["evidence"][-1]["type"] = "self_report"
+        with self.assertRaisesRegex(builder.ReportError, "observed_dates"):
+            builder.validate_report(r)
+
     def test_explicit_history_retains_early_exchange_outside_dense_stats(self):
         r = self.report
         r["scope"] = "history"

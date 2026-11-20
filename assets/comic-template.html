@@ -240,6 +240,26 @@ const activeDays=profile?.active_days??s?.active_days;
 const peakDay=profile?.peak??[...dayMap.values()].reduce((peak,day)=>
  day.count>0&&(!peak||day.count>peak.count||day.count===peak.count&&day.date<peak.date)?day:peak,null);
 const markers=new Map([...new Set(quotes.map(q=>q.date).filter(Boolean))].sort().map((d,i)=>[d,i+1]));
+const datedQuotes=quotes.filter(q=>q.date);
+const observedDates=[...new Set([...(a?.observed_dates||[]),...markers.keys()])].sort();
+const observedDaySet=new Set(observedDates);
+const extraDates=observedDates.filter(date=>!dayMap.has(date));
+const observedByMonth=new Map();
+for(const date of observedDates){
+ const month=date.slice(0,7);
+ observedByMonth.set(month,(observedByMonth.get(month)||0)+1);
+}
+const observedMonths=[...observedByMonth].sort(([a,n],[b,m])=>m-n||b.localeCompare(a))
+ .slice(0,3).sort(([a],[b])=>a.localeCompare(b)).map(([month,knownDays])=>({month,knownDays}));
+const observedQuoteLabel=datedQuotes.length===quotes.length?quotes.length+' 句原话有日期':
+ datedQuotes.length+' / '+quotes.length+' 句原话有日期';
+const missingDateLabel=quotes.length?'这 '+quotes.length+' 句原话未附日期':'这份记录未附日期';
+function dateList(dates){
+ return dates.map(shortDate).join('、');
+}
+function dateRange(dates){
+ return dates.length>1?shortDate(dates[0])+' – '+shortDate(dates.at(-1)):shortDate(dates[0]);
+}
 const roastKnown=Boolean(s&&Object.hasOwn(s,'roast_messages'));
 const reviewed=isRoast?(roastKnown?s.roast_messages:null):(a?.theme_stats?.messages??null);
 const themeDays=profile?profile.theme_days:isRoast?s?.roast_days:
@@ -317,13 +337,18 @@ function comicCell(x,y,size,state){
 ctx.fillStyle=state.roast?colors.calendar:state.count?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
 if(!state.known){ctx.strokeStyle=colors.outline;ctx.lineWidth=1.2;ctx.stroke();line(x+5,y+size-5,x+size-5,y+5,colors.outline,1)}
 }
-function comicCalendar(m,x,y,w){
+function comicCalendar(m,x,y,w,observedOnly=false){
 const month=Number(m.month.slice(5)),cx=x+w/2;centered(String(month).padStart(2,'0')+' 月',cx,y,36,ink,800);
 const first=new Date(Date.UTC(report.year,month-1,1)),last=new Date(Date.UTC(report.year,month,0)),monday=new Date(first);monday.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);
 const weeks=Math.floor((last-monday)/86400000/7)+1,step=28,size=23,gx=cx-(weeks*step-5)/2,gy=y+58;
 for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
- const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;comicCell(px,py,size,dayState(date));
- const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,dayState(date).roast?colors.onCalendar:paper,700)}
+ const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;const state=observedOnly?{known:observedDaySet.has(date),count:observedDaySet.has(date),roast:0}:dayState(date);
+ comicCell(px,py,size,state);
+ const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,state.roast?colors.onCalendar:state.count?paper:ink,700)}
+}
+if(observedOnly){
+ if(observedMonths.length>1)fitCentered('核实 '+m.knownDays+' 天',cx,y+270,w-4,type.meta,ink,700);
+ return;
 }
 const hits=monthHits(m);
 const stats=hits===null ? m.messages+' 条发言' : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
@@ -392,6 +417,49 @@ if(showFacts){
 const w=stackFacts?306:(804-24*(months.length-1))/months.length;
 months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+top,w));
 return y+top+365;
+}
+function comicObservedDates(y,draw){
+ if(!observedDates.length){
+   if(draw){
+     comicTitle('发言日历',48,y);
+     fitLeft(missingDateLabel,48,y+72,804,36,muted,600);
+   }
+   return y+149;
+ }
+ const single=observedMonths.length===1;
+ if(draw){
+   comicTitle('片段日期',48,y);
+   right(dateRange(observedDates),852,y+5,type.meta,muted,600);
+   if(single){
+     comicCalendar(observedMonths[0],48,y+85,306,true);
+     line(400,y+94,400,y+320,pale,2);
+     text('核实 '+observedDates.length+' 天',446,y+105,46,ink,750);
+     if(quotes.length)text(observedQuoteLabel,446,y+172,type.meta,muted,600);
+   }else{
+     text('核实 '+observedDates.length+' 天',48,y+71,46,ink,750);
+     if(quotes.length)right(observedQuoteLabel,852,y+82,type.meta,muted,600);
+     const w=(804-24*(observedMonths.length-1))/observedMonths.length;
+     observedMonths.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+201,w,true));
+   }
+   const x=single?446:48, legendY=y+(single?255:146);
+   comicCell(x,legendY+6,21,{count:1,known:true});text('已核实',x+30,legendY,30,muted);
+   comicCell(x+170,legendY+6,21,{count:0,known:false});text('缺日期',x+200,legendY,30,muted);
+ }
+ return y+(single?372:526);
+}
+function comicDateSection(y,draw){
+ if(!months.length)return comicObservedDates(y,draw);
+ y=comicActivity(y,draw);
+ if(extraDates.length){
+   if(draw){
+     line(48,y-8,852,y-8,pale,2);
+     text('另有 '+extraDates.length+' 个已知日期',48,y+11,32,ink,650);
+     const dates=extraDates.length<=4?dateList(extraDates):dateRange(extraDates);
+     right(dates,852,y+11,32,muted,600);
+   }
+   y+=77;
+ }
+ return y;
 }
 function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
@@ -511,7 +579,7 @@ else if(!lead&&hasPersona)y+=comicPersona(222,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
 if(lead&&puaiQuotesFirst)y=comicLead(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
-if(months.length)y=comicActivity(y,draw);
+y=comicDateSection(y,draw);
 if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
 if(posterScenes.length)y=comicScenes(y,draw);
 const showTags=!story||report.keywords.length>0;
@@ -539,6 +607,15 @@ quotes.forEach((q,i)=>{
 });
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const dailySummary=[];
+if(months.length){
+ dailySummary.push('发言日历');
+ if(extraDates.length)dailySummary.push('另有 '+extraDates.length+' 个已知日期：'+dateList(extraDates)+'。');
+}else if(observedDates.length){
+ dailySummary.push('片段日期','核实 '+observedDates.length+' 天：'+dateList(observedDates)+'。');
+ if(quotes.length)dailySummary.push(observedQuoteLabel+'。');
+}else{
+ dailySummary.push('发言日历',missingDateLabel+'。');
+}
 if(activeDays>0)dailySummary.push('有发言的日子：'+activeDays+' 天。');
 if(activeDays>0&&Number.isInteger(themeDays))dailySummary.push('其中有 '+themeDays+' 天'+edition.keyword+'。');
 if(peakDay)dailySummary.push('单日最高发言：'+peakDay.date+'，'+peakDay.count+' 条。');

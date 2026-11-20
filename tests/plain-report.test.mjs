@@ -104,3 +104,11 @@ test('第四条原话与原线程中紧邻的 AI 可以入图，用法和标签�
   assert.deepEqual(story.assistant_reply,{after_quote:3,text:'答第三句。'});
   assert.equal(activity.summary.messages,4);
 });
+
+test('date-only evidence survives a pasted receipt alongside six quotes', () => {
+  const card = parsePlainReport('PUAI 2026\n发言日期：03-01,04-05,03-01\n' +
+    ['甲','乙','丙','丁','戊','己'].map(word => '原话：' + word).join('\n'));
+  assert.deepEqual(card.activity.observed_dates, ['2026-03-01','2026-04-05']);
+  assert.equal(card.activity.share_quotes.length, 6);
+  assert.equal(card.activity.summary, undefined);
+});

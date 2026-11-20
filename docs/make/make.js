@@ -1,6 +1,6 @@
-import { readFields, parseReport } from './report-code.mjs?v=712be7e36e';
+import { readFields, parseReport } from './report-code.mjs?v=0777368ddc';
 
-import { readDirectFields, readPlainFields } from './plain-report.mjs?v=dbe9d9d7e3';
+import { readDirectFields, readPlainFields } from './plain-report.mjs?v=2a67dfcb80';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');
@@ -9,6 +9,8 @@ const result = document.getElementById('result');
 const heading = document.getElementById('title');
 const image = document.getElementById('preview');
 const save = document.getElementById('save');
+const datesCopy = document.getElementById('dates-copy');
+const datesText = document.getElementById('dates-text');
 const recovery = document.getElementById('recovery');
 const recover = document.getElementById('recover');
 const retry = document.getElementById('retry');
@@ -18,7 +20,7 @@ const partial = document.getElementById('partial');
 const partialText = document.getElementById('partial-text');
 const repair = document.getElementById('repair');
 const repairText = document.getElementById('repair-text');
-const repairPrompt = '请把刚才那份 PUAI 报告发成可复制的文字。首行单独写 PUAI 2026，下面把有依据的署名、主题、用法、原话、标签逐项分行写作“字段：内容”。能核准时补日期账或无日期账；仅有摘要就只写具体用法，只有本人逐字片段就写原话。无需我粘贴历史。';
+const repairPrompt = '请把刚才那份 PUAI 报告发成可复制的文字。首行单独写 PUAI 2026，下面把有依据的署名、主题、用法、原话、标签逐项分行写作“字段：内容”。先核对消息时间戳，能计数就补日期账，只有日期就填发言日期；仅有摘要就只写具体用法，只有本人逐字片段就写原话。无需我粘贴历史。';
 let clipboardAttempt = 0;
 let templateRequest;
 let pending;
@@ -26,7 +28,7 @@ let retryRequest;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=b716a39f35', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=39d79e6b6f', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -81,6 +83,9 @@ async function renderPoster(report, signal) {
 
 function clearResult() {
   result.hidden = true;
+  datesCopy.hidden = true;
+  datesText.hidden = true;
+  datesText.value = '';
   save.hidden = true;
   save.removeAttribute('href');
   image.removeAttribute('src');
@@ -181,6 +186,10 @@ async function generate(value, fromAddress = false, restored = null) {
     save.download = report.person.name + '-2026-PUAI.png';
     save.href = png;
     save.hidden = false;
+    if (!report.activity.days?.length) {
+      datesText.value = '用 $puai 给刚才「' + report.person.name + '」的报告补发言日历。保留原话，回原消息核对发送日期后重新出图。请读取这版 skill：\n' + datesCopy.dataset.skill;
+      datesCopy.hidden = false;
+    }
     result.hidden = false;
     const scopeTitle = { thread: '本次对话精选', fragments: '聊天片段精选' }[report.scope];
     heading.textContent = scopeTitle || '你的年度报告';
@@ -216,7 +225,7 @@ function openFragment() {
     generate(location.hash, true);
   } else {
     const saved = history.state?.puaiReceipt;
-    if (Array.isArray(saved) && saved.length >= 16 && saved.length <= 24 && saved[0] === 'v2'
+    if (Array.isArray(saved) && saved.length >= 16 && saved.length <= 25 && saved[0] === 'v2'
         && saved.every(field => typeof field === 'string') && saved.join('').length <= 48000) {
       generate('', false, saved);
       return;
@@ -265,19 +274,24 @@ input.addEventListener('input', event => {
 document.getElementById('use-partial').addEventListener('click', () => {
   if (partialText.textContent) generate('PUAI 2026\n用法：' + partialText.textContent);
 });
-document.getElementById('repair-copy').addEventListener('click', async () => {
+async function copyFollowup(field, text, success) {
   try {
-    await navigator.clipboard.writeText(repairPrompt);
+    await navigator.clipboard.writeText(text);
+    field.hidden = true;
     status.className = '';
-    status.textContent = '已复制。发到刚才生成报告的对话，再把回复粘贴回来。';
+    status.textContent = success;
   } catch {
-    repairText.value = repairPrompt;
-    repairText.hidden = false;
-    repairText.focus();
-    repairText.select();
+    field.value = text;
+    field.hidden = false;
+    field.focus();
+    field.select();
     status.textContent = '长按复制这段指令，发回刚才的聊天。';
   }
-});
+}
+document.getElementById('repair-copy').addEventListener('click', () =>
+  copyFollowup(repairText, repairPrompt, '已复制。发到刚才生成报告的对话，再把回复粘贴回来。'));
+datesCopy.addEventListener('click', () =>
+  copyFollowup(datesText, datesText.value, '已复制，回到生成这张图的对话发送。'));
 form.addEventListener('submit', event => {
   event.preventDefault();
   generate(input.value);

@@ -239,7 +239,7 @@ def read_shared_window(target, source, budget):
             continue
         seen.add(row["id"])
         if row["id"] == target["id"]:
-            if (row["role"] != "user" or row["text"] != target["text"] or
+            if (row["role"] != "user" or row["text"] != target["text"] or row["timestamp"] != target["timestamp"] or
                     row.get("node") != target.get("node") or row.get("line") != target.get("line")):
                 raise ValueError("original message no longer matches index")
             anchor = row
@@ -303,7 +303,8 @@ def readable_records(client, path, stats):
 
 
 def collect(client, paths, year, zone, out):
-    days, months, sessions, seen = set(), Counter(), set(), set()
+    daily, months, sessions, seen = Counter(), Counter(), set(), set()
+    checksum = hashlib.sha256()
     stats = Counter()
     if client == "codex":
         paths = sorted(paths, key=codex_source_order)
@@ -320,26 +321,67 @@ def collect(client, paths, year, zone, out):
             if int(day[:4]) != year:
                 continue
             sessions.add(row["session_id"])
-            days.add(day)
+            daily[day] += 1
             months[day[:7]] += 1
             row.update(client=client, date=day, source=str(path))
-            out.write(json.dumps(row, ensure_ascii=False) + "\n")
+            line = json.dumps(row, ensure_ascii=False) + "\n"
+            checksum.update(line.encode("utf-8"))
+            out.write(line)
     return {"client": client, "year": year, "source_files_considered": len(paths),
             "user_turns_before_editorial_filter": sum(months.values()),
-            "threads": len(sessions), "days": len(days), "months": dict(sorted(months.items())),
-            "first": min(days, default=None), "last": max(days, default=None), "skipped": dict(stats)}
+            "threads": len(sessions), "days": len(daily), "months": dict(sorted(months.items())),
+            "daily_before_editorial_filter": dict(sorted(daily.items())), "index_sha256": checksum.hexdigest(),
+            "first": min(daily, default=None), "last": max(daily, default=None), "skipped": dict(stats)}
+
+
+def reviewed_calendar(index, inventory_path, exclusions_path):
+    """Count the inventoried source once, excluding identified report controls or other ineligible turns."""
+    inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+    excluded = json.loads(exclusions_path.read_text(encoding="utf-8"))
+    if (not isinstance(inventory, dict) or not isinstance(excluded, list) or
+            any(not isinstance(mid, str) or not mid for mid in excluded)):
+        raise ValueError("invalid inventory or exclusions")
+    remaining = set(excluded)
+    checksum = hashlib.sha256()
+    daily = Counter()
+    with index.open(encoding="utf-8") as stream:
+        for line in stream:
+            checksum.update(line.encode("utf-8"))
+            row = json.loads(line)
+            if row["id"] in remaining:
+                remaining.remove(row["id"])
+            else:
+                daily[row["date"]] += 1
+    if checksum.hexdigest() != inventory.get("index_sha256") or remaining:
+        raise ValueError("use the original full inventory and exclusion IDs belonging to it")
+    dates = ",".join(f"{day[5:]}:{count}:?" for day, count in sorted(daily.items()))
+    return {"year": inventory["year"], "active_days": len(daily),
+            "dated_user_messages": sum(daily.values()), "days": dates}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--client", choices=("codex", "claude", "chatgpt"), required=True)
-    parser.add_argument("--year", type=int, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--client", choices=("codex", "claude", "chatgpt"))
+    mode.add_argument("--calendar-from", type=Path, help="complete private index for the publication calendar")
+    parser.add_argument("--inventory", type=Path, help="saved collection summary matching that index")
+    parser.add_argument("--exclude-ids", type=Path, help="reviewed JSON array of ineligible message IDs")
+    parser.add_argument("--year", type=int)
     parser.add_argument("--timezone", help="IANA timezone, default: OS local")
     parser.add_argument("--root", type=Path, help="override the selected local client's config root")
     parser.add_argument("--export", type=Path, help="explicitly provided ChatGPT JSON, ZIP, or export directory")
-    parser.add_argument("--output", type=Path, required=True, help="new private JSONL file (never overwritten)")
+    parser.add_argument("--output", type=Path, help="new private JSONL file (never overwritten)")
     args = parser.parse_args()
     try:
+        if args.calendar_from:
+            if not (args.inventory and args.exclude_ids):
+                parser.error("--calendar-from requires --inventory and --exclude-ids")
+            if args.year or args.output or args.root or args.export or args.timezone:
+                parser.error("--calendar-from uses the dates and scope of its inventory")
+            print(json.dumps(reviewed_calendar(args.calendar_from, args.inventory, args.exclude_ids)))
+            return
+        if not (args.year and args.output) or args.inventory or args.exclude_ids:
+            parser.error("--client requires --year and --output; calendar options belong to --calendar-from")
         zone = ZoneInfo(args.timezone) if args.timezone else None
         paths = source_files(args.client, args.root, args.export)
         fd = os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

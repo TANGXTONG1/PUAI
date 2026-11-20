@@ -1,11 +1,11 @@
-import { parseReport } from './report-code.mjs?v=712be7e36e';
+import { parseReport } from './report-code.mjs?v=0777368ddc';
 
 const themeNames = new Map([
   ['ai的教育','teach'], ['ai特全体','all'], ['ai在心口难开','hush'],
   ['ai因斯坦','einstein'], ['ai迪生','edison'], ['ai的供养','support'],
   ['ai咋咋地','free'], ['未归类',''], ['无',''], ['ai相处报告','']
 ]);
-const fieldPattern = /^(署名|主题|范围|短评|主场景|用法|原话|AI|AI收尾|前情|标签|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
+const fieldPattern = /^(署名|主题|范围|短评|主场景|用法|原话|AI|AI收尾|前情|标签|发言日期|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
 const repeated = new Set(['用法', '原话', '标签']);
 const title = /^(?:#{1,6}\s+)?(?:\*\*|__|`)?PUAI\s*2026(?:\*\*|__|`)?$/iu;
 const unknownStat = /^[（(]?(?:[-—–]+|N\/A|无|不详|未知|留空|未提供|无记录|暂无|未核[实准]?|未核[验对]|未统计|无法(?:逐条)?核[实准验对]|缺少数据)[）)]?$/iu;
@@ -29,7 +29,7 @@ function collectFields(lines, start) {
     const match = reportLine(line);
     if (!match || !match[2]) continue;
     const name = match[1].toLowerCase();
-    if (['日期账','无日期账','token'].includes(name) && unknownStat.test(match[2].trim())) continue;
+    if (['发言日期','日期账','无日期账','token'].includes(name) && unknownStat.test(match[2].trim())) continue;
     if (name === 'ai收尾') {
       const after = values.get('原话')?.length ?? 0;
       if (!ending && after > 0 && after <= 6 && publishableLine(match[2], 80)) {
@@ -72,15 +72,15 @@ export function readPlainFields(value) {
   if (value.length > 48000) throw new Error('报告文字太长，请只复制 PUAI 2026 这份报告。');
   const { values, reply, finalReply } = collectFields(lines, start);
   const first = name => values.get(name)?.[0] ?? '';
-  const firstThree = name => Array.from({ length: 3 }, (_, index) => values.get(name)?.[index] ?? '');
+  const three = (name, offset = 0) => Array.from({ length: 3 }, (_, index) => values.get(name)?.[offset + index] ?? '');
   const themeText = first('主题').replace(/\s+/gu, '').toLowerCase();
   const theme = themeNames.get(themeText) ?? themeText;
   const setup = first('前情');
   // Keep the original v2 slot positions for saved receipts. Only named/plain
-  // receipts use the optional tail (scope followed by quotes four to six).
+  // receipts use the optional tail (scope, quotes four to six and verified dates).
   const fields = ['v2', theme, first('署名'), first('短评'), first('日期账'), first('无日期账'), first('token'),
-    ...firstThree('用法'), ...firstThree('原话'), ...firstThree('标签'), first('原话') && publishableLine(setup, 24) ? setup : '',
-    reply, first('主场景'), finalReply, first('范围'), ...(values.get('原话') ?? []).slice(3, 6)];
+    ...three('用法'), ...three('原话'), ...three('标签'), first('原话') && publishableLine(setup, 24) ? setup : '',
+    reply, first('主场景'), finalReply, first('范围'), ...three('原话', 3), first('发言日期')];
   while (fields.length > 17 && !fields.at(-1)) fields.pop();
   return fields;
 }
@@ -93,7 +93,7 @@ export function parsePlainReport(value) {
 const directNames = new Map([
   ['name', '署名'], ['theme', '主题'], ['scope', '范围'], ['note', '短评'], ['lead', '主场景'], ['setup', '前情'],
   ['q', '原话'], ['ai', 'AI'], ['endai', 'AI收尾'], ['use', '用法'], ['tag', '标签'],
-  ['days', '日期账'], ['undated', '无日期账'], ['token', 'Token']
+  ['days', '日期账'], ['dates', '发言日期'], ['undated', '无日期账'], ['token', 'Token']
 ]);
 
 // These parameters live in the fragment, never the request query. Accept the

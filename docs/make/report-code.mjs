@@ -85,6 +85,16 @@ function reportDate(monthAndDay) {
   return date;
 }
 
+function readObservedDates(value) {
+  if (!value?.trim()) return [];
+  const dates = value.split(/[,，]/u).map(part => {
+    const stamp = part.trim();
+    if (!/^\d{2}-\d{2}$/u.test(stamp)) throw new Error('发言日期请写成 MM-DD，多天用逗号隔开。');
+    return reportDate(stamp);
+  });
+  return [...new Set(dates)].sort();
+}
+
 function readDays(value) {
   if (!value.trim()) return [];
   const dates = new Set();
@@ -98,16 +108,17 @@ function readDays(value) {
   }).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function readQuote(value, days, excerptsOnly = false, earlyCutoff) {
+function readQuote(value, days, excerptsOnly = false, earlyCutoff, observedDates = []) {
   const header = days && /^(\d{2}-\d{2})~/.exec(value);
   if (!header) return { text: checkText(value, '原话', 80) };
   const date = reportDate(header[1]);
-  if (!excerptsOnly && !(earlyCutoff && date < earlyCutoff) && !days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
+  if (!excerptsOnly && !observedDates.includes(date) && !(earlyCutoff && date < earlyCutoff) && !days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
   return { date, text: checkText(value.slice(header[0].length), '原话', 80) };
 }
 
 function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
   const days = readDays(fields[4]);
+  const observedDates = allowExcerptsWithoutLedger ? readObservedDates(fields[24]) : [];
   const undated = fields[5].trim() ? readCounts(fields[5].trim()) : null;
   const habits = fields.slice(7, 10).filter(habit => !lead || habit !== fields[18])
     .map(habit => editorialText(habit, 120)).filter(habit => habit && habit !== lead);
@@ -120,13 +131,15 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
   const excerptsOnly = allowExcerptsWithoutLedger && countedRows.length === 0;
   const quotes = fields.slice(10, 13);
   if (allowExcerptsWithoutLedger) quotes.push(...fields.slice(21, 24));
+  const datesWithoutLedger = allowExcerptsWithoutLedger && days.length === 0;
   const earlyCutoff = scope === 'history' ? days[0]?.date : undefined;
   const activity = {
     coverage: 'partial',
+    ...(observedDates.length ? { observed_dates: observedDates } : {}),
     daily_profile: {
       habits: [...new Set(habits)],
     },
-    share_quotes: quotes.filter(value => value.trim()).map(value => readQuote(value, days, excerptsOnly, earlyCutoff))
+    share_quotes: quotes.filter(value => value.trim()).map(value => readQuote(value, days, datesWithoutLedger, earlyCutoff, observedDates))
   };
   if (!excerptsOnly) {
     Object.assign(activity.daily_profile, {
@@ -136,10 +149,10 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
       undated_messages: undated?.count || 0
     });
   }
-  if (!totals.count && !habits.length && !lead && !(excerptsOnly && activity.share_quotes.length)) {
+  if (!totals.count && !observedDates.length && !habits.length && !lead && !(excerptsOnly && activity.share_quotes.length)) {
     throw new Error('请从可读的聊天里补充具体使用习惯或可核实的本人原话；有可核账目时再填发言数。');
   }
-  const countedQuotes = activity.share_quotes.filter(q => !(earlyCutoff && q.date && q.date < earlyCutoff));
+  const countedQuotes = activity.share_quotes.filter(q => !q.date || days.some(day => day.date === q.date));
   if (!excerptsOnly && countedQuotes.length > totals.count) {
     throw new Error('每条原话要来自一条不同的已统计发言，请让 GPT 补全逐日或无日期计数。');
   }

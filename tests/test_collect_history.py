@@ -70,6 +70,49 @@ class CollectionTest(unittest.TestCase):
         with self.assertRaises(subprocess.CalledProcessError):
             self.collect("codex", "--root", self.root)
 
+    def test_calendar_uses_full_inventory_then_removes_report_messages(self):
+        self.write("archived_sessions/rollout-one.jsonl", [
+            meta("one"), codex_turn("user", "PRIVATE question", "a"),
+            codex_turn("user", "PRIVATE followup", "b"),
+            codex_turn("user", "PRIVATE report command", "control"),
+            codex_turn("user", "PRIVATE another day", "c", "2026-01-02T14:00:00Z"),
+            codex_turn("user", "PRIVATE undated", "unknown", None),
+        ])
+        summary, rows = self.collect("codex", "--root", self.root)
+        self.assertEqual(summary["daily_before_editorial_filter"], {"2026-01-01": 3, "2026-01-02": 1})
+        self.assertEqual(summary["skipped"]["undated_turns"], 1)
+        inventory = self.root / "inventory.json"
+        inventory.write_text(json.dumps(summary))
+        exclusions = self.root / "exclude.json"
+        exclusions.write_text(json.dumps(["control"]))
+        command = [sys.executable, str(SCRIPTS / "collect_history.py"), "--calendar-from", str(self.index),
+                   "--inventory", str(inventory), "--exclude-ids", str(exclusions)]
+        result = subprocess.run(command, check=True, capture_output=True)
+        self.assertNotIn(b"PRIVATE", result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["days"], "01-01:2:?,01-02:1:?")
+        exclusions.write_text('["not-in-this-index"]')
+        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+        exclusions.write_text("[]")
+        self.index.write_text(json.dumps(rows[0]) + "\n")
+        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
+    def test_chatgpt_window_keeps_the_local_date_and_original_numeric_timestamp(self):
+        epoch = 1767202200  # 2025-12-31 UTC, 2026-01-01 in Shanghai
+        def node(mid, parent, ts):
+            return {"parent": parent, "children": [], "message": {"id": mid, "author": {"role": "user"},
+                    "create_time": ts, "content": {"content_type": "text", "parts": ["PRIVATE dialog"]}}}
+        export = self.root / "conversations.json"
+        export.write_text(json.dumps([{"id": "thread", "current_node": "b", "update_time": epoch + 86400,
+              "mapping": {"a": node("a", None, None), "b": node("b", "a", epoch)}}]))
+        summary, rows = self.collect("chatgpt", "--export", export)
+        self.assertEqual(summary["skipped"]["undated_turns"], 1)
+        self.assertEqual([r["id"] for r in rows], ["b"])
+        self.window(rows[0])
+        window = json.loads((self.root / "b-window").read_text())
+        self.assertEqual(window["target_date"], "2026-01-01")
+        self.assertEqual(window["messages"][-1]["record_timestamp"], epoch)
+        self.assertNotIn("record_timestamp", window["messages"][0])
+
     def test_fork_replay_cannot_move_an_original_turn_to_another_year(self):
         self.write("sessions/2026/05/10/rollout-child.jsonl", [meta("fork", forked_from_id="original"),
                    codex_turn("user","PRIVATE OLD","old","2026-05-10T00:00:00Z"),codex_turn("user","PRIVATE NEW","new","2026-05-10T00:00:00Z")])

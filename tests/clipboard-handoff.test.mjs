@@ -103,7 +103,8 @@ test('mobile copy/paste delivers a PNG, including stripped-link and denied-clipb
     await page.locator('#use-partial').click();
     const habitAlt = await ready();
     assert.match(habitAlt, /追问纸杯洗完还会响吗？/);
-    assert.doesNotMatch(habitAlt, /发言日历|对话现场/);
+    assert.match(habitAlt, /发言日历\n这份记录未附日期/);
+    assert.doesNotMatch(habitAlt, /单日最高发言|对话现场/);
 
     // Generic prose and an empty link give a same-chat repair, without inventing a report.
     await page.goto('about:blank');

@@ -68,6 +68,44 @@ class ChatPngTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.parse_receipt("\n".join(lines + ["范围：other"]))
 
+    def test_calendar_is_painted_for_quotes_observed_days_and_missing_dates(self):
+        from io import BytesIO
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        draw_text = ImageDraw.ImageDraw.text
+        cases = [
+            ("原话：甲。\n原话：乙。\n原话：丙。\n原话：丁。",
+             ("发言日历", "这 4 句原话未附日期"), ("活跃", "单日最高")),
+            ("发言日期：07-02,11-08,11-08", ("片段日期", "核实 2 天", "07 月", "11 月"), ("条指令", "单日最高")),
+            ("原话：07-02~甲。\n无日期账：2:?", ("片段日期", "核实 1 天", "2 条指令"), ("单日最高",)),
+            ("主场景：落了一行。", ("发言日历", "这份记录未附日期"), ("单日最高",)),
+            ("原话：02-03~甲。\n原话：02-03~乙。\n原话：丙。\n发言日期：02-03,04-05,04-05",
+             ("片段日期", "核实 2 天", "2 / 3 句原话有日期", "02 月", "04 月"), ("单日最高", "条指令")),
+            ("原话：02-03~甲。", ("片段日期", "核实 1 天", "1 句原话有日期"), ("单日最高", "条指令")),
+            ("原话：04-05~甲。\n发言日期：04-05,09-10\n日期账：09-10:5:?",
+             ("发言日历", "活跃 1 天", "单日最高 9.10 · 5 条", "另有 1 个已知日期", "04.05"), ("活跃 2 天",)),
+        ]
+        for body, expected, forbidden in cases:
+            report = renderer.parse_receipt("PUAI 2026\n" + body)
+            painted = {}
+            def observe(draw, xy, label, *args, **kwargs):
+                painted[label] = xy
+                return draw_text(draw, xy, label, *args, **kwargs)
+            with self.subTest(body=body), patch.object(ImageDraw.ImageDraw, "text", observe):
+                img = renderer.draw_report(report, font)
+                payload = BytesIO()
+                img.save(payload, "PNG")
+                with Image.open(payload) as png:
+                    self.assertEqual(png.width, 900)
+                    at = painted[expected[0]][1]
+                    self.assertGreater(len(png.crop((48, at, 820, at+43)).getcolors(400*1000)), 3)
+                words = "\n".join(painted)
+                for label in expected:
+                    self.assertIn(label, words)
+                for label in forbidden:
+                    self.assertNotIn(label, words)
+        with self.assertRaises(ValueError):
+            renderer.parse_receipt("PUAI 2026\n原话：甲。\n发言日期：02-30")
+
     def test_turn_selection_and_invalid_empty_source(self):
         self.assertIsNone(renderer.parse_receipt(
             "PUAI 2026\n原话：11-06~后来的问题。\nAI：不在其间。\n原话：11-01~早来的问题。")["reply"])

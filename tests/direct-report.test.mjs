@@ -87,3 +87,17 @@ test('a scoped scene cannot claim an annual theme; broader history can carry six
   assert.throws(() => report(link+'&scope=invented'));
   assert.equal(report(link + '&days=01-02:6:?').scope, undefined);
 });
+
+test('observed owner dates round-trip without inventing a message ledger', () => {
+  const partial = report('#p?q=03-08~第二回合&q=第三回合&dates=03-08,03-09,03-08');
+  assert.deepEqual(partial.activity.observed_dates, ['2026-03-08','2026-03-09']);
+  assert.equal(partial.activity.summary, undefined);
+  assert.equal(partial.activity.daily_profile.active_days, undefined);
+  const mixed = report('#p?days=03-08:2:?&q=03-09~另一个现场&dates=03-09');
+  assert.equal(mixed.activity.summary.messages, 2);
+  assert.deepEqual(mixed.activity.share_quotes[0], {date:'2026-03-09', text:'另一个现场'});
+  const undated = report('#p?q=03-09~有日期的一句&q=未标记日期的一句&undated=1:?');
+  assert.equal(undated.activity.summary.messages, 1);
+  assert.equal(undated.activity.share_quotes[0].date, '2026-03-09');
+  assert.throws(() => report('#p?q=一个现场&dates=02-29'), /日期/);
+});

@@ -85,7 +85,7 @@ def pack_message(role, parts, number, budget, message_id, timestamp):
     result = {"role": role, "line": number, "parts": []}
     if message_id:
         result["id"] = message_id
-    if isinstance(timestamp, str):
+    if type(timestamp) in (str, float, int):
         result["record_timestamp"] = timestamp
     for part in parts:
         if len(part) <= budget:
@@ -107,7 +107,10 @@ def read_window(index, source, message_id, budget=4000):
     target, locators = read_index(index, source, message_id)
     if target.get("client") in ("chatgpt", "claude"):
         from collect_history import read_shared_window
-        return read_shared_window(target, source, budget)
+        window = read_shared_window(target, source, budget)
+        if target.get("date"):
+            window["target_date"] = target["date"]
+        return window
 
     def verified_mid(message, line):
         mid = message[2]
@@ -126,6 +129,8 @@ def read_window(index, source, message_id, budget=4000):
 
     if "text" in target and target["text"] != "\n".join(candidate[1]):
         raise ValueError("original message text no longer matches index")
+    if target.get("client") == "codex" and target["timestamp"] != anchor_record.get("timestamp"):
+        raise ValueError("original timestamp no longer matches index")
     window = []
     omitted = Counter()
     seen_ids = set()
@@ -183,8 +188,11 @@ def read_window(index, source, message_id, budget=4000):
                 window.append(pack_message(role, parts, number, budget, mid, raw.get("timestamp")))
     if not found:
         raise ValueError("target disappeared while reading")
-    return {"target_line": anchor, "before": before, "after": after,
-            "omitted_assistant_answers": dict(omitted), "messages": window}
+    result = {"target_line": anchor, "before": before, "after": after,
+              "omitted_assistant_answers": dict(omitted), "messages": window}
+    if target.get("client") == "codex" and target.get("date"):
+        result["target_date"] = target["date"]
+    return result
 
 
 def main():

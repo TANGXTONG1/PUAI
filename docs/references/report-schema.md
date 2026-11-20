@@ -4,7 +4,7 @@
 
 ## 字段
 
-所有对象只接受下表字段。根对象的 `scope`、`theme`、`activity`、`share_story`，活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，分享清单的 `habits`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略。`moments[].title` 仅在旧格式必填。字符限制按 Python Unicode 字符计数。输入文件最多 32 MB。
+所有对象只接受下表字段。根对象的 `scope`、`theme`、`activity`、`share_story`，活动对象的 `observed_dates`、`roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，分享清单的 `habits`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略。`moments[].title` 仅在旧格式必填。字符限制按 Python Unicode 字符计数。输入文件最多 32 MB。
 
 | 字段 | 类型与限制 | 含义 |
 |---|---|---|
@@ -170,11 +170,15 @@ A 版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分
 
 紧凑 HTML 采用字段白名单。根字段为 `year`、`mode`、`period`、`keywords`、`person`，以及可选的 `scope`、`theme`、`activity` 和上述 A 版 `story`。完整编辑对象 `phrase`、`identity`、`metrics`、`moments`、`closing` 及活跃日批注、逐小时数组和原始证据都不嵌入 HTML。本人原句通过经过核验的 `activity.share_quotes` 进入。
 
+### 只有发言日期时
+
+私有 `activity.observed_dates` 可逐项保存 `{"date":"2026-03-04","evidence_ids":["e1"]}`。证据里留该本人消息的当地日期和角色，只向海报投影去重后的日期字符串。这些日期与带日期的入选原话可组成「片段日期」；同日多句只亮一天，某日缺乏完整记录就不据此计算日峰值或整个统计期间的活跃天数。逐日账之外另外核到的日期可以展示，不改已计数的消息分母。无任何日期依据时，保留日历栏并标明记录未附日期。
+
 ## 图片附件与一键打开
 
-默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、范围、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
+默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、范围、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、发言日期、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
 
-仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, scope, theme, lead, note, setup, q, ai, endai, use, tag, days, undated, token`。原话 q 最多六条，用法和标签各最多三项。使用明确的 scope 可让单次对话带上其真实统计，或在跨线程材料缺少日期账时仍正确标出范围。直接链接和中文报告单若缺少日期账且未写范围，图题默认为「聊天片段精选」。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
+仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, scope, theme, lead, note, setup, q, ai, endai, use, tag, days, dates, undated, token`。原话 q 最多六条，用法和标签各最多三项。使用明确的 scope 可让单次对话带上其真实统计，或在跨线程材料缺少日期账时仍正确标出范围。直接链接和中文报告单若缺少日期账且未写范围，图题默认为「聊天片段精选」。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
 
 `share_story.lead` 可选，形式为 `{"text":"……","evidence_ids":["e1"]}`，至多 90 字，单独排在最上。它是经过证据核实的纪事，可以与后面的语录来自不同场合。`share_story.final_reply` 采用相同对象结构，至多 80 字，证据为同一原回合中最后一条入选用户原话和随后的 AI 原文，两行分别以「用户：」「AI：」起头。它与中间的 assistant_reply 只选一个；都不计作本人消息。只把显示文字投影到公开数据。
 

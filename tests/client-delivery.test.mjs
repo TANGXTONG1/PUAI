@@ -102,6 +102,7 @@ test('report links open the PNG; manual recovery requires a tap', {
     inspectLoading = true;
     await page.goto(base+'?utm_source=chatgpt.com'+fragment);
     await ready();
+    assert.equal(await page.locator('#dates-copy').isVisible(), false);
     const alt = await preview.getAttribute('alt');
     assert.ok(alt.includes('原来这套杯子还自带打击乐。'));
     inspectLoading = false;
@@ -109,7 +110,7 @@ test('report links open the PNG; manual recovery requires a tap', {
     // A regular chat can put just the visible fields in a fragment. Opening
     // it in a fresh tab needs no clipboard, server record or previous visit.
     await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'clipboard', { value: {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
         readText: () => { window.__readClipboard = true; throw new Error('clipboard is off'); }
       } });
     });
@@ -119,6 +120,19 @@ test('report links open the PNG; manual recovery requires a tap', {
     await page.goto(directURL);
     await ready();
     assert.equal(downloads.length, 0);
+    const datesButton = page.getByRole('button', { name: '复制补日期口令' });
+    assert.equal(await datesButton.isVisible(), true);
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        writeText: async () => { throw new Error('clipboard unavailable'); }
+      }});
+    });
+    await datesButton.click();
+    const followup = await page.locator('#dates-text').inputValue();
+    assert.equal(await page.locator('#dates-text').isVisible(), true);
+    assert.ok(followup.includes('$puai') && followup.includes('保留原话'));
+    const shared = (await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim();
+    assert.equal(followup.split('\n').at(-1), shared.split('\n').at(-1));
     const turns = await preview.getAttribute('alt');
     const positions = ['是盖子高了？','是杯子矮了。','这两件事在茶几上有区别吗？'].map(q => turns.indexOf(q));
     assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])));

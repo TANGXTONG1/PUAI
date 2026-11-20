@@ -42,7 +42,7 @@ QR_ROWS = (
     0x1ecaa639, 0x1ab330dc, 0x1e7549f7, 0x17a31e, 0x1fc3ef56, 0x1054bb1a,
     0x17557bf1, 0x175a2c2d, 0x174025b7, 0x105b9455, 0x1fcb9378,
 )
-FIELDS = "署名 主题 范围 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 无日期账 token".split()
+FIELDS = "署名 主题 范围 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 发言日期 无日期账 token".split()
 UNKNOWN = {"", "?", "无", "未知", "留空", "未提供", "未核准", "未核实", "无法逐条核准", "—", "n/a"}
 TOKEN_MAX = 2**53 - 1
 
@@ -109,6 +109,8 @@ def parse_receipt(text):
             if key in days:
                 raise ValueError("日期账重叠")
             days[key] = counts(row)
+    raw_dates = stat("发言日期")
+    observed_dates = {day_key(year, item.strip()) for item in re.split(r"[,，]", raw_dates)} if raw_dates else set()
     scope = first("范围").lower() or ("" if days else "fragments")
     if len(values["范围"]) > 1 or scope not in ("", "history", "thread", "fragments"):
         raise ValueError("材料范围只接受 history、thread 或 fragments")
@@ -137,7 +139,9 @@ def parse_receipt(text):
             if index > 0 and index+1 < len(lines) and lines[index-1][0] == lines[index+1][0] == "原话":
                 reply = (len(quotes), value)
     first_day = min(days) if days else None
-    counted_quotes = [q for q in quotes if not (scope == "history" and first_day and q[0] and q[0] < first_day)]
+    counted_quotes = [(stamp, quote) for stamp, quote in quotes
+                      if not (stamp and stamp not in days and
+                              (not days or stamp in observed_dates or (scope == "history" and stamp < first_day)))]
     if rows and (len(counted_quotes) > total or any(day not in days or n > days[day][0]
                          for day, n in Counter(d for d, _ in counted_quotes if d).items())):
         raise ValueError("引语与发言账不符")
@@ -156,13 +160,13 @@ def parse_receipt(text):
     if len(lead) > 90:
         raise ValueError("主场景最多 90 字")
     habits = list(dict.fromkeys(values["用法"]))[:3]
-    if not (quotes or lead or habits or total):
+    if not (quotes or lead or habits or total or observed_dates):
         raise ValueError("缺少可核对的发言、现场或具体用法")
     tags = [tag.strip() for line in values["标签"] for tag in line.split("、") if tag.strip()]
     return dict(year=year, theme=theme, scope=scope, name=first("署名")[:16] or "我", lead=lead, quotes=quotes,
                 reply=reply, setup=first("前情") if len(first("前情")) <= 24 else "", short=first("短评")[:100],
                 habits=[h[:120] for h in habits if h != lead], tags=list(dict.fromkeys(tags))[:3],
-                days=days, total=total, hits=hits, tokens=int(tokens) if tokens else None)
+                days=days, observed_dates=observed_dates, total=total, hits=hits, tokens=int(tokens) if tokens else None)
 
 
 def load_font(path=None):
@@ -313,22 +317,36 @@ def draw_report(r, font):
             text(cx,y+120,theme_label+"占比",27,align="mt")
         y += max(height,160 if ratio is not None else 0)+31
 
-    if r["days"]:
-        days = r["days"]
-        y = heading(y,"发言日历")
-        peak = min(days,key=lambda d:(-days[d][0],d))
-        active_label = f"活跃 {len(days)} 天"
-        if theme and all(h is not None for _, h in days.values()):
-            themed_days = sum(h > 0 for _, h in days.values())
-            active_label += f" · {themed_days} 天{theme_label}"
-        facts = active_label + f"    单日最高 {peak.month}.{peak.day:02} · {days[peak][0]} 条"
-        y = paragraph(48, y, wrap(facts, 804, 33), 33) + 21
-        month_counts = Counter(day.month for day in days)
+    days = r["days"]
+    quote_dates = [dt for dt, _ in quotes if dt]
+    observed_dates = r["observed_dates"].union(quote_dates)
+    calendar_dates = set(days) or observed_dates
+    if calendar_dates:
+        first_date, last_date = min(calendar_dates), max(calendar_dates)
+        span = first_date.strftime("%m.%d")
+        if last_date != first_date:
+            span += " – " + last_date.strftime("%m.%d")
+        text(852, y+5, span, 29, align="rt")
+    y = heading(y, "片段日期" if observed_dates and not days else "发言日历")
+    if calendar_dates:
+        month_counts = Counter(day.month for day in calendar_dates)
         month_messages = Counter()
-        for day, (n, _) in days.items():
-            month_messages[day.month] += n
+        if days:
+            peak = min(days,key=lambda d:(-days[d][0],d))
+            active_label = f"活跃 {len(days)} 天"
+            if theme and all(h is not None for _, h in days.values()):
+                themed_days = sum(h > 0 for _, h in days.values())
+                active_label += f" · {themed_days} 天{theme_label}"
+            facts = active_label + f"    单日最高 {peak.month}.{peak.day:02} · {days[peak][0]} 条"
+            for day, (n, _) in days.items():
+                month_messages[day.month] += n
+        else:
+            facts = f"核实 {len(observed_dates)} 天"
+            if quote_dates:
+                dated = str(len(quote_dates)) if len(quote_dates) == len(quotes) else f"{len(quote_dates)} / {len(quotes)}"
+                facts += f"    {dated} 句原话有日期"
+        y = paragraph(48, y, wrap(facts, 804, 33), 33) + 21
         selected = sorted(sorted(month_counts, key=lambda m: (-month_counts[m], -month_messages[m], -m))[:3])
-
         card_width = (804-18*(len(selected)-1))//len(selected)
         for i,month in enumerate(selected):
             x = 48+i*(card_width+18)
@@ -339,12 +357,13 @@ def draw_report(r, font):
                 for weekday,day in enumerate(dates):
                     if not day:
                         continue
-                    record = days.get(date(year,month,day))
-                    fill = calendar_ink if record and record[1] else ink if record else None
+                    dt = date(year, month, day)
+                    record = days.get(dt)
+                    fill = calendar_ink if record and record[1] else ink if dt in calendar_dates else None
                     xx, yy = x+18+weekday*step,y+64+week*25
                     cmd("ellipse",(xx,yy,xx+17,yy+17),fill=fill,outline=fill or "#A7B2B4",width=2)
         y += 251
-        legend = [("发言", ink), ("缺记录", None)]
+        legend = [("发言" if days else "已核日期", ink), ("缺记录", None)]
         if any(h for _,h in days.values()):
             legend.append((theme_label, calendar_ink))
         for i,(label,fill) in enumerate(legend):
@@ -353,6 +372,18 @@ def draw_report(r, font):
             text(x+27,y,label,27)
 
         y += 61
+        extra = sorted(observed_dates.difference(days)) if days else []
+        if extra:
+            listed = "、".join(day.strftime("%m.%d") for day in extra[:3])
+            if len(extra) > 3:
+                listed = extra[0].strftime("%m.%d") + " – " + extra[-1].strftime("%m.%d")
+            y = paragraph(48, y, wrap(f"另有 {len(extra)} 个已知日期 · {listed}", 804, 30), 30) + 24
+    else:
+        label = f"这 {len(quotes)} 句原话未附日期。" if quotes else "这份记录未附日期。"
+        rect(48, y, 804, 76, paper, ink, 12)
+        rect(48, y+12, 6, 52, calendar_ink)
+        text(71, y+20, label, 33)
+        y += 112
     habits = r["habits"][:2] if r["lead"] or quotes else r["habits"]
     if quote_first:
         habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
