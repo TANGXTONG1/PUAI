@@ -1,6 +1,6 @@
 import { readFields, parseReport } from './report-code.mjs?v=dd2ced4faa';
 
-import { readPlainFields } from './plain-report.mjs?v=642b270c46';
+import { readPlainFields } from './plain-report.mjs?v=6b2d9b07f0';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');

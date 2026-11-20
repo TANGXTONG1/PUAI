@@ -15,7 +15,7 @@ node --test tests/editorial/audit.test.mjs
 
 ## 文字客户端到图片
 
-`portable-replies.json` 是独立 Codex 会话对合成材料的实际答复。分别覆盖只有一段可核原话、只有记忆摘要与有完整日期账的双方对话。以下测试将回复原文连同围栏、操作说明和固定网址一起交给出图页，核对原话先后、缺失统计和下载的 PNG。
+`portable-replies.json` 保留了 Codex 和 Gemini 官方网页访客会话对合成材料的实际答复，包含 Gemini 额外附上最后一句 AI 回答的例子。用例覆盖只有一段可核原话、只有记忆摘要与有完整日期账的双方对话。以下测试将回复原文连同围栏、操作说明和固定网址一起交给出图页，核对原话先后、缺失统计和下载的 PNG。
 
 ```sh
 python3 -m unittest discover -s tests -p test_portable_images.py -v
