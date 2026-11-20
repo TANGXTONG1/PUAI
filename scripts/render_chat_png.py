@@ -2,6 +2,7 @@
 """Draw a PUAI chat attachment using only Python and Pillow.
 
 python render_chat_png.py report.txt /mnt/data/PUAI-2026.png [--font /path/font.ttc]
+In a notebook cell, call display_chat_png(output_path) to publish the PNG inline.
 Input is a PUAI year heading followed by the selected public Chinese report fields.
 No account, browser, remote font, or rendering service is used.
 """
@@ -10,6 +11,7 @@ import calendar
 from collections import Counter, defaultdict
 from datetime import date
 from functools import lru_cache
+from io import BytesIO
 import os
 from pathlib import Path
 import re
@@ -376,6 +378,23 @@ def draw_report(r, font):
     for method,args,kwargs in commands:
         getattr(draw,method)(*args,**kwargs)
     return img
+
+
+def display_chat_png(path):
+    """Publish the finished PNG as rich output from the host's active notebook cell."""
+    try:
+        from IPython import get_ipython
+        from IPython.display import Image as InlineImage, display
+    except ImportError as exc:
+        raise RuntimeError("Inline PNG preview requires a notebook kernel.") from exc
+    if getattr(get_ipython(), "kernel", None) is None:
+        raise RuntimeError("Run display_chat_png in the host's active notebook kernel.")
+    png = Path(path).read_bytes()
+    with Image.open(BytesIO(png)) as poster:
+        if poster.format != "PNG":
+            raise ValueError("Inline report must be a PNG.")
+        poster.verify()
+    display(InlineImage(data=png, format="png"), include=["image/png"])
 
 
 def main():

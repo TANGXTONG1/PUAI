@@ -13,7 +13,7 @@
 | `mode` | `demo` / `excerpt` / `self_report` / `full` | 口径；由页面显示固定标记 |
 | `theme` | 可选，九种主题字符串或显式 null（见下） | 按互动中反复出现的动作定主题。新 A 版证据不足时显式填 null，保留用量和日历。缺少该字段的旧报告沿用原主题表现。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
-| `person` | `{name}`，1–16 字 | 分享昵称；未指定填“我” |
+| `person` | `{name}`，1–16 字 | 本次指定或从本人聊天辨认出的分享称呼，依据不足填“我” |
 | `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
 | `phrase` | `{text,note,kind,evidence_ids}` | `text` 1–50 字，`note` 1–60 字，`kind` 为 `quote` 或 `paraphrase` |
 | `keywords` | 0–3 个字符串，每个 1–6 字 | 据上下文先定 1–3 个具体特征，写成图尾标签，供回查原话 |
@@ -141,7 +141,7 @@
 A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式共用以下公开字段。A 版另支持选编后的人格与场景。
 
 - `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
-- `person` 只公开 `{name}`；用用户明确提供的分享昵称，未提供则填“我”。保留 1–16 字校验。不要从转发图、本地目录、工作信息或邮箱推测姓名。
+- `person` 只公开 `{name}`；用本次指定的分享称呼，或根据已授权聊天中本人认可、惯用的称呼定名。要求匿名、归属不清或没有可用称呼时填“我”。姓名线索留在私有上下文，公开数据只写最终称呼（1–16 字）。不要从转发图、本地目录、工作信息或邮箱推测姓名。
 - 可选 `activity` 只含 `timezone`、`coverage`、`rhythm`、`selected_months`、`months`、`summary`、`days`，以及从可选输入派生的 `share_quotes`、`token_usage`、`theme_stats`。
 
 A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,scenes,habits?}`。只有显式选入的习惯才进入 `story.habits` 字符串数组。`persona` 取 `identity.subtitle`，`scenes` 是含 0–2 项的数组，每项只有 `{"text":"一句短评"}`。场景标题、证据 ID、所选索引、`identity.title`、未选场景均留在本地。旧报告即使含有 `identity` 与 `moments` 也不会自动公开这些内容。
@@ -171,7 +171,7 @@ A 版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分
 
 ## 图片附件与一键打开
 
-默认交付已渲染的 PNG。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
+默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
 
 仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, theme, lead, note, setup, q, ai, endai, use, tag, days, undated, token`。省略无值的键；q、use、tag 可重复。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
 

@@ -23,3 +23,17 @@ node scripts/export_png.mjs --input /path/report.html --output /path/report.png 
 脚本等待字体和图像生成，阻止外网请求，检查 JavaScript 错误、画布尺寸及 390 px 手机横向溢出。它不判断文案是否真实或视觉是否好看；交付前打开 PNG 与可选手机预览，检查字形、署名居中、贴纸内原句是否完整、字体大小和间距。输出文件权限按私人材料设置，不会上传。
 
 没有可用 Node/Playwright 时，可用宿主浏览器打开 HTML，等待生成后点击「保存长图」。不要以网页截图代替最终原始 PNG，也不要声称未实际导出的图片已经生成。
+
+## 在对话里显示图片
+
+有原生图片输出工具时，直接发送成品 PNG 的图像数据。交互式 Python 宿主可在生成报告的同一个 notebook 单元或后续单元运行以下代码。将脚本所在目录加入导入路径，文件名使用实际成品。
+
+```python
+from render_chat_png import display_chat_png
+
+display_chat_png("/mnt/data/PUAI-2026.png")
+```
+
+这是 notebook 的图片输出步骤，在独立 shell 子进程里运行不会生成对话预览。脚本不可导入时，用 IPython 的 `display(Image(filename=path))` 显示相同的 PNG。宿主需要在回复正文引用文件时，把真实成品写成 `![我的年度报告](sandbox:/mnt/data/PUAI-2026.png)`。已展示的图片无需再配一个文件下载链接。
+
+只有文件下载或文字能力时，用含本人数据的网页直达链接「打开图片预览」。网页载入即显示整张图，读者可以选择保存。

@@ -33,10 +33,10 @@
           <button class="copy" id="copy" type="button"><i aria-hidden="true" class="copy-icon"></i>复制给 ChatGPT</button>
           <a class="secondary" href="make/">恢复旧回复</a>
         </div>
-        <p class="instruction">发给常用的对话，收一张可以保存的长图。文字助手会给出点开即见图的链接。</p>
+        <p class="instruction">发给常用的对话，直接看长图。仅支持文字或文件下载的助手会给出网页预览。</p>
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <textarea id="prompt" aria-label="完整生成口令" rows="5" readonly hidden></textarea>
-        <details class="signature"><summary>自定义署名</summary><label for="nickname">报告上叫我</label><input id="nickname" maxlength="16" placeholder="我" autocomplete="off"></details>
+        <details class="signature"><summary>自定义署名</summary><label for="nickname">报告上叫我</label><input id="nickname" maxlength="16" placeholder="留空，沿用聊天里的称呼" autocomplete="off"></details>
       </div>
       <aside class="press" aria-label="三种主题样刊，点击查看">
         <div class="print-field">
@@ -69,9 +69,9 @@
   </main>
   <footer class="foot wrap">
     <div><strong>在自己的 Agent 里用</strong><p>在本地读取聊天和用量日志，直接导出年度长图。</p></div>
-    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=9567f41dc1" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
+    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=be1b9374f8" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
   </footer>
-  <script src="portable-prompt.js?v=0b89a85672"></script>
+  <script src="portable-prompt.js?v=6ae9a438d6"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>
 </body>
 </html>

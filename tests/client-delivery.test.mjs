@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import test from 'node:test';
+import { runInNewContext } from 'node:vm';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -10,6 +11,20 @@ try {
 } catch (error) {
   if (error.code !== 'MODULE_NOT_FOUND' || process.env.PUAI_PLAYWRIGHT_PACKAGE) throw error;
 }
+
+test('the copied prompt distinguishes a blank signature from an explicit nickname or 我', async () => {
+  const source = await readFile(new URL('../assets/portable-prompt.js', import.meta.url), 'utf8');
+  const prompt = runInNewContext(source + '\npuaiPortablePrompt');
+  const auto = prompt();
+  assert.equal(prompt('  '), auto);
+  assert.equal(prompt('XXX'), auto);
+  assert.match(auto, /本人对话.*昵称/);
+  assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
+  for (const name of ['山楂', '我']) {
+    assert.ok(prompt(name).includes('指定署名是' + JSON.stringify(name)));
+    assert.notEqual(prompt(name), auto);
+  }
+});
 
 // Run with playwright-core installed and either bundled Chromium or PUAI_CHROMIUM.
 test('report links open the PNG; manual recovery requires a tap', {
@@ -34,6 +49,8 @@ test('report links open the PNG; manual recovery requires a tap', {
     let failFrame = false;
     let inspectLoading = false;
     const requested = [];
+    const downloads = [];
+    page.on('download', file => downloads.push(file));
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
       requested.push(url.pathname + url.search);
@@ -72,6 +89,7 @@ test('report links open the PNG; manual recovery requires a tap', {
     const directURL = base + '?utm_source=chatgpt.com#p?' + named;
     await page.goto(directURL);
     await ready();
+    assert.equal(downloads.length, 0);
     const turns = await preview.getAttribute('alt');
     const positions = ['是盖子高了？','是杯子矮了。','这两件事在茶几上有区别吗？'].map(q => turns.indexOf(q));
     assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])));
