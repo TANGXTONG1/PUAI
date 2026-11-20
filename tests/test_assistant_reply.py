@@ -31,6 +31,18 @@ class AssistantReplyTests(unittest.TestCase):
                 "highlights": [], "share_quotes": [
                     {"message_id": "one", "text": first}, {"message_id": "two", "text": last}]}}
 
+    def test_name_projection_for_native_templates(self):
+        report = json.loads((MODULE.parents[1] / "assets/demo-report.json").read_text())
+        report.pop("share_story")
+        for person, expected in [({}, "我"), ({"name": " "}, "我"), ({"name": "ＸＸＸ"}, "我"),
+                                 ({"name": "「xXx」"}, "我"), ({"name": "普通唐某"}, "普通唐某")]:
+            report["person"] = person
+            builder.validate_report(report)
+            for compact in [False, True]:
+                with self.subTest(person=person, compact=compact):
+                    self.assertEqual(builder.public_report(report, compact=compact)["person"]["name"], expected)
+            self.assertEqual(report["person"], person)
+
     def test_projection_keeps_only_the_exact_turn_and_position(self):
         r = builder.validate_report(self.report)
         public = builder.public_report(r, compact=True)
@@ -156,13 +168,10 @@ class AssistantReplyTests(unittest.TestCase):
                     self.assertEqual(alt.count("给清单补漏"), 1)
                     self.assertNotIn("人格", alt)
                 else:
-                    quote_first = data["theme"] == "puai"
                     self.assertIn(short_habit, alt)
-                    self.assertEqual(long_habit in alt, not quote_first)
+                    self.assertEqual(long_habit in alt, data["theme"] != "puai")
                     for painted in (labels, alt):
-                        self.assertEqual(
-                            painted.index("挑个顺眼的。") < painted.index("这次评委也参赛。"),
-                            quote_first)
+                        self.assertLess(painted.index("挑个顺眼的。"), painted.index("这次评委也参赛。"))
             browser.close()
 
 

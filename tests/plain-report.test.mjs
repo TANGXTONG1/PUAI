@@ -18,6 +18,12 @@ test('共享入口字段映射与已有有账报告的计数、引语、插话�
   assert.deepEqual(parsePlainReport(full.join('\n')), expected);
 });
 
+test('占位符和空署名用「我」兜底，保留用户选定的昵称', () => {
+  for (const [input, expected] of [['XXX','我'],['「xXx」','我'],['ＸＸＸ','我'],['×××','我'],['','我'],['Ｘ某','Ｘ某'],['梦XXX','梦XXX']]) {
+    assert.equal(parsePlainReport('PUAI 2026\n署名：' + input + '\n原话：谁来付账？').person.name, expected);
+  }
+});
+
 test('整条聊天复制包含空链接、单独静态网址、加粗标签、围栏和前后说明', () => {
   const reply = ['本次可以查到两段。','[查看并保存长图]()','```text','**PUAI 2026**',
     '- **署名**：小白', '- **原话：** 两次都说「等一下」？','```',

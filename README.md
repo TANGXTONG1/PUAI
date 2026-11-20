@@ -6,7 +6,7 @@
   <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
-填上报告署名，点「复制给 ChatGPT」，发到你常用的 AI 对话。也可以直接改口令里的「XXX」。保留占位符时，PUAI 会沿用聊天里你认可的称呼。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
+点「复制给 ChatGPT」，发到你常用的 AI 对话。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
 
 有历史检索的客户端会跨月份打开原对话。若当前对话只能看到一段，成图会署「本次对话精选」或「聊天片段精选」。也可在有文件工具的对话里使用已有的 ChatGPT 聊天导出（JSON 或 ZIP），沿用同一句口令。
 
@@ -39,11 +39,11 @@
 npx skills add TANGXTONG1/PUAI
 ```
 
-装好后，把这句里的 XXX 换成昵称即可。
+装好后直接唤起，也可以把「小栗」换成自己的昵称。
 
-> 调用 $puai，从我的聊天原话生成 2026 年度长图，署名「XXX」。
+> 调用 $puai，从我的聊天原话生成 2026 年度长图，署名「小栗」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=f541c1536f) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=483047a8b0) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>

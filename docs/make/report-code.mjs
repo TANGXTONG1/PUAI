@@ -220,7 +220,9 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
     throw new Error('材料范围只接受 history、thread 或 fragments。');
   }
   const scope = declaredScope || (isRich && allowExcerptsWithoutLedger && !fields[4].trim() ? 'fragments' : '');
-  const name = checkText(rawName.trim(), '署名', 16, true) || '我';
+  const signature = checkText(rawName.trim(), '署名', 16, true);
+  const placeholder = /^[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?$/iu.test(signature);
+  const name = signature && !placeholder ? signature : '我';
   const keywords = fields.slice(isRich ? 13 : 6, isRich ? 16 : 8).map((tag, index) =>
     isRich ? editorialText(tag, 6) : checkText(tag.trim(), '标签', 6, index > 0)
   ).filter(Boolean);

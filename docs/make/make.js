@@ -1,6 +1,6 @@
-import { readFields, parseReport } from './report-code.mjs?v=0777368ddc';
+import { readFields, parseReport } from './report-code.mjs?v=ffbab029bc';
 
-import { readDirectFields, readPlainFields } from './plain-report.mjs?v=2a67dfcb80';
+import { readDirectFields, readPlainFields } from './plain-report.mjs?v=0517cd62cc';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');
@@ -28,7 +28,7 @@ let retryRequest;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=39d79e6b6f', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=b0fcc96f0c', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();

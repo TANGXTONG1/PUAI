@@ -25,6 +25,11 @@ test('named links carry a readable scene, preserve speaker turns, and retain the
   assert.deepEqual(report('[打开图](<' + path + '>)'), card);
 });
 
+test('legacy placeholder signatures do not appear on linked posters', () => {
+  assert.equal(report('#p?name=XXX&q=你偷偷换杯子了？').person.name, '我');
+  assert.equal(parseReport(['v1','puai','「ＸＸＸ」','偷换杯子','你偷偷换杯子了？','','换杯','']).person.name, '我');
+});
+
 test('only the named values are encoded; original special characters survive the URL round-trip', () => {
   const quote = 'C++ &= #1 [100%] (%20) | ｜ 🫖';
   const fragment = '#p?' + new URLSearchParams([['q',quote],['tag','代码茶']]);

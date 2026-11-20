@@ -394,8 +394,8 @@ def validate_report(report, today=None, now=None):
     if mode == "full" and (start != date(year, 1, 1) or end != date(year, 12, 31) or end >= today):
         raise ReportError("mode=full: requires January 1–December 31 of an already completed year")
 
-    obj(report["person"], ["name"], "person")
-    string(report["person"]["name"], 16, "person.name")
+    obj(report["person"], [], "person", optional=["name"])
+    string(report["person"].get("name", ""), 16, "person.name", minimum=0)
     obj(report["identity"], ["title", "subtitle"], "identity")
     string(report["identity"]["title"], 12, "identity.title")
     string(report["identity"]["subtitle"], 60, "identity.subtitle")
@@ -602,9 +602,12 @@ def public_report(report, compact=False, include_story=True):
     """Whitelist display fields; never put private provenance in the HTML."""
     if not compact and "share_story" in report:
         raise ReportError("share_story: select compact mode to preserve the sharing selection")
+    name = report["person"].get("name", "").strip()
+    if not name or re.fullmatch(r'[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?', name, re.IGNORECASE):
+        name = "我"
     if compact:
         public = {key: copy.deepcopy(report[key]) for key in ("year", "mode", "period", "keywords")}
-        public["person"] = {"name": report["person"]["name"]}
+        public["person"] = {"name": name}
         for key in ("theme", "scope"):
             if key in report:
                 public[key] = report[key]
@@ -629,7 +632,8 @@ def public_report(report, compact=False, include_story=True):
             public["activity"] = compact_activity(report["activity"], include_early_quotes=report.get("scope") == "history")
         return public
     public = {key: copy.deepcopy(report[key]) for key in (
-        "schema_version", "year", "mode", "period", "person", "identity", "keywords")}
+        "schema_version", "year", "mode", "period", "identity", "keywords")}
+    public["person"] = {"name": name}
     public["phrase"] = {key: report["phrase"][key] for key in ("text", "note", "kind")}
     public["metrics"] = [{key: item[key] for key in ("label", "value", "unit")} for item in report["metrics"]]
     public["moments"] = [{key: item[key] for key in ("title", "text")} for item in report["moments"]]

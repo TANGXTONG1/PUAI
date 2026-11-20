@@ -32,6 +32,12 @@ Token：13000
 
 
 class ChatPngTest(unittest.TestCase):
+    def test_signature_placeholder_is_never_painted_as_the_name(self):
+        for incoming, expected in [("", "我"), ("XXX", "我"), ("「xXx」", "我"), ("ＸＸＸ", "我"),
+                                   ("叉叉叉", "我"), ("不愿透露姓名的唐某", "不愿透露姓名的唐某"), ("XXX号", "XXX号")]:
+            with self.subTest(incoming=incoming):
+                self.assertEqual(renderer.parse_receipt(RECEIPT.replace("试读者", incoming))["name"], expected)
+
     def test_partial_ledger_and_real_conversation_order(self):
         r = renderer.parse_receipt(RECEIPT)
         self.assertEqual(r["reply"], (1, "左边第二行说得更清楚。"))
@@ -112,7 +118,7 @@ class ChatPngTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.parse_receipt("PUAI 2026\n署名：我\n标签：教学")
 
-    def test_roast_leads_with_the_verified_exchange_before_the_scene_and_stats(self):
+    def test_all_themes_lead_with_the_verified_exchange_before_the_caption_and_stats(self):
         receipt = """PUAI 2026
 主题：puai
 主场景：自带红笔。
@@ -136,10 +142,8 @@ AI：四行。
                 renderer.draw_report(renderer.parse_receipt(source), font)
             return ys
 
-        for theme, order in [
-            ("puai", ["对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "年度现场", "自带红笔。", "对话用量"]),
-            ("teach", ["年度现场", "自带红笔。", "对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "对话用量"]),
-        ]:
+        for theme in ["puai", "teach"]:
+            order = ["对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "现场旁注", "自带红笔。", "对话用量"]
             with self.subTest(theme=theme):
                 ys = positions(receipt.replace("主题：puai", f"主题：{theme}"))
                 actual = [ys[text] for text in order]
@@ -147,6 +151,31 @@ AI：四行。
         lead_only = positions("PUAI 2026\n主题：puai\n主场景：自带红笔。")
         self.assertLess(lead_only["对话现场"], lead_only["自带红笔。"])
         self.assertNotIn("本人原话", lead_only)
+
+    def test_comic_layout_centers_the_signature_and_alternates_quotes(self):
+        source = "PUAI 2026\n署名：不愿透露姓名的唐某\n原话：你再数数。\n原话：四行半。\n原话：退款！"
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        positions = {}
+        draw_text = ImageDraw.ImageDraw.text
+
+        def observe(draw, xy, label, *args, **kwargs):
+            positions[label] = (xy, kwargs)
+            return draw_text(draw,xy,label,*args,**kwargs)
+
+        with patch.object(ImageDraw.ImageDraw,"text",observe):
+            img = renderer.draw_report(renderer.parse_receipt(source),font)
+        badge = "不愿透露姓名的唐某的"
+        xy, kwargs = positions[badge]
+        bounds = kwargs["font"].getbbox(badge,anchor=kwargs["anchor"])
+        actual_cx = xy[0]+(bounds[0]+bounds[2])/2
+        width = round(kwargs["font"].getlength(badge))+44
+        self.assertAlmostEqual(actual_cx,48+width/2,delta=1)
+        self.assertAlmostEqual(xy[1]+(bounds[1]+bounds[3])/2,64,delta=1)
+        first, second, third = [positions[q][0] for q in ("你再数数。","四行半。","退款！")]
+        self.assertLess(first[0],second[0])
+        self.assertLess(third[0],second[0])
+        for (x,y),color in zip([first,second,third],["#FCFDFB","#16399A","#C7E1F4"]):
+            self.assertEqual(img.getpixel((x-6,y+5)),tuple(bytes.fromhex(color[1:])))
 
     def test_standalone_png_without_node_browser_templates_or_network(self):
         with tempfile.TemporaryDirectory() as folder:

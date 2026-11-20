@@ -16,16 +16,19 @@ test('the shared launcher includes an editable signature and the official skill 
   const source = await readFile(new URL('../assets/portable-prompt.js', import.meta.url), 'utf8');
   const prompt = runInNewContext(source + '\npuaiPortablePrompt');
   const auto = prompt();
-  assert.equal(prompt('  '), auto);
-  assert.equal(prompt('XXX'), auto);
-  assert.ok(auto.includes('署名「XXX」'));
+  for (const marker of ['  ', 'XXX', '「xXx」', 'ＸＸＸ', '×××', '叉叉叉']) {
+    assert.equal(prompt(marker), auto);
+  }
+  assert.ok(auto.includes('署名沿用我在聊天里用过的称呼'));
+  assert.ok(!auto.includes('XXX'));
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '7');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
-  for (const name of ['不愿透露姓名的唐某', '我']) {
-    assert.equal(prompt(name), auto.replace('「XXX」', '「' + name + '」'));
+  for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {
+    assert.equal(prompt(name), auto.replace('署名沿用我在聊天里用过的称呼', '署名「' + name + '」'));
   }
   const canonical = await readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
   for (const mirror of ['../docs/skill.txt', '../docs/SKILL.md']) {

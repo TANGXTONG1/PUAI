@@ -14,7 +14,7 @@
 | `scope` | 可选，`history` / `thread` / `fragments` | 打开多个不同现场并确认跨期行为后用 history。仅能核对一个线程或同一现场用 thread，零散线索用 fragments。后两种在图上分别题作「本次对话精选」「聊天片段精选」。日期账单独记录可数的发言。 |
 | `theme` | 可选，九种主题字符串或显式 null（见下） | 按互动中反复出现的动作定主题。新 A 版证据不足时显式填 null，保留用量和日历。缺少该字段的旧报告沿用原主题表现。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
-| `person` | `{name}`，1–16 字 | 本次指定或从本人聊天辨认出的分享称呼，依据不足填“我” |
+| `person` | 公开为 `{name}`，1–16 字 | 先从本人聊天核对分享称呼。留空、缺少 `name` 或收到旧版 XXX 占位符时统一显示为“我”。 |
 | `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
 | `phrase` | `{text,note,kind,evidence_ids}` | `text` 1–50 字，`note` 1–60 字，`kind` 为 `quote` 或 `paraphrase` |
 | `keywords` | 0–3 个字符串，每个 1–6 字 | 据上下文先定 1–3 个具体特征，写成图尾标签，供回查原话 |
@@ -77,7 +77,7 @@
 | `highlights` | 0–12 个 `{date,title,text,evidence_ids}` | 每天最多一个精选片段，该日必须有至少一条消息 |
 | `roast_message_ids` | 可选，0–50,000 个消息 ID | 必须唯一且全部来自同一 `activity.messages`；表示经过上下文人工核验、确实在骂或讽刺 AI 的用户消息 |
 | `theme_message_ids` | 可选，0–50,000 个消息 ID | 适用于 PUAI 以外的八种主题。需同时提供根 `theme`，且引用同一份 `messages` 中的唯一 ID。逐条复核其是否体现此主题；本人报告中对应消息至少有一条 `provided` 证据。 |
-| `share_quotes` | 可选，0–6 个 `{message_id,text,emphasis?,repeat_message_ids?,rewrite?}` | 同一现场只摘必要的原话；材料丰富时可精选至多 6 句来自不同回合的本人原话，最能代表其特征的一句居首。`rewrite` 仅作历史兼容，当前流程不填；原 `text` 为 1–120 个字符，消息 ID 唯一且属于 `messages`；未提供复读统计时无需属于 `roast_message_ids` |
+| `share_quotes` | 可选，0–6 个 `{message_id,text,emphasis?,repeat_message_ids?,rewrite?}` | 新图默认选两句，一句足够就单独用，有独立收尾时可选到三句。最能让人记住的一句居首。格式兼容已有的四至六条引语。`rewrite` 仅作历史兼容，当前流程不填；原 `text` 为 1–120 个字符，消息 ID 唯一且属于 `messages`；未提供复读统计时无需属于 `roast_message_ids` |
 | `token_usage` | 可选，见下文 | 从真实使用日志核验的分析期 token 汇总；没有可靠记录时完全省略 |
 
 消息的 `id` 为 1–128 字且唯一，用于去重；`timestamp` 须为含明确 UTC offset 或 `Z` 的 ISO 8601 时间，如 `2026-06-21T23:47:00+08:00`。本地日期须落在 `period` 内，时间不能晚于生成时刻。精选片段的 `date` 为 `YYYY-MM-DD`，`title` 为 1–18 字，`text` 为 1–90 字。非 `demo` 模式的每条消息和精选片段都必须引用合法证据；`self_report` 模式每条消息还须至少引用一条 `provided` 证据，不能凭记忆填精确时间。
@@ -178,7 +178,7 @@ A 版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分
 
 默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、范围、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、发言日期、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
 
-仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, scope, theme, lead, note, setup, q, ai, endai, use, tag, days, dates, undated, token`。原话 q 最多六条，用法和标签各最多三项。使用明确的 scope 可让单次对话带上其真实统计，或在跨线程材料缺少日期账时仍正确标出范围。直接链接和中文报告单若缺少日期账且未写范围，图题默认为「聊天片段精选」。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
+仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, scope, theme, lead, note, setup, q, ai, endai, use, tag, days, dates, undated, token`。新图原话 q 默认两条、最多三条。原链接兼容六条。用法和标签各最多三项。使用明确的 scope 可让单次对话带上其真实统计，或在跨线程材料缺少日期账时仍正确标出范围。直接链接和中文报告单若缺少日期账且未写范围，图题默认为「聊天片段精选」。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
 
 `share_story.lead` 可选，形式为 `{"text":"……","evidence_ids":["e1"]}`，至多 90 字，单独排在最上。它是经过证据核实的纪事，可以与后面的语录来自不同场合。`share_story.final_reply` 采用相同对象结构，至多 80 字，证据为同一原回合中最后一条入选用户原话和随后的 AI 原文，两行分别以「用户：」「AI：」起头。它与中间的 assistant_reply 只选一个；都不计作本人消息。只把显示文字投影到公开数据。
 
