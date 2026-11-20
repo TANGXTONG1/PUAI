@@ -4,13 +4,14 @@
 
 ## 字段
 
-所有对象只接受下表字段。根对象的 `theme`、`activity`、`share_story`，活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，分享清单的 `habits`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略。`moments[].title` 仅在旧格式必填。字符限制按 Python Unicode 字符计数。输入文件最多 32 MB。
+所有对象只接受下表字段。根对象的 `scope`、`theme`、`activity`、`share_story`，活动对象的 `roast_message_ids`、`theme_message_ids`、`share_quotes`、`token_usage`，分享清单的 `habits`，以及每条分享原句的 `emphasis`、`repeat_message_ids`、`rewrite` 可省略。`moments[].title` 仅在旧格式必填。字符限制按 Python Unicode 字符计数。输入文件最多 32 MB。
 
 | 字段 | 类型与限制 | 含义 |
 |---|---|---|
 | `schema_version` | 整数 `1` | 固定版本 |
 | `year` | 整数，2000–2100 | 用户指定的回顾年份 |
 | `mode` | `demo` / `excerpt` / `self_report` / `full` | 口径；由页面显示固定标记 |
+| `scope` | 可选，`history` / `thread` / `fragments` | 打开多个不同现场并确认跨期行为后用 history。仅能核对一个线程或同一现场用 thread，零散线索用 fragments。后两种在图上分别题作「本次对话精选」「聊天片段精选」。日期账单独记录可数的发言。 |
 | `theme` | 可选，九种主题字符串或显式 null（见下） | 按互动中反复出现的动作定主题。新 A 版证据不足时显式填 null，保留用量和日历。缺少该字段的旧报告沿用原主题表现。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
 | `person` | `{name}`，1–16 字 | 本次指定或从本人聊天辨认出的分享称呼，依据不足填“我” |
@@ -54,9 +55,9 @@
 }
 ```
 
-`share_story.quote_setup` 是可选的 `{"text":"……","evidence_ids":["e1"]}`。正文 1–24 字，引用可核的原始对话，只为第一条入选原话交代必要的前情。首条引语须属于实际展示的分析期；没有合适引语就省略。公开输出仅含 `story.quote_setup` 字符串，前情与用户原话分开排。两句前后呼应时按真实顺序各自入选，跨对话不剪成接话。
+`share_story.quote_setup` 是可选的 `{"text":"……","evidence_ids":["e1"]}`。正文 1–24 字，引用可核的原始对话，只为第一条入选原话交代必要的前情。首条引语须能在本图展示；没有合适引语就省略。公开输出仅含 `story.quote_setup` 字符串，前情与用户原话分开排。两句前后呼应时按真实顺序各自入选，跨对话不剪成接话。
 
-`share_story.assistant_reply` 是可选的 `{"after_quote":1,"text":"……","evidence_ids":["e1"]}`。位置 1 或 2 表示放在第几条本人原话后，两侧须各有一条实际展示的本人原话。AI 回复取自同一线程，1–80 字，逐字连续，只选当时已给用户看的发言。在同一个 provided 证据项（演示可用 demo）把这三段按实际顺序各写一行，角色前缀分别为「用户：」「AI：」「用户：」。核实三句属于这一回合，再填写位置。前后的两条本人原句仍须各自通过 activity 的来源校验。缺少角色、顺序或核对依据就省略这一字段。公开对象只保留 `after_quote` 与 `text`。AI 插话不进统计分母、金句数量或复读次数。
+`share_story.assistant_reply` 是可选的 `{"after_quote":1,"text":"……","evidence_ids":["e1"]}`。位置 1–5 表示放在第几条本人原话后，两侧须各有一条实际展示的本人原话。AI 回复取自同一线程，1–80 字，逐字连续，只选当时已给用户看的发言。在同一个 provided 证据项（演示可用 demo）把这三段按实际顺序各写一行，角色前缀分别为「用户：」「AI：」「用户：」。核实三句属于这一回合，再填写位置。前后的两条本人原句仍须各自通过 activity 的来源校验。缺少角色、顺序或核对依据就省略这一字段。公开对象只保留 `after_quote` 与 `text`。AI 插话不进统计分母、金句数量或复读次数。
 
 `share_story.habits` 可选，最多选三项。每项形如 `{"text":"先要两个版本，再把两版的开头互换","evidence_ids":["e1","e3"]}`。文字限 1–24 字，引用能支撑这个互动动作的证据。写“经常”或“每次”之前须有相应频次依据。用法可以来自脱敏工作摘要，原话须能核对本人原文。原始证据、消息 ID 和工作背景留在私有文件。
 
@@ -76,7 +77,7 @@
 | `highlights` | 0–12 个 `{date,title,text,evidence_ids}` | 每天最多一个精选片段，该日必须有至少一条消息 |
 | `roast_message_ids` | 可选，0–50,000 个消息 ID | 必须唯一且全部来自同一 `activity.messages`；表示经过上下文人工核验、确实在骂或讽刺 AI 的用户消息 |
 | `theme_message_ids` | 可选，0–50,000 个消息 ID | 适用于 PUAI 以外的八种主题。需同时提供根 `theme`，且引用同一份 `messages` 中的唯一 ID。逐条复核其是否体现此主题；本人报告中对应消息至少有一条 `provided` 证据。 |
-| `share_quotes` | 可选，0–6 个 `{message_id,text,emphasis?,repeat_message_ids?,rewrite?}` | 新报告精选 0–3 句本人原话，最能代表其特征的一句居首。`rewrite` 仅作历史兼容，当前流程不填；原 `text` 为 1–120 个字符，消息 ID 唯一且属于 `messages`；未提供复读统计时无需属于 `roast_message_ids` |
+| `share_quotes` | 可选，0–6 个 `{message_id,text,emphasis?,repeat_message_ids?,rewrite?}` | 同一现场只摘必要的原话；材料丰富时可精选至多 6 句来自不同回合的本人原话，最能代表其特征的一句居首。`rewrite` 仅作历史兼容，当前流程不填；原 `text` 为 1–120 个字符，消息 ID 唯一且属于 `messages`；未提供复读统计时无需属于 `roast_message_ids` |
 | `token_usage` | 可选，见下文 | 从真实使用日志核验的分析期 token 汇总；没有可靠记录时完全省略 |
 
 消息的 `id` 为 1–128 字且唯一，用于去重；`timestamp` 须为含明确 UTC offset 或 `Z` 的 ISO 8601 时间，如 `2026-06-21T23:47:00+08:00`。本地日期须落在 `period` 内，时间不能晚于生成时刻。精选片段的 `date` 为 `YYYY-MM-DD`，`title` 为 1–18 字，`text` 为 1–90 字。非 `demo` 模式的每条消息和精选片段都必须引用合法证据；`self_report` 模式每条消息还须至少引用一条 `provided` 证据，不能凭记忆填精确时间。
@@ -140,7 +141,7 @@
 
 A 版 `--style comic` 及兼容别名 `--style print` 均使用 `assets/comic-template.html`，自动启用紧凑数据；单独 `--compact` 仍使用旧 `assets/compact-template.html`。各紧凑样式共用以下公开字段。A 版另支持选编后的人格与场景。
 
-- `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
+- `year`、`mode`、`period`、`keywords` 和输入显式提供的 `theme`、`scope`；关键词仍最多 3 个，每个最多 6 字，须经编辑脱敏。
 - `person` 只公开 `{name}`；用本次指定的分享称呼，或根据已授权聊天中本人认可、惯用的称呼定名。要求匿名、归属不清或没有可用称呼时填“我”。姓名线索留在私有上下文，公开数据只写最终称呼（1–16 字）。不要从转发图、本地目录、工作信息或邮箱推测姓名。
 - 可选 `activity` 只含 `timezone`、`coverage`、`rhythm`、`selected_months`、`months`、`summary`、`days`，以及从可选输入派生的 `share_quotes`、`token_usage`、`theme_stats`。
 
@@ -163,17 +164,17 @@ A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,sc
 
 A 版的非 PUAI 主题使用 `theme_stats.messages / summary.messages`；月分母为对应月的全部用户消息。只有主题子集经语义复核、分母有可用消息时才有占比。呈现为已核验消息下限，舍入比例用「约」。不从标签、金句数或 `roast_message_ids` 推算主题计数。指令总数、活跃日历及日志 token 都与所选主主题独立。
 
-公开 `activity.share_quotes` 为 `[{date,text,kind?,emphasis?,repeat_count?}]`：`kind` 仅在输入附有 `rewrite` 时输出为 `"rewrite"`，同时 `text` 与可选 `emphasis` 取改写版本；其他可选字段只在对应输入提供时输出，旧数据仍为 `{date,text}`。日期由对应原消息的时间戳按同一 `timezone` 换算，只保留 `rhythm.analysis_months` 内的条目，不受日历选展月份限制；输出沿用输入的编辑顺序，过滤不改变剩余条目的相对顺序，不按日期重新排序。原消息 ID、复读 ID 列表、时间戳、来源和证据引用不公开；有改写时也不公开原 `text` 或原 `emphasis`。模板按不同日期升序编号，同一天共用日期标记，编号不受编辑排序影响；日期可能没有对应的选展日历，仍须标出原消息日期。同日不同消息仍可各占一条。未提供此字段时省略，显式空列表或全部落在分析期前时输出 `[]`。普通非紧凑输出保持原逻辑，不自动增加此分享列表或 `rhythm`。
+公开 `activity.share_quotes` 为 `[{date,text,kind?,emphasis?,repeat_count?}]`：`kind` 仅在输入附有 `rewrite` 时输出为 `"rewrite"`，同时 `text` 与可选 `emphasis` 取改写版本；其他可选字段只在对应输入提供时输出，旧数据仍为 `{date,text}`。日期由对应原消息的时间戳按同一 `timezone` 换算，新报告显式指定 `scope=history` 时，保留年内核实的全部入选原句，包括密集月之前的发言。旧报告仍只展示 `rhythm.analysis_months` 内的条目。日期和引语数量均不改变日历与消息分母；输出沿用输入的编辑顺序，过滤不改变剩余条目的相对顺序，不按日期重新排序。原消息 ID、复读 ID 列表、时间戳、来源和证据引用不公开；有改写时也不公开原 `text` 或原 `emphasis`。模板按不同日期升序编号，同一天共用日期标记，编号不受编辑排序影响；日期可能没有对应的选展日历，仍须标出原消息日期。同日不同消息仍可各占一条。未提供此字段时省略，显式空列表或按旧口径过滤后没有条目时输出 `[]`。普通非紧凑输出保持原逻辑，不自动增加此分享列表或 `rhythm`。
 
 详细分析期、来源范围与缓存语义保留在数据及 HTML 折叠统计口径；长图不加「可见记录」日期行或「主会话／含缓存」解释，保留年份、日历月份、真实数值及「≥／至少／约」。PUAI 主题及原红白 A 版用整个分析期 `summary.roast_messages / summary.messages` 呈现用户消息中已核验吐槽的占比；例如核验到 500 条消息中有 20 条吐槽，可写「500 条消息，至少 20 条开喷」，比例标注「约 4%」；小数按显示精度四舍五入，不能把向上舍入的值当作严格下界。分母是 `rhythm.analysis_months` 覆盖的全部用户消息，不是自然日、活跃天数、token 数、日历选展月份之和或全年消息数；分子仍是核验下限。如另外展示 `summary.roast_days / summary.active_days`，必须标明「吐槽日占比」，不能和消息占比混称。没有吐槽核验或相应分母为 0 时，不输出 0% 或完整比例图；不外推全年或其他客户端的使用情况。
 
-紧凑 HTML 采用字段白名单。根字段为 `year`、`mode`、`period`、`keywords`、`person`，以及可选的 `theme`、`activity` 和上述 A 版 `story`。完整编辑对象 `phrase`、`identity`、`metrics`、`moments`、`closing` 及活跃日批注、逐小时数组和原始证据都不嵌入 HTML。本人原句通过经过核验和月份过滤的 `activity.share_quotes` 进入。
+紧凑 HTML 采用字段白名单。根字段为 `year`、`mode`、`period`、`keywords`、`person`，以及可选的 `scope`、`theme`、`activity` 和上述 A 版 `story`。完整编辑对象 `phrase`、`identity`、`metrics`、`moments`、`closing` 及活跃日批注、逐小时数组和原始证据都不嵌入 HTML。本人原句通过经过核验的 `activity.share_quotes` 进入。
 
 ## 图片附件与一键打开
 
-默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
+默认在聊天里显示已渲染的 PNG。只能提供下载附件或文字时，改给网页预览。有 Python/Pillow 时，单文件渲染器读取私下准备的可读报告单。首行 `PUAI 2026`，随后每项一行，按需填写署名、范围、主题、主场景、短评、前情、原话、AI、AI收尾、用法、标签、日期账、无日期账、Token。已核的引语可单独做图，无需为它发明统计。只有摘要时用独立现场或具体用法。
 
-仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, theme, lead, note, setup, q, ai, endai, use, tag, days, undated, token`。省略无值的键；q、use、tag 可重复。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
+仅能输出文字时，用 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 加有序键值对。对应键为 `name, scope, theme, lead, note, setup, q, ai, endai, use, tag, days, undated, token`。原话 q 最多六条，用法和标签各最多三项。使用明确的 scope 可让单次对话带上其真实统计，或在跨线程材料缺少日期账时仍正确标出范围。直接链接和中文报告单若缺少日期账且未写范围，图题默认为「聊天片段精选」。取材与发言账口径和上下文校验沿用本页。程序应以列表向标准 URL 编码器传入各项，如 Python 的 `urllib.parse.urlencode(pairs)`。手工拼接时要转义括号、&、#、%、+、空格等 URL 字符。保留正常的 HTTP(S) 网址在前，所有分享内容在片段内。链接应自带本人的可分享信息，点开就自动绘制并可保存 PNG；不用手工粘贴。旧文字报告仍能通过固定出图页恢复。
 
 `share_story.lead` 可选，形式为 `{"text":"……","evidence_ids":["e1"]}`，至多 90 字，单独排在最上。它是经过证据核实的纪事，可以与后面的语录来自不同场合。`share_story.final_reply` 采用相同对象结构，至多 80 字，证据为同一原回合中最后一条入选用户原话和随后的 AI 原文，两行分别以「用户：」「AI：」起头。它与中间的 assistant_reply 只选一个；都不计作本人消息。只把显示文字投影到公开数据。
 

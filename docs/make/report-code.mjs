@@ -98,15 +98,15 @@ function readDays(value) {
   }).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function readQuote(value, days, excerptsOnly = false) {
+function readQuote(value, days, excerptsOnly = false, earlyCutoff) {
   const header = days && /^(\d{2}-\d{2})~/.exec(value);
   if (!header) return { text: checkText(value, '原话', 80) };
   const date = reportDate(header[1]);
-  if (!excerptsOnly && !days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
+  if (!excerptsOnly && !(earlyCutoff && date < earlyCutoff) && !days.some(day => day.date === date)) throw new Error('原话前标注的日期须出现在逐日记录里。');
   return { date, text: checkText(value.slice(header[0].length), '原话', 80) };
 }
 
-function richActivity(fields, theme, allowExcerptsWithoutLedger, lead) {
+function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
   const days = readDays(fields[4]);
   const undated = fields[5].trim() ? readCounts(fields[5].trim()) : null;
   const habits = fields.slice(7, 10).filter(habit => !lead || habit !== fields[18])
@@ -118,12 +118,15 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead) {
   }
   const totals = summarizeRows(countedRows);
   const excerptsOnly = allowExcerptsWithoutLedger && countedRows.length === 0;
+  const quotes = fields.slice(10, 13);
+  if (allowExcerptsWithoutLedger) quotes.push(...fields.slice(21, 24));
+  const earlyCutoff = scope === 'history' ? days[0]?.date : undefined;
   const activity = {
     coverage: 'partial',
     daily_profile: {
       habits: [...new Set(habits)],
     },
-    share_quotes: fields.slice(10, 13).filter(value => value.trim()).map(value => readQuote(value, days, excerptsOnly))
+    share_quotes: quotes.filter(value => value.trim()).map(value => readQuote(value, days, excerptsOnly, earlyCutoff))
   };
   if (!excerptsOnly) {
     Object.assign(activity.daily_profile, {
@@ -136,7 +139,8 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead) {
   if (!totals.count && !habits.length && !lead && !(excerptsOnly && activity.share_quotes.length)) {
     throw new Error('请从可读的聊天里补充具体使用习惯或可核实的本人原话；有可核账目时再填发言数。');
   }
-  if (!excerptsOnly && activity.share_quotes.length > totals.count) {
+  const countedQuotes = activity.share_quotes.filter(q => !(earlyCutoff && q.date && q.date < earlyCutoff));
+  if (!excerptsOnly && countedQuotes.length > totals.count) {
     throw new Error('每条原话要来自一条不同的已统计发言，请让 GPT 补全逐日或无日期计数。');
   }
   for (const { date, count } of days) {
@@ -198,6 +202,11 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
   const isRich = version === 'v2';
   const theme = rawTheme.trim().toLowerCase() || null;
   if (!(isRich && theme === null) && !themes.has(theme)) throw new Error('报告码的主题 ID 无法识别，请使用九种主题之一，未归类的 v2 可留空。');
+  const declaredScope = isRich && allowExcerptsWithoutLedger ? fields[20]?.trim() : '';
+  if (declaredScope && !['history', 'thread', 'fragments'].includes(declaredScope)) {
+    throw new Error('材料范围只接受 history、thread 或 fragments。');
+  }
+  const scope = declaredScope || (isRich && allowExcerptsWithoutLedger && !fields[4].trim() ? 'fragments' : '');
   const name = checkText(rawName.trim(), '署名', 16, true) || '我';
   const keywords = fields.slice(isRich ? 13 : 6, isRich ? 16 : 8).map((tag, index) =>
     isRich ? editorialText(tag, 6) : checkText(tag.trim(), '标签', 6, index > 0)
@@ -205,7 +214,7 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
   // Only named links and clipboard receipts may supply a lead. The original
   // positional share-code format stays unchanged.
   const lead = isRich && allowExcerptsWithoutLedger ? editorialText(fields[18] || '', 90) : '';
-  const activity = isRich ? richActivity(fields, theme, allowExcerptsWithoutLedger, lead) : {
+  const activity = isRich ? richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) : {
     share_quotes: fields.slice(4, 6).filter(value => value.trim()).map(value => readQuote(value))
   };
   const story = { persona: isRich ? editorialText(persona, 100) : checkText(persona.trim(), '人格短评', 60), scenes: [] };
@@ -216,8 +225,8 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
     story.quote_setup = setup.trim();
   }
   if (isRich && fields[17]) {
-    const match = /^([12])~(.+)$/u.exec(fields[17]);
-    if (!match) throw new Error('AI 回复请填「1~原话」或「2~原话」，数字表示接在哪条本人发言之后。');
+    const match = /^([1-5])~(.+)$/u.exec(fields[17]);
+    if (!match || !allowExcerptsWithoutLedger && Number(match[1]) > 2) throw new Error('AI 回复须标明接在哪条已选本人发言之后。');
     const pos = Number(match[1]);
     const before = activity.share_quotes[pos - 1], after = activity.share_quotes[pos];
     if (!before || !after || before.date && after.date && before.date > after.date) {
@@ -233,6 +242,7 @@ export function parseReport(fields, { allowExcerptsWithoutLedger = false } = {})
     // Both URL formats belong to this edition, including when reopened later.
     year: 2026,
     mode: 'excerpt',
+    ...(scope ? { scope } : {}),
     theme,
     person: { name },
     story,

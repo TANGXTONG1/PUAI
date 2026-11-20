@@ -147,7 +147,7 @@ def reviewed_message_ids(activity, field, messages_by_id):
     return ids
 
 
-def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False):
+def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False, include_early_quotes=False):
     """Return the selected quotes' instants, with None for quotes outside the analysis period."""
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
         optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
@@ -225,7 +225,7 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
             if mid not in messages_by_id:
                 raise ReportError(f"{path}.message_id: unknown message ID {mid!r}")
             quote_instants.append(activity_timestamp(messages_by_id[mid]["timestamp"], path)
-                                  if message_months[mid] in analysis_months else None)
+                                  if include_early_quotes or message_months[mid] in analysis_months else None)
             if mid in seen_quotes:
                 raise ReportError(f"{path}.message_id: duplicate shared quote message ID")
             seen_quotes.add(mid)
@@ -285,7 +285,7 @@ def validate_assistant_reply(reply, quotes, instants, evidence, refs, mode):
     path = "share_story.assistant_reply"
     obj(reply, ["after_quote", "text", "evidence_ids"], path)
     pos = reply["after_quote"]
-    if type(pos) is not int or pos not in (1, 2) or len(instants) <= pos or not all(instants[:pos+1]):
+    if type(pos) is not int or not 1 <= pos <= 5 or len(instants) <= pos or not all(instants[:pos+1]):
         raise ReportError(f"{path}.after_quote: place the reply between two visible selected user quotes")
     if instants[pos-1] > instants[pos]:
         raise ReportError(f"{path}: the surrounding user quotes must be in chronological order")
@@ -355,7 +355,9 @@ def validate_report(report, today=None, now=None):
     today = today or date.today()
     obj(report, ["schema_version", "year", "mode", "period", "person", "identity",
                  "phrase", "keywords", "metrics", "moments", "closing", "evidence"], "report",
-        optional=["activity", "theme", "share_story"])
+        optional=["activity", "theme", "share_story", "scope"])
+    if "scope" in report and report["scope"] not in ("history", "thread", "fragments"):
+        raise ReportError("report.scope: expected history, thread or fragments")
     # An absent key retains the original PUAI edition. Explicit null is a
     # neutral A-layout report for records without a characteristic theme.
     unclassified = "theme" in report and report["theme"] is None
@@ -480,7 +482,7 @@ def validate_report(report, today=None, now=None):
     if "activity" in report:
         quote_instants = validate_activity(
             report["activity"], start, end, mode, evidence, refs, now or datetime.now(timezone.utc),
-            theme=report.get("theme"), has_story=has_share_story)
+            theme=report.get("theme"), has_story=has_share_story, include_early_quotes=report.get("scope") == "history")
         if unclassified and "roast_message_ids" in report["activity"]:
             raise ReportError("activity.roast_message_ids: omit reviewed theme counts when report.theme is null")
     if "quote_setup" in report.get("share_story", {}) and not (quote_instants and quote_instants[0]):
@@ -519,7 +521,7 @@ def count_theme_messages(activity, analysis_months, target_zone):
     return {"messages": sum(months.values()), "months": months, "days": dict(sorted(days.items()))}
 
 
-def compact_activity(activity):
+def compact_activity(activity, include_early_quotes=False):
     """Summarize the observed analysis period and select up to three calendars."""
     aggregate = summarize_activity(activity)
     rhythm = derive_rhythm(date.fromisoformat(day["date"]) for day in aggregate["days"])
@@ -567,7 +569,7 @@ def compact_activity(activity):
         for quote in activity["share_quotes"]:
             message = messages_by_id[quote["message_id"]]
             day = activity_timestamp(message["timestamp"], "shared quote timestamp").astimezone(target_zone).date().isoformat()
-            if day[:7] in analysis_months:
+            if include_early_quotes or day[:7] in analysis_months:
                 display_quote = quote.get("rewrite", quote)
                 public_quote = {"date": day, "text": display_quote["text"]}
                 if "rewrite" in quote:
@@ -588,8 +590,9 @@ def public_report(report, compact=False, include_story=True):
     if compact:
         public = {key: copy.deepcopy(report[key]) for key in ("year", "mode", "period", "keywords")}
         public["person"] = {"name": report["person"]["name"]}
-        if "theme" in report:
-            public["theme"] = report["theme"]
+        for key in ("theme", "scope"):
+            if key in report:
+                public[key] = report[key]
         if include_story and "share_story" in report:
             selected = report["share_story"]["moment_indices"]
             scene_lines = [report["moments"][index]["text"] for index in selected]
@@ -608,7 +611,7 @@ def public_report(report, compact=False, include_story=True):
                 reply = report["share_story"]["assistant_reply"]
                 public["story"]["assistant_reply"] = {key: reply[key] for key in ("after_quote", "text")}
         if "activity" in report:
-            public["activity"] = compact_activity(report["activity"])
+            public["activity"] = compact_activity(report["activity"], include_early_quotes=report.get("scope") == "history")
         return public
     public = {key: copy.deepcopy(report[key]) for key in (
         "schema_version", "year", "mode", "period", "person", "identity", "keywords")}

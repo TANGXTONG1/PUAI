@@ -32,9 +32,9 @@ h1 span{display:block;white-space:nowrap}
 .instruction,.status{font-size:13px;line-height:1.65;color:var(--muted);margin:11px 0 0}
 .status:not(:empty){color:var(--blue);font-weight:650}.status:empty{display:none}
 #prompt{width:100%;margin:10px 0 0;padding:10px;font:inherit;font-size:14px;background:#fffdf7;color:var(--ink);border:1px solid var(--ink)}
-.signature{margin-top:7px;font-size:13px;line-height:1.6;color:var(--muted)}
-.signature summary{width:fit-content;cursor:pointer}
-.signature label{margin-right:8px}.signature input{max-width:180px;border:1px solid var(--rule);padding:6px 8px;color:var(--ink);background:#fffdf7;margin-top:7px;font:inherit}
+.signature{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.signature label{flex:none;font-size:15px;font-weight:650}
+.signature input{width:17em;min-width:0;max-width:100%;padding:10px 12px;border:1px solid #89939a;border-radius:3px;color:var(--ink);background:#fffdf7;font:inherit;font-size:16px}
 .print-field{position:relative;isolation:isolate;aspect-ratio:1.41;container-type:inline-size;background:var(--blue);border-radius:3px;overflow:hidden}
 .press a{color:var(--ink);text-decoration:none;display:flex;align-items:center;justify-content:center;position:absolute;transition:transform .16s ease-out}
 .press a:hover{z-index:4}

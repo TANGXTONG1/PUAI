@@ -104,9 +104,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 <script>// Shared by the public site and the offline report's copy button.
 function puaiPortablePrompt(nickname = '') {
   const name = Array.from(String(nickname).trim().replace(/\s+/g, ' ')).slice(0, 16).join('');
-  const signature = name && !/^xxx$/i.test(name) ? '，署名' + JSON.stringify(name) : '';
-  return '调用 $puai，从我的聊天原话生成 2026 年度长图' + signature +
-    '。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=3';
+  const signature = name && !/^xxx$/i.test(name) ? name : 'XXX';
+  return '调用 $puai，从我的聊天原话生成 2026 年度长图，署名「' + signature +
+    '」。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=4';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {
@@ -202,9 +202,10 @@ const fontFamily='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Smiley San
 const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
 const demoLabel=report.mode==='demo'?(isSpecimen?'演示数据':story?'虚拟人物样例':'虚构演示'):'';
-const reportTitle=report.year+' '+(unclassified?'AI 相处报告':edition.name+' 报告');
+const scopeTitle={thread:'本次对话精选',fragments:'聊天片段精选'}[report.scope];
+const reportTitle=report.year+' '+(scopeTitle||(unclassified?'AI 相处报告':edition.name+' 报告'));
 const personaLabel=isSpecimen?'人格示意':'用户人格';
-const tagLabel=isSpecimen?'标签示意':story?'人格标签':'用户人格';
+const tagLabel=isSpecimen?'标签示意':scopeTitle?'片段标签':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
 const shareFooterHeight=216;
 const shareInstruction='按图底网址，用我的聊天生成';
@@ -426,7 +427,8 @@ function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
 }
 function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
-function comicQuote(q,i,y,draw=true){
+function comicQuote(q,index,y,draw=true){
+const i=index%3;
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
 const hasHeader=Boolean(hasAiReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);

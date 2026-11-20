@@ -63,7 +63,7 @@ test('部分有账的报告不能把漏数的片段塞进已核对样本', () =>
 
 test('单值不互相覆盖，超出支持数量不悄悄拼接', () => {
   assert.throws(() => parsePlainReport('PUAI 2026\n署名：A\n署名：B\n用法：检查格子'),/署名/);
-  assert.deepEqual(parsePlainReport('PUAI 2026\n'+['A','B','C','D'].map(x=>'原话：'+x).join('\n')).activity.share_quotes.map(q=>q.text),['A','B','C']);
+  assert.deepEqual(parsePlainReport('PUAI 2026\n'+['A','B','C','D'].map(x=>'原话：'+x).join('\n')).activity.share_quotes.map(q=>q.text),['A','B','C','D']);
   assert.deepEqual(parsePlainReport('PUAI 2026\n原话：x\nAI：a\n原话：y\nAI：b\n原话：z').story.assistant_reply,{after_quote:1,text:'a'});
 });
 
@@ -93,14 +93,14 @@ test('不拼接多条连续 AI，也不把隔着场景标题的答复夹进对�
   assert.equal(parsePlainReport('PUAI 2026\n用法：根据声音挑闹钟。\n前情：先听听。').story.quote_setup,undefined);
 });
 
-test('额外的本人原话、标签、用法只取前三项，省略第4句不会改变 AI 归属', () => {
+test('第四条原话与原线程中紧邻的 AI 可以入图，用法和标签仍精选三项', () => {
   const plain = ['PUAI 2026', '原话：第一句','原话：第二句','原话：第三句',
     'AI：答第三句。','原话：第四句', '标签：甲、乙、丙、丁',
     ...['一','二','三','四'].map(s=>'用法：'+s), '日期账：06-10:4:?'].join('\n');
   const {activity,story,keywords}=parsePlainReport(plain);
-  assert.deepEqual(activity.share_quotes.map(q=>q.text),['第一句','第二句','第三句']);
+  assert.deepEqual(activity.share_quotes.map(q=>q.text),['第一句','第二句','第三句','第四句']);
   assert.deepEqual(keywords,['甲','乙','丙']);
   assert.deepEqual(activity.daily_profile.habits,['一','二','三']);
-  assert.equal(story.assistant_reply,undefined);
+  assert.deepEqual(story.assistant_reply,{after_quote:3,text:'答第三句。'});
   assert.equal(activity.summary.messages,4);
 });

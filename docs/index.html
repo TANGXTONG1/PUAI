@@ -15,7 +15,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="2026 你和 AI 的年度相处报告">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="home.css?v=annual26">
+  <link rel="stylesheet" href="home.css?v=signature26">
   <link rel="preload" href="home-display.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
@@ -29,14 +29,17 @@
         <div class="year"><span>2026</span> 年刊</div>
         <h1 id="cover-title"><span>你和 AI 的</span><span>年度相处报告</span></h1>
         <p class="lead">这一年，有人找 AI 挂急诊，有人给 AI 当导师，还有人花会员费给它提供情绪价值。</p>
+        <div class="signature">
+          <label for="nickname">报告署名</label>
+          <input id="nickname" maxlength="16" placeholder="留空沿用聊天里的称呼" autocomplete="off">
+        </div>
         <div class="action-row">
           <button class="copy" id="copy" type="button"><i aria-hidden="true" class="copy-icon"></i>复制给 ChatGPT</button>
           <a class="secondary" href="make/">恢复旧回复</a>
         </div>
-        <p class="instruction">发到常用对话即可。口令会调用 PUAI；未安装时，助手可从链接读取这个 skill。</p>
+        <p class="instruction">把口令发到你常用的 AI 对话。</p>
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <textarea id="prompt" aria-label="完整生成口令" rows="3" readonly hidden></textarea>
-        <details class="signature"><summary>自定义署名</summary><label for="nickname">报告上叫我</label><input id="nickname" maxlength="16" placeholder="留空，沿用聊天里的称呼" autocomplete="off"></details>
       </div>
       <aside class="press" aria-label="三种主题样刊，点击查看">
         <div class="print-field">
@@ -69,9 +72,9 @@
   </main>
   <footer class="foot wrap">
     <div><strong>在自己的 Agent 里用</strong><p>在本地读取聊天和用量日志，直接导出年度长图。</p></div>
-    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=cba59c2882" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="palettes/atlas/">配色样刊</a></nav>
+    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=99807fec5b" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="palettes/atlas/">配色样刊</a></nav>
   </footer>
-  <script src="portable-prompt.js?v=6ef78ee16e"></script>
+  <script src="portable-prompt.js?v=bf2f6a6cd3"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>
 </body>
 </html>

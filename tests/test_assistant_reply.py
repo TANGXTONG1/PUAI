@@ -37,6 +37,22 @@ class AssistantReplyTests(unittest.TestCase):
         self.assertEqual(public["story"]["assistant_reply"], {"after_quote": 1, "text": "第二张。"})
         self.assertEqual(public["activity"]["summary"]["messages"], 2)
 
+    def test_explicit_history_retains_early_exchange_outside_dense_stats(self):
+        r = self.report
+        r["scope"] = "history"
+        r["period"]["end"] = "2026-02-20"
+        for day in range(1, 16):
+            r["activity"]["messages"].append({"id": "feb-" + str(day), "timestamp": f"2026-02-{day:02}T12:00:00Z",
+                                             "evidence_ids": ["thread"]})
+        public = builder.public_report(builder.validate_report(r), compact=True)
+        self.assertEqual(public["scope"], "history")
+        self.assertEqual(len(public["activity"]["share_quotes"]), 2)
+        self.assertEqual(public["activity"]["summary"]["messages"], 15)
+        self.assertEqual(public["activity"]["rhythm"]["dense_start_month"], "2026-02")
+        r["scope"] = "made-up"
+        with self.assertRaisesRegex(builder.ReportError, "scope"):
+            builder.validate_report(r)
+
     def test_lead_and_last_reply_publish_only_selected_text(self):
         story = self.report["share_story"]
         del story["assistant_reply"]

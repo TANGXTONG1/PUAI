@@ -1,6 +1,6 @@
-import { readFields, parseReport } from './report-code.mjs?v=68ad05395a';
+import { readFields, parseReport } from './report-code.mjs?v=712be7e36e';
 
-import { readDirectFields, readPlainFields } from './plain-report.mjs?v=55171fd789';
+import { readDirectFields, readPlainFields } from './plain-report.mjs?v=dbe9d9d7e3';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');
@@ -26,7 +26,7 @@ let retryRequest;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=0a2efedaf2', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=32aa3d8606', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -182,8 +182,9 @@ async function generate(value, fromAddress = false, restored = null) {
     save.href = png;
     save.hidden = false;
     result.hidden = false;
-    heading.textContent = '你的年度报告';
-    document.title = report.person.name + '的 AI 年度相处报告 · PUAI';
+    const scopeTitle = { thread: '本次对话精选', fragments: '聊天片段精选' }[report.scope];
+    heading.textContent = scopeTitle || '你的年度报告';
+    document.title = report.person.name + '的' + (scopeTitle || ' AI 年度相处报告') + ' · PUAI';
     status.textContent = '';
   } catch (error) {
     if (attempt.signal.aborted) return;
@@ -215,7 +216,7 @@ function openFragment() {
     generate(location.hash, true);
   } else {
     const saved = history.state?.puaiReceipt;
-    if (Array.isArray(saved) && [16, 17, 18, 19, 20].includes(saved.length) && saved[0] === 'v2'
+    if (Array.isArray(saved) && saved.length >= 16 && saved.length <= 24 && saved[0] === 'v2'
         && saved.every(field => typeof field === 'string') && saved.join('').length <= 48000) {
       generate('', false, saved);
       return;

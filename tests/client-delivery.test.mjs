@@ -12,23 +12,46 @@ try {
   if (error.code !== 'MODULE_NOT_FOUND' || process.env.PUAI_PLAYWRIGHT_PACKAGE) throw error;
 }
 
-test('the shared launcher points to the official skill and only adds an optional signature', async () => {
+test('the shared launcher includes an editable signature and the official skill address', async () => {
   const source = await readFile(new URL('../assets/portable-prompt.js', import.meta.url), 'utf8');
   const prompt = runInNewContext(source + '\npuaiPortablePrompt');
   const auto = prompt();
   assert.equal(prompt('  '), auto);
   assert.equal(prompt('XXX'), auto);
+  assert.ok(auto.includes('署名「XXX」'));
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/main/SKILL.md');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
-  for (const name of ['山楂', '我']) {
-    assert.equal(prompt(name).replace('，署名' + JSON.stringify(name), ''), auto);
+  for (const name of ['不愿透露姓名的唐某', '我']) {
+    assert.equal(prompt(name), auto.replace('「XXX」', '「' + name + '」'));
   }
   const canonical = await readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
   for (const mirror of ['../docs/skill.txt', '../docs/SKILL.md']) {
     assert.equal(await readFile(new URL(mirror, import.meta.url), 'utf8'), canonical);
+  }
+});
+
+test('mobile visitors can sign before copying on the home page and sample', {
+  skip: !chromium && 'Install playwright-core to run the browser integration.',
+}, async () => {
+  const browser = await chromium.launch({ executablePath: process.env.PUAI_CHROMIUM });
+  try {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 },
+      permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = await context.newPage();
+    for (const file of ['index.html', 'sample.html']) {
+      await page.goto(new URL('../docs/' + file, import.meta.url).href);
+      const nickname = page.getByLabel(/署名/);
+      assert.ok(await nickname.isVisible());
+      await nickname.fill('山楂');
+      await page.getByRole('button', { name: '复制给 ChatGPT' }).click();
+      await page.waitForFunction(() => document.querySelector('#status').textContent.includes('已复制'));
+      assert.match(await page.evaluate(() => navigator.clipboard.readText()), /署名「山楂」/);
+    }
+  } finally {
+    await browser.close();
   }
 });
 

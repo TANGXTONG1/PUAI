@@ -42,7 +42,8 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / relative, target)
     shutil.copyfile(root / "SKILL.md", docs / "skill.txt")
-    shutil.copyfile(root / "scripts" / "render_chat_png.py", docs / "render_chat_png.py")
+    for script in ("render_chat_png.py", "collect_history.py", "read_context.py"):
+        shutil.copyfile(root / "scripts" / script, docs / script)
     make = docs / "make"
     for page in ("index.html", "sample.html"):
         update_asset_version(docs / page, docs / "portable-prompt.js")

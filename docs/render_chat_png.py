@@ -42,7 +42,7 @@ QR_ROWS = (
     0x1ecaa639, 0x1ab330dc, 0x1e7549f7, 0x17a31e, 0x1fc3ef56, 0x1054bb1a,
     0x17557bf1, 0x175a2c2d, 0x174025b7, 0x105b9455, 0x1fcb9378,
 )
-FIELDS = "署名 主题 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 无日期账 token".split()
+FIELDS = "署名 主题 范围 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 无日期账 token".split()
 UNKNOWN = {"", "?", "无", "未知", "留空", "未提供", "未核准", "未核实", "无法逐条核准", "—", "n/a"}
 TOKEN_MAX = 2**53 - 1
 
@@ -109,6 +109,9 @@ def parse_receipt(text):
             if key in days:
                 raise ValueError("日期账重叠")
             days[key] = counts(row)
+    scope = first("范围").lower() or ("" if days else "fragments")
+    if len(values["范围"]) > 1 or scope not in ("", "history", "thread", "fragments"):
+        raise ValueError("材料范围只接受 history、thread 或 fragments")
     undated = stat("无日期账")
     rows = list(days.values()) + ([counts(undated)] if undated else [])
     total = sum(n for n, _ in rows)
@@ -123,18 +126,20 @@ def parse_receipt(text):
     quotes = []
     reply = None
     for index, (kind, value) in enumerate(lines):
-        if kind == "原话" and len(quotes) < 3:
+        if kind == "原话" and len(quotes) < 6:
             prefix = re.match(r"^(\d\d-\d\d)~", value)
             stamp = day_key(year, prefix[1]) if prefix else None
             value = value[prefix.end():] if prefix else value
             if not value or len(value) > 80:
                 raise ValueError("每条本人原话应为 1–80 字的连续原文")
             quotes.append((stamp, value))
-        elif kind == "ai" and reply is None and 0 < len(quotes) < 3 and len(value) <= 80:
+        elif kind == "ai" and reply is None and 0 < len(quotes) < 6 and len(value) <= 80:
             if index > 0 and index+1 < len(lines) and lines[index-1][0] == lines[index+1][0] == "原话":
                 reply = (len(quotes), value)
-    if rows and (len(quotes) > total or any(day not in days or n > days[day][0]
-                                             for day, n in Counter(d for d, _ in quotes if d).items())):
+    first_day = min(days) if days else None
+    counted_quotes = [q for q in quotes if not (scope == "history" and first_day and q[0] and q[0] < first_day)]
+    if rows and (len(counted_quotes) > total or any(day not in days or n > days[day][0]
+                         for day, n in Counter(d for d, _ in counted_quotes if d).items())):
         raise ValueError("引语与发言账不符")
     if reply:
         pos = reply[0]
@@ -154,7 +159,7 @@ def parse_receipt(text):
     if not (quotes or lead or habits or total):
         raise ValueError("缺少可核对的发言、现场或具体用法")
     tags = [tag.strip() for line in values["标签"] for tag in line.split("、") if tag.strip()]
-    return dict(year=year, theme=theme, name=first("署名")[:16] or "我", lead=lead, quotes=quotes,
+    return dict(year=year, theme=theme, scope=scope, name=first("署名")[:16] or "我", lead=lead, quotes=quotes,
                 reply=reply, setup=first("前情") if len(first("前情")) <= 24 else "", short=first("短评")[:100],
                 habits=[h[:120] for h in habits if h != lead], tags=list(dict.fromkeys(tags))[:3],
                 days=days, total=total, hits=hits, tokens=int(tokens) if tokens else None)
@@ -235,10 +240,12 @@ def draw_report(r, font):
     badge_w = min(round(font(34).getlength(badge))+44, 804)
     rect(48, 36, badge_w, 56, accent)
     text(48+badge_w/2, 66, badge, 34, on_accent, True, "mm")
-    text(48, 118, f"{year} {name}报告" if not theme else f"{year} {name} 报告", 64, bold=True)
+    scope_title = {"thread": "本次对话精选", "fragments": "聊天片段精选"}.get(r["scope"])
+    title = scope_title or (f"{name} 报告" if theme else f"{name}报告")
+    text(48, 118, f"{year} {title}", 64, bold=True)
     y = 226
     def draw_lead(y):
-        y = heading(y, "年度现场")
+        y = heading(y, "对话现场" if scope_title else "年度现场")
         rows = wrap(r["lead"], 720, 45)
         height = len(rows)*62+60
         rect(48, y, 804, height, pull)
@@ -258,10 +265,11 @@ def draw_report(r, font):
             rows = wrap(quote, 732, 46)
             header = "本人" + (f"  {dt.month:02}.{dt.day:02}" if dt else "")
             height = 76 + len(rows)*63 + 18
-            fill, fg = (pull, on_pull) if i == 1 else (tint if i == 2 else "#FCFCFA", ink)
+            style = i % 3
+            fill, fg = (pull, on_pull) if style == 1 else (tint if style == 2 else "#FCFCFA", ink)
             rect(48, y, 804, height, fill, ink, 24)
-            tail = 716 if i == 1 else 116
-            poly = [(tail, y+height-1),(tail+48,y+height-1),(tail+(62 if i==1 else -17),y+height+19)]
+            tail = 716 if style == 1 else 116
+            poly = [(tail, y+height-1),(tail+48,y+height-1),(tail+(62 if style==1 else -17),y+height+19)]
             cmd("polygon", poly, fill=fill)
             cmd("line", [poly[0],poly[2],poly[1]], fill=ink, width=2)
             text(82, y+22, header, 29, fg, True)
@@ -356,7 +364,7 @@ def draw_report(r, font):
     if r["tags"]:
         zone = y
         rect(0,zone,900,149,tint)
-        text(48,zone+19,"人格标签",31,bold=True)
+        text(48,zone+19,"片段标签" if scope_title else "人格标签",31,bold=True)
         x = 48
         for tag in r["tags"]:
             tag = tag[:6]

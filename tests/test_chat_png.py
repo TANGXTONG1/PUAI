@@ -53,6 +53,21 @@ class ChatPngTest(unittest.TestCase):
         self.assertFalse(lead["quotes"])
         self.assertFalse(lead["days"])
 
+    def test_scope_and_six_quotes_reach_the_painted_poster(self):
+        lines = ["PUAI 2026", "主题：teach", *("原话：" + q for q in "甲乙丙丁戊己"), "AI收尾：六句。"]
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        for scope, expected in [("", "聊天片段精选"), ("thread", "本次对话精选"), ("history", "AI的教育 报告")]:
+            parsed = renderer.parse_receipt("\n".join(lines + (["范围：" + scope] if scope else [])))
+            self.assertEqual(len(parsed["quotes"]), 6)
+            self.assertEqual(parsed["reply"], (6, "六句。"))
+            with patch.object(ImageDraw.ImageDraw, "text") as draw:
+                renderer.draw_report(parsed, font)
+                painted = [call.args[1] for call in draw.call_args_list]
+            self.assertIn("2026 " + expected, painted)
+            self.assertTrue(all(q in painted for q in "甲乙丙丁戊己"))
+        with self.assertRaises(ValueError):
+            renderer.parse_receipt("\n".join(lines + ["范围：other"]))
+
     def test_turn_selection_and_invalid_empty_source(self):
         self.assertIsNone(renderer.parse_receipt(
             "PUAI 2026\n原话：11-06~后来的问题。\nAI：不在其间。\n原话：11-01~早来的问题。")["reply"])
@@ -92,7 +107,7 @@ AI：四行。
                 actual = [ys[text] for text in order]
                 self.assertEqual(actual, sorted(set(actual)))
         lead_only = positions("PUAI 2026\n主题：puai\n主场景：自带红笔。")
-        self.assertLess(lead_only["年度现场"], lead_only["自带红笔。"])
+        self.assertLess(lead_only["对话现场"], lead_only["自带红笔。"])
         self.assertNotIn("本人原话", lead_only)
 
     def test_standalone_png_without_node_browser_templates_or_network(self):

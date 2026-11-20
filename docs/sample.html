@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>不愿透露姓名的唐某 · 2026 PUAI 报告</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#fff7ed;color:#231e1a;font-family:"PingFang SC","Microsoft YaHei",sans-serif}header{max-width:900px;margin:auto;padding:20px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}h1{font-size:20px;margin:0}nav{display:flex;gap:18px;align-items:center}a{color:inherit;font-size:16px;text-underline-offset:4px}button:focus-visible,a:focus-visible{outline:3px solid #ff3d32;outline-offset:4px}.download{background:#231e1a;color:#fff;padding:12px 18px;text-decoration:none}main{max-width:900px;margin:0 auto 32px}img{display:block;width:100%;height:auto}.copy{font:inherit;font-weight:650;padding:11px 16px;background:#231e1a;color:#fff;border:1px solid #231e1a;cursor:pointer}.download{background:transparent;color:#231e1a;border:1px solid #231e1a;padding:11px 16px}.share-status,.share-prompt{flex:0 0 100%;margin:0;line-height:1.5;overflow-wrap:anywhere}.share-status:empty{display:none}.share-prompt{padding:12px 14px;background:#fff;border-left:4px solid #ff3d32}h1 a{font:inherit;text-decoration:none}nav{gap:10px;flex-wrap:wrap}
-.share-hint{flex:0 0 100%;margin:0;color:#665951;font-size:14px}.share-prompt{font:inherit;min-width:0;resize:vertical;box-sizing:border-box}</style></head>
+.share-hint{flex:0 0 100%;margin:0;color:#665951;font-size:14px}.share-prompt{font:inherit;min-width:0;resize:vertical;box-sizing:border-box}.signature{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:650}.signature input{width:9em;max-width:100%;border:1px solid #846e5e;background:#fffdf7;color:inherit;font:inherit;font-size:16px;padding:9px}</style></head>
 <body><header>
 <h1><a href="./" aria-label="PUAI 首页">2026 PUAI 报告</a></h1>
-<nav aria-label="分享与下载"><button id="copy" class="copy" type="button">复制给 ChatGPT</button><a class="download" href="persona-report.png?v=e87e43f248" download="2026-PUAI-唐某.png">下载长图</a></nav>
+<nav aria-label="分享与下载"><label class="signature" for="nickname">我的署名<input id="nickname" placeholder="选填" maxlength="16" autocomplete="off"></label><button id="copy" class="copy" type="button">复制给 ChatGPT</button><a class="download" href="persona-report.png?v=e87e43f248" download="2026-PUAI-唐某.png">下载长图</a></nav>
 <p class="share-hint">把这句调用 PUAI 的口令发到常用对话，用你自己的原话出图。</p>
 <p class="share-status" id="status" role="status" aria-live="polite"></p>
 <textarea class="share-prompt" id="prompt" aria-label="完整生成口令" rows="3" readonly hidden></textarea>
 </header><main><img src="persona-report.png?v=e87e43f248" width="900" height="2392" alt="不愿透露姓名的唐某的 2026 PUAI 报告。11 月 7 日四次问「我缺你这点 token 吗？」，11 月 10 日追讨「赔钱！」。"></main>
-<script src="portable-prompt.js?v=6ef78ee16e"></script>
+<script src="portable-prompt.js?v=bf2f6a6cd3"></script>
 <script>
 bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'),
-  document.querySelector('#status'));
+  document.querySelector('#status'), document.querySelector('#nickname'));
 </script></body></html>

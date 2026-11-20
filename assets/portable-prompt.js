@@ -1,9 +1,9 @@
 // Shared by the public site and the offline report's copy button.
 function puaiPortablePrompt(nickname = '') {
   const name = Array.from(String(nickname).trim().replace(/\s+/g, ' ')).slice(0, 16).join('');
-  const signature = name && !/^xxx$/i.test(name) ? '，署名' + JSON.stringify(name) : '';
-  return '调用 $puai，从我的聊天原话生成 2026 年度长图' + signature +
-    '。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=3';
+  const signature = name && !/^xxx$/i.test(name) ? name : 'XXX';
+  return '调用 $puai，从我的聊天原话生成 2026 年度长图，署名「' + signature +
+    '」。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=4';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {

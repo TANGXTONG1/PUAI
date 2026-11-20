@@ -64,8 +64,26 @@ test('an explicitly selected final AI line belongs after the last visible user q
   const misplaced = report('#p?q=第一句&endai=提前的结尾&q=真正的最后一问');
   assert.equal(misplaced.story.final_reply, undefined);
   const unselected = report('#p?q=一&q=二&q=三&q=四&endai=只答第四问');
-  assert.equal(unselected.story.final_reply, undefined);
+  assert.equal(unselected.story.final_reply, '只答第四问');
   const both = report('#p?q=第一句&ai=中间的答复&q=第二句&endai=再答一句');
   assert.equal(both.story.assistant_reply.text, '中间的答复');
   assert.equal(both.story.final_reply, undefined);
+});
+
+test('a scoped scene cannot claim an annual theme; broader history can carry six different turns', () => {
+  const turns = ['一','二','三','四','五','六'];
+  const link = '#p?' + new URLSearchParams([['theme', 'teach'], ...turns.map(q => ['q',q])]);
+  assert.equal(report(link).scope, 'fragments');
+  assert.equal(report(link + '&scope=thread').scope, 'thread');
+  const broad = report(link + '&scope=history&endai=最后的回复');
+  assert.equal(broad.scope, 'history');
+  assert.deepEqual(broad.activity.share_quotes.map(q => q.text), turns);
+  assert.equal(broad.story.final_reply, '最后的回复');
+  assert.equal(report(link + '&undated=6:?').scope, 'fragments');
+  const early = report('#p?scope=history&q=02-02~二月的原话&q=07-03~暑假的原话&days=07-03:1:?');
+  assert.equal(early.activity.share_quotes.length, 2);
+  assert.equal(early.activity.summary.messages, 1);
+  assert.equal(early.activity.daily_profile.active_days, 1);
+  assert.throws(() => report(link+'&scope=invented'));
+  assert.equal(report(link + '&days=01-02:6:?').scope, undefined);
 });

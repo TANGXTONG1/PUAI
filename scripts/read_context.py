@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Open one indexed Codex rollout around a selected user message. Output contains private text.
+"""Open a private context window from a collect_history.py index or an existing Codex index.
 
 Both the local JSONL index (id, source, 1-based line, optional session_id) and its
 authorized rollout must be supplied. Use a verified user index, preferably with all user
 messages. An unindexed ordinary user turn is an opaque boundary. This is a reader for
-response_item.message and event_msg.user_message / agent_message, not an account search.
+response_item.message and event_msg.user_message / agent_message. ChatGPT and Claude locators reopen their original source.
 """
 import argparse
 from collections import Counter
@@ -27,6 +27,12 @@ def read_index(index, source, message_id):
             row = json.loads(line)
             raw_path = row.get("source")
             if not isinstance(raw_path, str) or not raw_path or Path(raw_path) != source:
+                continue
+            if row.get("client") in ("chatgpt", "claude"):
+                if row.get("id") == message_id:
+                    if target:
+                        raise ValueError("ambiguous target in index")
+                    target = row
                 continue
             number = row["line"]
             if type(number) is not int or number < 1 or not isinstance(row.get("id"), str):
@@ -62,9 +68,10 @@ def visible_message(record, family):
         return None
     if role not in ("user", "assistant"):
         return None
+    if payload.get("hidden") or payload.get("is_hidden_from_user"):
+        return None
     if role == "assistant" and (not parts or payload.get("phase") not in (None, "final", "final_answer")
-                                or payload.get("channel") not in (None, "final", "assistant")
-                                or payload.get("hidden") or payload.get("is_hidden_from_user")):
+                                or payload.get("channel") not in (None, "final", "assistant")):
         return None
     if role == "user" and parts:
         parts = [part for part in parts if not part.lstrip().startswith(INJECTED)]
@@ -98,14 +105,27 @@ def read_window(index, source, message_id, budget=4000):
     if budget < 1:
         raise ValueError("max-chars must be positive")
     target, locators = read_index(index, source, message_id)
+    if target.get("client") in ("chatgpt", "claude"):
+        from collect_history import read_shared_window
+        return read_shared_window(target, source, budget)
+
+    def verified_mid(message, line):
+        mid = message[2]
+        if not mid and target.get("client") == "codex" and message[0] == "user":
+            from collect_history import local_id
+            mid = local_id(target["session_id"], line, message[1])
+        return mid
+
     anchor = target["line"]
     with source.open(encoding="utf-8") as stream:
         anchor_record = next((json.loads(row) for i, row in enumerate(stream, 1) if i == anchor), {})
     family = anchor_record.get("type")
     candidate = visible_message(anchor_record, family)
-    if not candidate or candidate[0] != "user" or not candidate[2] or candidate[2] != message_id:
+    if not candidate or candidate[0] != "user" or verified_mid(candidate, anchor) != message_id:
         raise ValueError("source line no longer matches the indexed user message ID")
 
+    if "text" in target and target["text"] != "\n".join(candidate[1]):
+        raise ValueError("original message text no longer matches index")
     window = []
     omitted = Counter()
     seen_ids = set()
@@ -125,7 +145,8 @@ def read_window(index, source, message_id, budget=4000):
             message = visible_message(raw, family)
             if message is None:
                 continue
-            role, parts, mid = message
+            role, parts, _ = message
+            mid = verified_mid(message, number)
             if mid and mid in seen_ids:
                 if number == anchor:
                     raise ValueError("anchor is a replayed message ID")
