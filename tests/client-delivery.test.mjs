@@ -12,17 +12,23 @@ try {
   if (error.code !== 'MODULE_NOT_FOUND' || process.env.PUAI_PLAYWRIGHT_PACKAGE) throw error;
 }
 
-test('the copied prompt distinguishes a blank signature from an explicit nickname or 我', async () => {
+test('the shared launcher points to the official skill and only adds an optional signature', async () => {
   const source = await readFile(new URL('../assets/portable-prompt.js', import.meta.url), 'utf8');
   const prompt = runInNewContext(source + '\npuaiPortablePrompt');
   const auto = prompt();
   assert.equal(prompt('  '), auto);
   assert.equal(prompt('XXX'), auto);
-  assert.match(auto, /本人对话.*昵称/);
+  assert.match(auto, /\$puai\b/);
+  assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
+  assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/main/SKILL.md');
+  assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['山楂', '我']) {
-    assert.ok(prompt(name).includes('指定署名是' + JSON.stringify(name)));
-    assert.notEqual(prompt(name), auto);
+    assert.equal(prompt(name).replace('，署名' + JSON.stringify(name), ''), auto);
+  }
+  const canonical = await readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
+  for (const mirror of ['../docs/skill.txt', '../docs/SKILL.md']) {
+    assert.equal(await readFile(new URL(mirror, import.meta.url), 'utf8'), canonical);
   }
 });
 

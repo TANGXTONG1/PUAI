@@ -1,4 +1,4 @@
 interface:
   display_name: "PUAI"
   short_description: "从聊天记录统计发言日历和主题占比，把日常用法、原话和人格做成年度长图"
-  default_prompt: "用 $puai 做我的 AI 年度报告，数数我平时怎么用你，再挑几句我的原话上图。"
+  default_prompt: "调用 $puai，从我的聊天原话生成年度长图。"

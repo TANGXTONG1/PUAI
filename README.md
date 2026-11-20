@@ -6,7 +6,9 @@
   <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
-把口令发到常用的 AI 对话。支持图片消息的助手会把整张图显示在聊天里。只支持文字或文件下载的助手可以给你网页预览，打开就能看图。部分客户端会把动态网址改成搜索链接，这时可以打开回复中显示的完整网址。它会先翻你亲口对 AI 说过的话。隔三天就把自己的话推翻了？两句都给你登。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
+点「复制给 ChatGPT」，按需填署名，把一句口令发到常用对话。已安装的助手调用 `$puai`；能联网的助手也可读取同一份公开技能说明。PUAI 去聊天里翻你的原话，用项目自带的版式出图。能显示图片的对话直接收图，文字对话点开网页预览。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
+
+如果助手打不开技能链接，可把[技能说明文件](https://xn--sxrw8m230b.com/PUAI/skill.txt)作为附件发给它，再发同一句口令。
 
 ## 翻三张场景样刊
 
@@ -35,7 +37,7 @@
 npx skills add TANGXTONG1/PUAI
 ```
 
-装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=a7ca6fac44) · [阅读 SKILL.md](SKILL.md)
+装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=af137f2155) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>

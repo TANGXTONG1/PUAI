@@ -35,6 +35,13 @@ def main():
     (root / "docs" / "portable-prompt.js").write_text(prompt_js, encoding="utf-8")
     (root / "docs" / "go.txt").write_text(prompt, encoding="utf-8")
     docs = root / "docs"
+    # Keep the attachable skill and its relative references browsable from Pages.
+    for relative in ("SKILL.md", "references/scene-selection.md", "references/report-schema.md",
+                     "references/png-export.md", "assets/demo-report.json"):
+        target = docs / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / relative, target)
+    shutil.copyfile(root / "SKILL.md", docs / "skill.txt")
     shutil.copyfile(root / "scripts" / "render_chat_png.py", docs / "render_chat_png.py")
     make = docs / "make"
     for page in ("index.html", "sample.html"):
