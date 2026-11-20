@@ -192,7 +192,7 @@ v2｜主题ID｜署名｜人格｜日期账｜无日期账｜token｜习惯一�
 
 ## 示例与文案映射
 
-完整示例见 [assets/demo-report.json](../assets/demo-report.json)。它使用明确虚构的测试数据。人格摘要见 `identity.subtitle`，分享清单选了前两个场景，最后用 `keywords` 收尾。第三个备选场景和所有出处只留在编辑档。
+完整示例见 随包的 `assets/demo-report.json`（[仓库副本](https://github.com/TANGXTONG1/PUAI/blob/main/assets/demo-report.json)）。它使用明确虚构的测试数据。人格摘要见 `identity.subtitle`，分享清单选了前两个场景，最后用 `keywords` 收尾。第三个备选场景和所有出处只留在编辑档。
 
 本人报告用获准使用的实际记录填写。`phrase.note` 填简短日期或范围，`moments.text` 概括对应场景，`closing.text` 是旧版兼容字段。原句栏目可收独立成立的原话，也可收有真实前情或前后呼应的原话。
 

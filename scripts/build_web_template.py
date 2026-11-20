@@ -37,7 +37,7 @@ def main():
     docs = root / "docs"
     # Keep the attachable skill and its relative references browsable from Pages.
     for relative in ("SKILL.md", "references/scene-selection.md", "references/report-schema.md",
-                     "references/png-export.md", "assets/demo-report.json"):
+                     "references/png-export.md"):
         target = docs / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / relative, target)
