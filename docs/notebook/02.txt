@@ -1,0 +1,93 @@
+
+    def first(name):
+        return next(iter(values[name]), "")
+
+    def stat(name):
+        if len(values[name]) > 1:
+            raise ValueError(f"重复的{name}")
+        val = first(name)
+        return "" if val.strip("（）()").lower() in UNKNOWN else val
+
+    tags = [tag.strip() for line in values["标签"] for tag in line.split("、") if tag.strip()]
+    theme = first("主题").lower()
+    if not theme:
+        named_types = {TYPE_NAMES[tag.lower()] for tag in tags if tag.lower() in TYPE_NAMES}
+        if len(named_types) == 1:
+            theme = named_types.pop()
+            tags = [tag for tag in tags if TYPE_NAMES.get(tag.lower()) != theme]
+    theme = TYPE_NAMES.get(theme, theme)
+    if theme in {"待定", "未归类", "无", "ai 相处", "ai相处报告"}:
+        theme = ""
+    if theme not in EDITIONS:
+        raise ValueError("未知主题")
+    days = {}
+    ledger = stat("日期账")
+    if ledger:
+        for piece in re.split(r"[,，]", ledger):
+            dt, _, row = piece.strip().partition(":")
+            key = day_key(year, dt)
+            if key in days:
+                raise ValueError("日期账重叠")
+            days[key] = counts(row)
+    raw_dates = stat("发言日期")
+    observed_dates = {day_key(year, item.strip()) for item in re.split(r"[,，]", raw_dates)} if raw_dates else set()
+    scope = first("范围").lower() or ("" if days else "fragments")
+    if len(values["范围"]) > 1 or scope not in ("", "history", "thread", "fragments"):
+        raise ValueError("材料范围只接受 history、thread 或 fragments")
+    undated = stat("无日期账")
+    rows = list(days.values()) + ([counts(undated)] if undated else [])
+    total = sum(n for n, _ in rows)
+    if total > TOKEN_MAX:
+        raise ValueError("计数超出范围")
+    hits = sum(h for _, h in rows) if rows and theme and all(h is not None for _, h in rows) else None
+    if not theme and any(h is not None for _, h in rows):
+        raise ValueError("未归类时命中数应为 ?")
+    tokens = stat("token")
+    if tokens and (not re.fullmatch(r"[0-9]+", tokens) or int(tokens) > TOKEN_MAX):
+        raise ValueError("Token 须为已核准的整数")
+    quotes = []
+    reply = None
+    for index, (kind, value) in enumerate(lines):
+        if kind == "原话" and len(quotes) < 6:
+            prefix = re.match(r"^(\d\d-\d\d)~", value)
+            stamp = day_key(year, prefix[1]) if prefix else None
+            value = value[prefix.end():] if prefix else value
+            if not value or len(value) > 80:
+                raise ValueError("每条本人原话应为 1–80 字的连续原文")
+            quotes.append((stamp, value))
+        elif kind == "ai" and reply is None and 0 < len(quotes) < 6 and len(value) <= 80:
+            if index > 0 and index+1 < len(lines) and lines[index-1][0] == lines[index+1][0] == "原话":
+                reply = (len(quotes), value)
+    first_day = min(days) if days else None
+    counted_quotes = [(stamp, quote) for stamp, quote in quotes
+                      if not (stamp and stamp not in days and
+                              (not days or stamp in observed_dates or (scope == "history" and stamp < first_day)))]
+    if rows and (len(counted_quotes) > total or any(day not in days or n > days[day][0]
+                         for day, n in Counter(d for d, _ in counted_quotes if d).items())):
+        raise ValueError("引语与发言账不符")
+    if reply:
+        pos = reply[0]
+        if pos >= len(quotes) or quotes[pos-1][0] and quotes[pos][0] and quotes[pos-1][0] > quotes[pos][0]:
+            reply = None
+    if not reply and quotes:
+        # A trailing "AI" is commonly an assistant's unselected extra turn. Only an
+        # explicit AI收尾 after the final retained user turn can supply the last beat.
+        selected = [(kind, value) for kind, value in lines if kind in {"原话", "ai", "ai收尾"}]
+        if (len(values["原话"]) == len(quotes) and selected[-1][0] == "ai收尾"
+                and len(selected) >= 2 and selected[-2][0] == "原话" and len(selected[-1][1]) <= 80):
+            reply = (len(quotes), selected[-1][1])
+    lead = first("主场景")
+    if len(lead) > 90:
+        raise ValueError("主场景最多 90 字")
+    habits = list(dict.fromkeys(values["用法"]))[:3]
+    if not (quotes or lead or habits or total or observed_dates):
+        raise ValueError("缺少可核对的发言、现场或具体用法")
+    name = first("署名")[:16]
+    if not name or re.fullmatch(r'[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?', name, re.IGNORECASE):
+        name = "我"
+    return dict(year=year, theme=theme, scope=scope, name=name, lead=lead, quotes=quotes,
+                emphases=[quote_emphasis(quote, highlights.get(i)) for i, (_, quote) in enumerate(quotes)],
+                repeats=[repeats.get(i) for i in range(len(quotes))],
+                reply=reply, setup=first("前情") if len(first("前情")) <= 24 else "", short=first("短评")[:100],
+                habits=[h[:120] for h in habits if h != lead], tags=list(dict.fromkeys(tags))[:3],
+                days=days, observed_dates=observed_dates, total=total, hits=hits, tokens=int(tokens) if tokens else None)

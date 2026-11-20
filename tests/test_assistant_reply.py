@@ -49,6 +49,61 @@ class AssistantReplyTests(unittest.TestCase):
         self.assertEqual(public["story"]["assistant_reply"], {"after_quote": 1, "text": "第二张。"})
         self.assertEqual(public["activity"]["summary"]["messages"], 2)
 
+    def test_missing_theme_can_use_one_official_badge_without_changing_input(self):
+        r = self.report
+        del r["theme"]
+        for theme, label in [*builder.THEMES.items(), ("einstein", "爱因斯坦")]:
+            r["keywords"] = [label, "当场拆台"]
+            public = builder.public_report(builder.validate_report(r), compact=True)
+            self.assertEqual((public["theme"], public["keywords"]), (theme, ["当场拆台"]))
+            self.assertNotIn("theme", r)
+            self.assertEqual(r["keywords"], [label, "当场拆台"])
+        r["theme"] = "all"
+        r["keywords"] = ["AICU"]
+        self.assertEqual(builder.public_report(builder.validate_report(r), compact=True)["theme"], "all")
+        r["theme"] = None
+        self.assertIsNone(builder.public_report(builder.validate_report(r), compact=True)["theme"])
+
+    def test_legacy_mixed_badges_keep_their_previous_valid_scope(self):
+        # This built-in legacy material already carries a verified roast ledger.
+        r = json.loads((MODULE.parents[1] / "assets/demo-report.json").read_text())
+        r["keywords"] = ["AI在心口难开", "AICU", "找零"]
+        for has_story in (True, False):
+            if not has_story:
+                del r["share_story"]
+            public = builder.public_report(builder.validate_report(r), compact=True)
+            self.assertIsNone(public["theme"])
+            self.assertEqual(public["keywords"], r["keywords"])
+        self.assertEqual(builder.public_report(r)["keywords"], r["keywords"])
+        r["keywords"] = ["这个标签有七个字"]
+        with self.assertRaisesRegex(builder.ReportError, "keywords"):
+            builder.validate_report(r)
+        r["keywords"] = ["AICU", "一个", "两个", "三个"]
+        with self.assertRaisesRegex(builder.ReportError, "keywords"):
+            builder.validate_report(r)
+
+    def test_default_and_explicit_old_styles_accept_untyped_legacy_sources(self):
+        r = json.loads((MODULE.parents[1] / "assets/demo-report.json").read_text())
+        del r["share_story"]
+        r["keywords"] = ["AI因斯坦", "找零"]
+        r["activity"]["share_quotes"][0]["rewrite"] = {"text": "一条标注过的旧改写"}
+        with tempfile.TemporaryDirectory() as directory:
+            src, out = Path(directory) / "report.json", Path(directory) / "report.html"
+            src.write_text(json.dumps(r, ensure_ascii=False))
+            args = ["--input", str(src), "--output", str(out)]
+            self.assertEqual(builder.main(args), 0)
+            html = out.read_text()
+            self.assertIn('"theme":"einstein"', html)
+            self.assertIn('"kind":"rewrite"', html)
+            self.assertEqual(builder.main(args + ["--style", "ticket"]), 0)
+            r["keywords"] = ["AICU", "PUAI"]
+            src.write_text(json.dumps(r))
+            self.assertEqual(builder.main(args), 0)
+            self.assertIn('"schema_version":1', out.read_text())
+        r["theme"] = "einstein"
+        with self.assertRaisesRegex(builder.ReportError, "rewrite"):
+            builder.validate_report(r)
+
     def test_partial_date_evidence_is_projected_without_creating_messages(self):
         r = self.report
         activity = r["activity"]

@@ -1,0 +1,95 @@
+
+    if quotes:
+        y = heading(y, "对话现场" if r["reply"] else "本人原话")
+        if r["setup"]:
+            text(48,y+1,"前情",32,"#475364",True)
+            y = paragraph(140, y, wrap(r["setup"], 712, 34), 34) + 18
+        for i, (dt, quote) in enumerate(quotes):
+            y = quote_sticker(i, dt, quote, y)
+            if r["reply"] and r["reply"][0] == i+1:
+                rows = wrap(r["reply"][1], 610, 36)
+                height = len(rows)*50+32
+                rect(86,y,766,height,tint,radius=12)
+                text(110,y+17,"AI",34,bold=True)
+                cmd("line",(170,y+14,170,y+height-14),fill=ink,width=2)
+                paragraph(190,y+16,rows,36)
+                y += height+19
+    if r["lead"] and not quotes:
+        y = heading(y, "对话现场" if scope_title else "年度现场")
+        y = paragraph(48, y, wrap(r["lead"], 804, 43), 43, bold=True) + 26
+    if not quotes and not r["lead"] and r["short"] and not r["habits"]:
+        y = paragraph(48,y,wrap(r["short"],800,41),41,bold=True)+28
+    if r["total"] or r["tokens"] is not None:
+        ratio = None if r["hits"] is None else r["hits"]/r["total"]
+        width = 514 if ratio is not None else 804
+        if r["tokens"] is not None:
+            tokens = r["tokens"]
+            if tokens >= 100_000_000:
+                whole, decimals = divmod(tokens//1_000_000, 100)
+                value = f"≥{whole}.{decimals:02}亿 token"
+            else:
+                value = f"至少 {tokens:,} token"
+            caption = "和 AI 对话，烧了"
+        else:
+            value, caption = f'{r["total"]:,} 条指令', "记录里，你发出了"
+        height = 154 if ratio is not None else 104
+        rect(48,y,width,height,pull)
+        if ratio is not None:
+            text(74,y+18,caption,34,on_pull,True)
+            text(74,y+72,value,fitted(value,width-52,52),on_pull,True)
+            cx, cy, rad = 720, y+72, 65
+            bounds = (cx-rad,cy-rad,cx+rad,cy+rad)
+            cmd("ellipse",bounds,outline=tint,width=12)
+            if ratio:
+                cmd("arc",bounds,-90,-90+ratio*360,fill=calendar_ink,width=12)
+            percentage = f"{ratio*100:.1f}".removesuffix(".0")+"%"
+            centered(cx,cy-23,"约",24,bold=True)
+            centered(cx,cy+14,percentage,fitted(percentage,108,44),bold=True)
+            text(cx,y+156,"指令在骂 AI" if theme=="puai" else theme_label+"指令占比",30,align="mt")
+        else:
+            text(74,y+32,caption,34,on_pull,True)
+            centered(625,y+52,value,fitted(value,390,52),on_pull,True)
+        extra = []
+        if r["tokens"] is not None and r["total"]:
+            extra.append(f'{r["total"]:,} 条指令')
+        if ratio is not None:
+            extra.append(f'{r["hits"]:,} 条{theme_label}')
+        if extra:
+            value = " · ".join(extra)
+            text(48,y+(169 if ratio is not None else 117),value,fitted(value,width,31),bold=True)
+        y += 232 if ratio is not None else (178 if extra else 139)
+
+    days = r["days"]
+    quote_dates = [dt for dt, _ in quotes if dt]
+    observed_dates = r["observed_dates"].union(quote_dates)
+    calendar_dates = set(days) or observed_dates
+    if calendar_dates:
+        first_date, last_date = min(calendar_dates), max(calendar_dates)
+        span = first_date.strftime("%m.%d")
+        if last_date != first_date:
+            span += " – " + last_date.strftime("%m.%d")
+        text(852, y+6, span, 32, align="rt")
+    y = heading(y, "片段日期" if observed_dates and not days else "发言日历")
+    if calendar_dates:
+        month_counts = Counter(day.month for day in calendar_dates)
+        month_messages = Counter()
+        if days:
+            peak = min(days,key=lambda d:(-days[d][0],d))
+            active_label = f"{len(days)} 天"
+            if theme and all(h is not None for _, h in days.values()):
+                themed_days = sum(h > 0 for _, h in days.values())
+                active_label += f" · {themed_days} 天{theme_label}"
+            primary = active_label
+            secondary = f"{peak.month}.{peak.day:02} · {days[peak][0]} 条"
+            for day, (n, _) in days.items():
+                month_messages[day.month] += n
+        else:
+            primary, secondary = f"核实 {len(observed_dates)} 天", ""
+            if quote_dates:
+                dated = str(len(quote_dates)) if len(quote_dates) == len(quotes) else f"{len(quote_dates)} / {len(quotes)}"
+                secondary = f"{dated} 句原话有日期"
+        selected = sorted(sorted(month_counts, key=lambda m: (-month_counts[m], -month_messages[m], -m))[:3])
+        legend = [("发言" if days else "已核日期", ink)]
+        if any(h for _,h in days.values()):
+            legend.append((theme_label, calendar_ink))
+        legend.append(("缺记录", None))

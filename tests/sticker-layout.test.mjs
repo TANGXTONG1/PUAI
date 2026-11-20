@@ -41,7 +41,7 @@ test('A 版把原话放在短评前，短贴左右对齐，旧链接仍可完整
     });
     for (const count of [1, 2, 3, 4, 5, 6]) {
       const selected = lines.slice(0, count);
-      const fields = new URLSearchParams([['theme', 'teach'], ['lead', lead], ...selected.map(q => ['q', q])]);
+      const fields = new URLSearchParams([['theme', 'teach'], ['lead', lead], ['days','10-08:10:3'], ...selected.map(q => ['q', q])]);
       const report = parseReport(readDirectFields('#p?' + fields), {allowExcerptsWithoutLedger: true});
       await page.goto('about:blank');
       await page.setContent(frame.replace('__REPORT_JSON__', () => JSON.stringify(report)));
@@ -56,6 +56,8 @@ test('A 版把原话放在短评前，短贴左右对齐，旧链接仍可完整
       assert.deepEqual(stickers.map(row => row.text), selected);
       assert.ok(painted.indexOf(selected.at(-1)) >= 0);
       assert.ok(painted.indexOf(selected.at(-1)) < painted.indexOf(lead));
+      assert.ok(painted.indexOf(selected.at(-1)) < painted.indexOf('发言日历'));
+      assert.ok(painted.indexOf('发言日历') < painted.indexOf(lead));
       assert.ok(transcript.indexOf(selected.at(-1)) < transcript.indexOf(lead));
       assert.equal(stickers[0].x, 48);
       assert.ok(stickers[0].width < 804);
@@ -125,7 +127,12 @@ test('九型独立署在图上，精选保留范围标题，兼容旧 JSON', {
       assert.ok(type.y <= 92);
       assert.ok(alt.includes(label+'：'+value));
       assert.ok(ink.some(t => t.value === '装盘高手'));
-      if (isPartial) assert.ok(alt.includes(scope === 'thread' ? '本次对话精选' : '聊天片段精选'));
+      if (theme) assert.ok(ink.some(t => t.value === '2026 '+value+' 报告' && t.y < 202));
+      if (isPartial) {
+        const caption = scope === 'thread' ? '本次对话精选' : '聊天片段精选';
+        assert.ok(alt.includes(caption));
+        if (theme) assert.ok(ink.some(t => t.value.includes(caption) && t.y > 150 && t.y < 260));
+      }
       if (mode) {
         const source = ink.find(t => t.value === (mode === 'demo' ? '虚拟人物样例' : '自述'));
         assert.ok(source && source.y > 92);

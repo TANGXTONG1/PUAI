@@ -13,7 +13,28 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
-THEMES = ("puai", "teach", "aicu", "all", "hush", "einstein", "edison", "support", "free")
+THEMES = {
+    "puai": "PUAI", "teach": "AI的教育", "aicu": "AICU", "all": "AI特全体",
+    "hush": "AI在心口难开", "einstein": "AI因斯坦", "edison": "AI迪生",
+    "support": "AI的供养", "free": "AI咋咋地",
+}
+TYPE_LABELS = {label.casefold(): key for key, label in THEMES.items()}
+TYPE_LABELS["爱因斯坦"] = "einstein"
+
+
+def resolve_tagged_theme(report):
+    """Older receipts can carry the chosen persona name among the free-form tags."""
+    if not isinstance(report, dict) or "theme" in report or not isinstance(report.get("keywords"), list):
+        return report
+    tags = report["keywords"]
+    named = {TYPE_LABELS[t.strip().casefold()] for t in tags if isinstance(t, str) and t.strip().casefold() in TYPE_LABELS}
+    if len(named) == 1:
+        theme = named.pop()
+        return {**report, "theme": theme, "keywords": [
+            t for t in tags if not isinstance(t, str) or TYPE_LABELS.get(t.strip().casefold()) != theme]}
+    if len(named) > 1:
+        return {**report, "theme": None}
+    return report
 
 
 class ReportError(ValueError):
@@ -439,7 +460,11 @@ def validate_report(report, today=None, now=None):
             raise ReportError("phrase.text: a quote must appear verbatim in a linked evidence excerpt")
 
     for index, keyword in enumerate(array(report["keywords"], 0, 3, "keywords")):
-        string(keyword, 6, f"keywords[{index}]")
+        # A legacy badge can be longer than six characters. Only its exact
+        # official spelling qualifies; ordinary personality tags keep the limit.
+        legacy_badge = ("theme" not in report and isinstance(keyword, str)
+                        and keyword.casefold() in TYPE_LABELS)
+        string(keyword, len(keyword) if legacy_badge else 6, f"keywords[{index}]")
     for index, metric in enumerate(array(report["metrics"], 0, 3, "metrics")):
         path = f"metrics[{index}]"
         obj(metric, ["label", "value", "unit", "evidence_ids"], path)
@@ -493,9 +518,12 @@ def validate_report(report, today=None, now=None):
     refs(closing["evidence_ids"], "closing.evidence_ids")
     quote_instants = []
     if "activity" in report:
+        activity_theme = report.get("theme")
+        if "theme" not in report and isinstance(report["activity"], dict) and "theme_message_ids" in report["activity"]:
+            activity_theme = resolve_tagged_theme(report).get("theme")
         quote_instants = validate_activity(
             report["activity"], start, end, mode, evidence, refs, now or datetime.now(timezone.utc),
-            theme=report.get("theme"), has_story=has_share_story, include_early_quotes=report.get("scope") == "history")
+            theme=activity_theme, has_story=has_share_story, include_early_quotes=report.get("scope") == "history")
         if unclassified and "roast_message_ids" in report["activity"]:
             raise ReportError("activity.roast_message_ids: omit reviewed theme counts when report.theme is null")
     if "quote_setup" in report.get("share_story", {}) and not (quote_instants and quote_instants[0]):
@@ -606,6 +634,7 @@ def public_report(report, compact=False, include_story=True):
     if not name or re.fullmatch(r'[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?', name, re.IGNORECASE):
         name = "我"
     if compact:
+        report = resolve_tagged_theme(report)
         public = {key: copy.deepcopy(report[key]) for key in ("year", "mode", "period", "keywords")}
         public["person"] = {"name": name}
         for key in ("theme", "scope"):
@@ -695,7 +724,7 @@ def main(argv=None):
             raise ReportError("input exceeds 32 MB; keep only evidence and timestamps needed for this report")
         report = json.loads(input_path.read_text(encoding="utf-8"))
         style = args.style
-        if isinstance(report, dict) and ("theme" in report or "share_story" in report):
+        if isinstance(report, dict) and ("theme" in report or "share_story" in report or resolve_tagged_theme(report).get("theme")):
             style = style or "comic"
             if "theme" in report and report["theme"] != "puai" and style not in {"print", "comic"}:
                 raise ReportError("report.theme: themed posters require --style print or comic")

@@ -8,6 +8,7 @@ import shutil
 import subprocess
 
 from build_report import embed_template_assets
+from build_notebook import build_notebook
 
 
 def update_asset_version(page, asset):
@@ -35,6 +36,7 @@ def main():
     (root / "docs" / "portable-prompt.js").write_text(prompt_js, encoding="utf-8")
     (root / "docs" / "go.txt").write_text(prompt, encoding="utf-8")
     docs = root / "docs"
+    build_notebook(root, docs)
     # Keep the attachable skill and its relative references browsable from Pages.
     for relative in ("SKILL.md", "references/scene-selection.md", "references/report-schema.md",
                      "references/png-export.md"):
@@ -42,7 +44,7 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / relative, target)
     shutil.copyfile(root / "SKILL.md", docs / "skill.txt")
-    for script in ("render_chat_png.py", "notebook_card.py", "collect_history.py", "read_context.py", "browse_history.py"):
+    for script in ("render_chat_png.py", "collect_history.py", "read_context.py", "browse_history.py"):
         shutil.copyfile(root / "scripts" / script, docs / script)
     make = docs / "make"
     # The date-recovery button sends the originating chat to the same skill as go.txt.

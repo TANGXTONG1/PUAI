@@ -176,7 +176,10 @@ const scopeTitle={thread:'本次对话精选',fragments:'聊天片段精选'}[re
 const typeCaption=scopeTitle?'本次类型':'年度类型';
 const typeName=Object.hasOwn(editions,report.theme)?edition.name:unclassified?'待定':'';
 const sourceLabel=demoLabel||(report.mode==='self_report'?'自述':'');
-const reportTitle=report.year+' '+(scopeTitle||(unclassified?'AI 相处报告':edition.name+' 报告'));
+const classified=Object.hasOwn(editions,report.theme);
+const reportTitle=report.year+' '+(classified?edition.name+' 报告':scopeTitle||(unclassified?'AI 相处报告':edition.name+' 报告'));
+const scopeNote=scopeTitle&&classified?scopeTitle:'';
+const headerNote=[scopeNote,sourceLabel].filter(Boolean).join(' · ');
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':scopeTitle?'片段标签':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
@@ -498,7 +501,16 @@ function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
 }
 function burstPath(w,h){ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
+// An accent can pick out the closing words without changing the quotation.
+function closingPhrase(text) {
+ const clauses=text.match(/[^，,。！？!?；;：:\n]+[，,。！？!?；;：:]*/gu)||[];
+ if(clauses.length<2)return '';
+ const last=clauses.at(-1).trim(),words=last.replace(/[，,。！？!?；;：:]+$/u,'').trim();
+ if(Array.from(words).length<2||Array.from(last).length>12||/^(?:对吧|对吗|好吗|行吗|是吗|好吧|可以吗)$/u.test(words))return '';
+ return last;
+}
 function comicQuote(q,index,y,draw=true){
+if(!q.emphasis)q={...q,emphasis:closingPhrase(q.text)};
 const i = quotes.length === 1 ? 1 : index % 3;
 // Short editions put the closing line in a solid burst. Longer ones keep the A trio.
 const burst = i === 2 || (quotes.length <= 2 && i === 1);
@@ -626,8 +638,8 @@ if(draw){
  font(type.title,800);const titleWidth=ctx.measureText(reportTitle).width;
  text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
  right(shareGuide,852,202,28,ink,600);
- if(sourceLabel){
-   if(typeName)text(sourceLabel,48,199,type.meta,legacyPalette?accent:muted,700);
+ if(headerNote){
+   if(typeName)fitLeft(headerNote,48,199,450,type.meta,legacyPalette?accent:muted,700);
    else right(sourceLabel,852,44,type.meta,legacyPalette?accent:ink,700);
  }
 }
@@ -636,9 +648,9 @@ if(lead&&!quotesFirst)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
 else if(!lead&&hasPersona)y+=comicPersona(y-8,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
-if(lead&&quotesFirst)y=comicLead(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
 y=comicDateSection(y,draw);
+if(lead&&quotesFirst)y=comicLead(y,draw);
 if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
 if(posterScenes.length)y=comicScenes(y,draw);
 const showTags=!story||report.keywords.length>0;
@@ -682,8 +694,8 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',sourceLabel,shareGuide,quotesFirst?'':lead,
- ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),quotesFirst?lead:'',
+ owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',headerNote,shareGuide,quotesFirst?'':lead,
+ ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
@@ -691,7 +703,7 @@ const readableSummary=[
  tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+(tokenUsage.coverage==='partial'?'（已核对部分）':'')+'。':'',
  tokenUsage&&!profile?'用量范围 '+tokenUsage.scope+'，缓存输入已包含。':'',
  reviewed!==null&&percent!==null?'已核验的'+edition.keyword+'指令：'+reviewed+' / '+s.messages+' 条，约占 '+percent+'%。':'',
- ...dailySummary,
+ ...dailySummary,quotesFirst?lead:'',
  partialCalendar?'日历选展了其中三个活跃月份。':'',
  !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。'+(unclassified?'':'占比按整个分析期的用户消息数计算，')+'缺记录的日期不计作停用。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),

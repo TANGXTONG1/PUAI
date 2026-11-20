@@ -126,5 +126,6 @@ test('中文报告单的人物类型可单独识别，普通标签仍保留原�
     assert.deepEqual(report.keywords, ['果核精算师']);
   }
   assert.equal(parsePlainReport('PUAI 2026\n人物类型：待定\n原话：这里也算吗？').theme, null);
-  assert.equal(parsePlainReport('PUAI 2026\n标签：PUAI\n原话：这里也算吗？').theme, null);
+  assert.equal(parsePlainReport('PUAI 2026\n标签：PUAI\n原话：这里也算吗？').theme, 'puai');
+  assert.equal(parsePlainReport('PUAI 2026\n标签：果核精算师\n原话：这里也算吗？').theme, null);
 });

@@ -11,32 +11,62 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/render_chat_png.py"
 
 
+def notebook_parts():
+    import re
+    skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+    appendix = skill.split("<!-- generated notebook source -->", 1)[1]
+    return re.findall(r"```python\n(.*?)^```$", appendix, re.S | re.M)
+
+
 class InlinePreviewTests(unittest.TestCase):
-    def test_remote_skill_contains_the_offline_notebook_program(self):
-        import re
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        embedded = re.search(r"## 离线对话画布.*?```python\n(.*?)```", skill, re.S)
-        self.assertIsNotNone(embedded, "a link-only skill leaves an offline kernel without a renderer")
-        self.assertEqual(embedded.group(1), (SCRIPT.parent / "notebook_card.py").read_text(encoding="utf-8"))
+    def test_remote_skill_carries_the_complete_print_renderer(self):
+        parts = notebook_parts()
+        self.assertTrue(parts)
+        source = "".join(parts)
+        self.assertEqual(source, (ROOT / "docs/notebook_card.py").read_text(encoding="utf-8"))
+        official = SCRIPT.read_text(encoding="utf-8").split("\ndef display_chat_png(", 1)[0].rstrip()
+        self.assertIn(official[official.index("EDITIONS ="):], source)
+        for i, part in enumerate(parts, 1):
+            self.assertEqual(part, (ROOT / f"docs/notebook/{i:02}.txt").read_text(encoding="utf-8"))
 
     @unittest.skipUnless(importlib.util.find_spec("ipykernel") and importlib.util.find_spec("jupyter_client"),
                          "requires Jupyter for rich-output integration")
-    def test_offline_cell_only_needs_the_skill_text_and_its_own_report(self):
-        import re
+    def test_offline_notebook_displays_the_full_poster_pixel_for_pixel(self):
         from io import BytesIO
         from jupyter_client.manager import run_kernel
         from PIL import Image
 
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        program = re.search(r"## 离线对话画布.*?```python\n(.*?)```", skill, re.S).group(1)
-        # Run the published text in a fresh directory. No repository imports, HTTP or ZIP download.
-        with tempfile.TemporaryDirectory() as directory, run_kernel(cwd=directory) as client:
-            initialization = "import socket\ndef offline(*args, **kwargs):\n    raise AssertionError('external network')\nsocket.create_connection = offline\n"
-            code = initialization + program + "\npuai_card(name='探班员', theme='puai', scope='fragments', turns=[('本人', '08-20', '这锅谁来背？')], dates=['08-20','10-01'], days={'11-02':(9,None)}, tags=['锅盖批发'], output='report.png')"
-            messages = []
-            reply = client.execute_interactive(code, output_hook=messages.append, timeout=45)
-            file_for_chat = (Path(directory) / "report.png").read_bytes()
-        self.assertEqual(reply["content"]["status"], "ok", reply["content"])
+        receipt = ("PUAI 2026\n署名：探班员\n主题：puai\n范围：fragments\n"
+                   "原话：08-20~这锅谁来背？\n划线：谁来背？\n复读：2\n"
+                   "日期账：11-02:9:?\n发言日期：08-20,10-01\n标签：锅盖批发")
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            with run_kernel(cwd=directory) as client:
+                deny_network = ("import socket\ndef offline(*args, **kwargs): raise AssertionError('external network')"
+                                "\nsocket.create_connection = offline")
+                client.execute_interactive(deny_network, timeout=10)
+                for i, part in enumerate(notebook_parts()):
+                    magic = "%%writefile " + ("-a " if i else "") + "puai_notebook.py\n"
+                    reply = client.execute_interactive(magic + part, output_hook=lambda msg: None, timeout=10)
+                    self.assertEqual(reply["content"]["status"], "ok", reply["content"])
+                messages = []
+                call = f"from puai_notebook import show_puai\nshow_puai({receipt!r}, output='report.png')"
+                reply = client.execute_interactive(call, output_hook=messages.append, timeout=45)
+                self.assertEqual(reply["content"]["status"], "ok", reply["content"])
+                legacy = ("from puai_notebook import puai_card\n"
+                          "puai_card(name='探班员', theme='puai', scope='fragments', "
+                          "turns=[('本人','08-20','这锅谁来背？')], highlights=['谁来背？'], repeats=[2], "
+                          "tags=['锅盖批发'], days={'11-02':(9,None)}, dates=['08-20','10-01'], "
+                          "output='structured.png')")
+                reply = client.execute_interactive(legacy, output_hook=lambda msg: None, timeout=45)
+                self.assertEqual(reply["content"]["status"], "ok", reply["content"])
+            file_for_chat = (work / "report.png").read_bytes()
+            self.assertEqual(file_for_chat, (work / "structured.png").read_bytes())
+            # Run the actual installed CLI with the same locally available fonts.
+            (work / "renderer.py").write_bytes(SCRIPT.read_bytes())
+            (work / "report.txt").write_text(receipt, encoding="utf-8")
+            subprocess.run([sys.executable, work / "renderer.py", work / "report.txt", work / "cli.png"], check=True)
+            self.assertEqual(file_for_chat, (work / "cli.png").read_bytes())
         displays = [msg["content"]["data"] for msg in messages if msg["msg_type"] == "display_data"]
         self.assertEqual(len(displays), 1)
         self.assertEqual(set(displays[0]), {"image/png"})

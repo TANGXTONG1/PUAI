@@ -1,0 +1,140 @@
+
+        def dot(px, py, diameter, fill):
+            cmd("ellipse",(px,py,px+diameter,py+diameter),fill=fill,outline=fill or "#87959D",width=1)
+            if not fill:
+                cmd("line",(px+4,py+diameter-4,px+diameter-4,py+4),fill="#87959D",width=1)
+
+        def month_grid(month, x, top, width):
+            cx = x+width/2
+            centered(cx,top+17,f"{month:02} 月",34,bold=True)
+            weeks = calendar.Calendar(0).monthdayscalendar(year,month)
+            step, diameter = 28, 23
+            left = round(cx-((len(weeks)-1)*step+diameter)/2)
+            for week, dates in enumerate(weeks):
+                for weekday, day in enumerate(dates):
+                    if not day:
+                        continue
+                    dt = date(year, month, day)
+                    record = days.get(dt)
+                    fill = calendar_ink if record and record[1] else ink if dt in calendar_dates or dt in observed_dates else None
+                    px, py = left+week*step,top+54+weekday*step
+                    dot(px,py,diameter,fill)
+                    if dt in markers:
+                        cmd("rectangle",(px-2,py-2,px+diameter+2,py+diameter+2),outline=ink,width=2)
+                        centered(px+diameter/2,py+diameter/2,str(markers[dt]),18,"#FFFFFF" if fill else ink,True)
+            monthly = [(n,h) for day,(n,h) in days.items() if day.month==month]
+            if monthly:
+                n = month_messages[month]
+                if theme and all(h is not None for _,h in monthly):
+                    hits = sum(h for _,h in monthly)
+                    stat = f"{hits} {'喷 / ' if theme=='puai' else '/ '}{n} 条"
+                    left, bar = x+18, width-36
+                    rect(left, top+296, bar, 8, tint)
+                    if hits:
+                        rect(left,top+296,round(bar*hits/n),8,calendar_ink)
+                else:
+                    stat = f"{n} 条发言"
+            elif len(selected) > 1:
+                stat = f"核实 {month_counts[month]} 天"
+            else:
+                return
+            centered(cx,top+265,stat,fitted(stat,width-8,30),bold=True)
+
+        def date_legend(x, at, available):
+            col = available/len(legend)
+            for i,(label,fill) in enumerate(legend):
+                xx = round(x+i*col)
+                dot(xx,at+4,20,fill)
+                text(xx+28,at,label,26)
+
+        def date_fact(x, at, width, label, value):
+            text(x,at,label,32,"#475364",True)
+            text(x,at+44,value,fitted(value,width,46),bold=True)
+
+        if len(selected)==1:
+            month_grid(selected[0],48,y,326)
+            cmd("line",(397,y+4,397,y+291),fill="#BAC6C8",width=2)
+            if days:
+                date_fact(428,y+12,424,"有发言的日子",primary)
+                date_fact(428,y+128,424,"单日最高发言",secondary)
+            else:
+                text(428,y+29,primary,fitted(primary,424,38),bold=True)
+            if secondary and not days:
+                text(428,y+112,secondary,fitted(secondary,424,34),bold=True)
+            date_legend(428,y+245,424)
+            y += 334
+        else:
+            if days:
+                date_fact(48,y,325,"有发言的日子",primary)
+                cmd("line",(385,y+4,385,y+86),fill="#BAC6C8",width=2)
+                date_fact(419,y,433,"单日最高发言",secondary)
+                y += 53
+            else:
+                text(48,y,primary,fitted(primary,367,36),bold=True)
+                if secondary:
+                    text(450,y,secondary,fitted(secondary,402,34),bold=True)
+            date_legend(48,y+65,804)
+            width = (804-24*(len(selected)-1))//len(selected)
+            for i,month in enumerate(selected):
+                month_grid(month,48+i*(width+24),y+125,width)
+            y += 462
+        extra = sorted(observed_dates.difference(days)) if days else []
+        if extra:
+            listed = "、".join(day.strftime("%m.%d") for day in extra[:3])
+            if len(extra) > 3:
+                listed = extra[0].strftime("%m.%d") + " – " + extra[-1].strftime("%m.%d")
+            y = paragraph(48, y, wrap(f"另有 {len(extra)} 个已知日期 · {listed}", 804, 30), 30) + 24
+    else:
+        label = f"这 {len(quotes)} 句原话未附日期。" if quotes else "这份记录未附日期。"
+        rect(48, y, 804, 76, paper, ink, 12)
+        rect(48, y+12, 6, 52, calendar_ink)
+        text(71, y+20, label, 33)
+        y += 112
+    if r["lead"] and quotes:
+        rows = wrap(r["lead"], 776, 36)
+        rect(48,y+2,7,len(rows)*50-5,accent)
+        y = paragraph(76,y,rows,36,"#475364") + 30
+    habits = r["habits"][:2] if r["lead"] or quotes else r["habits"]
+    if quote_first:
+        habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
+    if habits:
+        y = heading(y,"日常用法")
+        for habit in habits:
+            y = paragraph(48,y,wrap(habit,804,38),38)+17
+        y += 12
+    stickers = []
+    if r["tags"]:
+        zone = y
+        rect(0,zone,900,212,signal)
+        text(48,zone+24,"片段标签" if scope_title else "人格标签",38,bold=True)
+        tags = r["tags"]
+        width = (804-32)//3
+        for i,tag in enumerate(tags):
+            if len(tag) > 10:
+                tag = tag[:9]+"…"
+            x = 48+i*(width+16)
+            rect(x,zone+94,width,62,paper,ink)
+            centered(x+width/2,zone+125,tag,fitted(tag,width-20,40),bold=True)
+            stickers.append((x-5,zone+88,x+width+6,zone+162))
+        y += 212
+    footer_height = 228
+    rect(0,y,900,footer_height,"#FBFBF8")
+    text(48,y+49,"扫码获取口令",46,bold=True)
+    text(48,y+124,"发给自己的 Agent 总结出图。",34)
+    cell = 5
+    modules = len(QR_ROWS)
+    qr_size = (modules+8)*cell
+    qr_x, qr_y = 852-qr_size, y+(footer_height-qr_size)//2
+    rect(qr_x,qr_y,qr_size,qr_size,"#FFFFFF")
+    for row,bits in enumerate(QR_ROWS):
+        for col in range(modules):
+            if bits & (1 << (modules-1-col)):
+                rect(qr_x+(col+4)*cell,qr_y+(row+4)*cell,cell-1,cell-1,"#101824")
+    img = Image.new("RGB",(900,y+footer_height),paper)
+    draw = ImageDraw.Draw(img)
+    for method,args,kwargs in commands:
+        getattr(draw,method)(*args,**kwargs)
+    for bounds, angle in zip(stickers, (0.92,-0.86,0.69)):
+        tile = img.crop(bounds)
+        img.paste(tile.rotate(angle,resample=Image.Resampling.BICUBIC,fillcolor=signal),bounds[:2])
+    return img

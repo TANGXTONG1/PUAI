@@ -81,7 +81,7 @@ class ChatPngTest(unittest.TestCase):
                 with self.subTest(field=field, spelling=spelling):
                     receipt = f"PUAI 2026\n{field}：{spelling}\n原话：这是真的吗？"
                     self.assertEqual(renderer.parse_receipt(receipt)["theme"], key)
-        self.assertEqual(renderer.parse_receipt("PUAI 2026\n标签：AI因斯坦\n原话：这是真的吗？")["theme"], "")
+        self.assertEqual(renderer.parse_receipt("PUAI 2026\n标签：AI因斯坦\n原话：这是真的吗？")["theme"], "einstein")
 
     def test_unledgered_quote_lead_and_explicit_ai_ending(self):
         r = renderer.parse_receipt("PUAI 2026\n原话：11-06~又丢了？\nAI收尾：你刚才已经给我了。")
@@ -98,14 +98,16 @@ class ChatPngTest(unittest.TestCase):
     def test_scope_and_six_quotes_reach_the_painted_poster(self):
         lines = ["PUAI 2026", "主题：teach", *("原话：" + q for q in "甲乙丙丁戊己"), "AI收尾：六句。"]
         font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
-        for scope, expected in [("", "聊天片段精选"), ("thread", "本次对话精选"), ("history", "AI的教育 报告")]:
+        for scope, expected in [("", "聊天片段精选"), ("thread", "本次对话精选"), ("history", None)]:
             parsed = renderer.parse_receipt("\n".join(lines + (["范围：" + scope] if scope else [])))
             self.assertEqual(len(parsed["quotes"]), 6)
             self.assertEqual(parsed["reply"], (6, "六句。"))
             with patch.object(ImageDraw.ImageDraw, "text") as draw:
                 renderer.draw_report(parsed, font)
                 painted = [call.args[1] for call in draw.call_args_list]
-            self.assertIn("2026 " + expected, painted)
+            self.assertIn("2026 AI的教育 报告", painted)
+            if expected:
+                self.assertIn(expected, painted)
             self.assertTrue(all(q in painted for q in "甲乙丙丁戊己"))
         with self.assertRaises(ValueError):
             renderer.parse_receipt("\n".join(lines + ["范围：other"]))
@@ -124,7 +126,7 @@ class ChatPngTest(unittest.TestCase):
              ("片段日期", "核实 2 天", "2 / 3 句原话有日期", "02 月", "04 月"), ("单日最高", "条指令")),
             ("原话：02-03~甲。", ("片段日期", "核实 1 天", "1 句原话有日期"), ("单日最高", "条指令")),
             ("原话：04-05~甲。\n发言日期：04-05,09-10\n日期账：09-10:5:?",
-             ("发言日历", "活跃 1 天", "单日最高 9.10 · 5 条", "另有 1 个已知日期", "04.05"), ("活跃 2 天",)),
+             ("发言日历", "有发言的日子", "1 天", "单日最高发言", "9.10 · 5 条", "另有 1 个已知日期", "04.05"), ("2 天开喷",)),
         ]
         for body, expected, forbidden in cases:
             report = renderer.parse_receipt("PUAI 2026\n" + body)
@@ -191,7 +193,7 @@ AI：四行。
             return ys
 
         for theme in ["puai", "teach"]:
-            order = ["对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "现场旁注", "自带红笔。", "对话用量"]
+            order = ["对话现场", "表里少一行。", "你再数数。", "四行。", "三行半吗？", "记录里，你发出了", "发言日历", "自带红笔。"]
             with self.subTest(theme=theme):
                 ys = positions(receipt.replace("主题：puai", f"主题：{theme}"))
                 actual = [ys[text] for text in order]

@@ -1,11 +1,12 @@
-import { parseReport } from './report-code.mjs?v=ffbab029bc';
+import { parseReport } from './report-code.mjs?v=0f193ecd90';
 
 const themeNames = new Map([
+  ['puai','puai'], ['aicu','aicu'],
   ['ai的教育','teach'], ['ai特全体','all'], ['ai在心口难开','hush'],
   ['ai因斯坦','einstein'], ['爱因斯坦','einstein'], ['ai迪生','edison'], ['ai的供养','support'],
   ['ai咋咋地','free'], ['未归类',''], ['待定',''], ['无',''], ['ai相处报告','']
 ]);
-const fieldPattern = /^(署名|主题|(?:人物|人格|年度|本次)类型|范围|短评|主场景|用法|原话|AI|AI收尾|前情|标签|发言日期|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
+const fieldPattern = /^(署名|主题|(?:人物|人格|年度|本次)类型|范围|短评|主场景|用法|原话|划线|复读|AI|AI收尾|前情|(?:人格)?标签|发言日期|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
 const repeated = new Set(['用法', '原话', '标签']);
 const title = /^(?:#{1,6}\s+)?(?:\*\*|__|`)?PUAI\s*2026(?:\*\*|__|`)?$/iu;
 const unknownStat = /^[（(]?(?:[-—–]+|N\/A|无|不详|未知|留空|未提供|无记录|暂无|未核[实准]?|未核[验对]|未统计|无法(?:逐条)?核[实准验对]|缺少数据)[）)]?$/iu;
@@ -23,12 +24,30 @@ function collectFields(lines, start) {
   const values = new Map();
   let reply = '';
   let ending;
-  const body = lines.slice(start + 1).filter(Boolean);
-  for (const [index, line] of body.entries()) {
+  const body = [];
+  const quoteNotes = [];
+  let quote = '', index = -1;
+  for (const line of lines.slice(start + 1).filter(Boolean)) {
     if (/^(?:```|~~~)|^(?:报告结束|结束|END|END PUAI)$/iu.test(line) || title.test(line)) break;
+    const field = reportLine(line);
+    if (field && (field[1] === '划线' || field[1] === '复读')) {
+      if (quote && index < 6) {
+        const value = field[2].trim();
+        const note = quoteNotes[index] ?? {};
+        if (field[1] === '划线' && publishableLine(value, 30) && quote.includes(value)) note.emphasis = value;
+        if (field[1] === '复读' && /^[1-9]\d{0,4}$/u.test(value) && +value >= 2 && +value <= 50000) note.repeat_count = +value;
+        if (Object.keys(note).length) quoteNotes[index] = note;
+      }
+      continue;
+    }
+    quote = field?.[1] === '原话' ? field[2].replace(/^\d{2}-\d{2}~/u, '') : '';
+    if (quote) index++;
+    body.push(line);
+  }
+  for (const [index, line] of body.entries()) {
     const match = reportLine(line);
     if (!match || !match[2]) continue;
-    const name = match[1].endsWith('类型') ? '主题' : match[1].toLowerCase();
+    const name = match[1].endsWith('类型') ? '主题' : match[1] === '人格标签' ? '标签' : match[1].toLowerCase();
     if (['发言日期','日期账','无日期账','token'].includes(name) && unknownStat.test(match[2].trim())) continue;
     if (name === 'ai收尾') {
       const after = values.get('原话')?.length ?? 0;
@@ -57,7 +76,7 @@ function collectFields(lines, start) {
     values.set(name, entries);
   }
   const finalReply = !reply && ending && ending.after === values.get('原话').length ? ending.text : '';
-  return { values, reply, finalReply };
+  return { values, reply, finalReply, quoteNotes };
 }
 
 function publishableLine(value, limit) {
@@ -70,17 +89,27 @@ export function readPlainFields(value) {
   const start = lines.findIndex(line => title.test(line));
   if (start < 0) return null;
   if (value.length > 48000) throw new Error('报告文字太长，请只复制 PUAI 2026 这份报告。');
-  const { values, reply, finalReply } = collectFields(lines, start);
+  const { values, reply, finalReply, quoteNotes } = collectFields(lines, start);
   const first = name => values.get(name)?.[0] ?? '';
   const three = (name, offset = 0) => Array.from({ length: 3 }, (_, index) => values.get(name)?.[offset + index] ?? '');
   const themeText = first('主题').replace(/\s+/gu, '').toLowerCase();
-  const theme = themeNames.get(themeText) ?? themeText;
+  let theme = themeNames.get(themeText) ?? themeText;
+  if (!themeText) {
+    const tags = values.get('标签') ?? [];
+    const tagTheme = tag => themeNames.get(tag.toLowerCase());
+    const named = [...new Set(tags.map(tagTheme).filter(Boolean))];
+    if (named.length === 1) {
+      theme = named[0];
+      values.set('标签', tags.filter(tag => tagTheme(tag) !== theme));
+    }
+  }
   const setup = first('前情');
   // Keep the original v2 slot positions for saved receipts. Only named/plain
   // receipts use the optional tail (scope, quotes four to six and verified dates).
   const fields = ['v2', theme, first('署名'), first('短评'), first('日期账'), first('无日期账'), first('token'),
     ...three('用法'), ...three('原话'), ...three('标签'), first('原话') && publishableLine(setup, 24) ? setup : '',
-    reply, first('主场景'), finalReply, first('范围'), ...three('原话', 3), first('发言日期')];
+    reply, first('主场景'), finalReply, first('范围'), ...three('原话', 3), first('发言日期'),
+    quoteNotes.length ? JSON.stringify(quoteNotes) : ''];
   while (fields.length > 17 && !fields.at(-1)) fields.pop();
   return fields;
 }
@@ -92,7 +121,7 @@ export function parsePlainReport(value) {
 
 const directNames = new Map([
   ['name', '署名'], ['theme', '主题'], ['scope', '范围'], ['note', '短评'], ['lead', '主场景'], ['setup', '前情'],
-  ['q', '原话'], ['ai', 'AI'], ['endai', 'AI收尾'], ['use', '用法'], ['tag', '标签'],
+  ['q', '原话'], ['mark', '划线'], ['repeat', '复读'], ['ai', 'AI'], ['endai', 'AI收尾'], ['use', '用法'], ['tag', '标签'],
   ['days', '日期账'], ['dates', '发言日期'], ['undated', '无日期账'], ['token', 'Token']
 ]);
 
@@ -113,7 +142,7 @@ export function readDirectFields(value) {
     if (!label || /[\u0000-\u001f\u007f]/u.test(content)) {
       throw new Error('报告链接含无法识别的字段或换行，请重新生成完整链接。');
     }
-    const lines = ['原话', 'AI', 'AI收尾'].includes(label) ? turns : metadata;
+    const lines = ['原话', '划线', '复读', 'AI', 'AI收尾'].includes(label) ? turns : metadata;
     lines.push(label + '：' + content);
   }
   return readPlainFields(metadata.concat(turns).join('\n'));

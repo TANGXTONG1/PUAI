@@ -141,6 +141,19 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
     },
     share_quotes: quotes.filter(value => value.trim()).map(value => readQuote(value, days, datesWithoutLedger, earlyCutoff, observedDates))
   };
+  if (allowExcerptsWithoutLedger && fields[25]) {
+    const notes = JSON.parse(fields[25]);
+    if (!Array.isArray(notes)) throw new Error('原话的标记格式无效。');
+    for (const [index, quote] of activity.share_quotes.entries()) {
+      const note = notes[index];
+      if (typeof note?.emphasis === 'string' && note.emphasis && Array.from(note.emphasis).length <= 30 && quote.text.includes(note.emphasis)) {
+        quote.emphasis = note.emphasis;
+      }
+      if (Number.isInteger(note?.repeat_count) && note.repeat_count >= 2 && note.repeat_count <= 50000) {
+        quote.repeat_count = note.repeat_count;
+      }
+    }
+  }
   if (!excerptsOnly) {
     Object.assign(activity.daily_profile, {
       active_days: days.length,

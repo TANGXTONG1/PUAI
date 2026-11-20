@@ -1,6 +1,6 @@
-import { readFields, parseReport } from './report-code.mjs?v=ffbab029bc';
+import { readFields, parseReport } from './report-code.mjs?v=0f193ecd90';
 
-import { readDirectFields, readPlainFields } from './plain-report.mjs?v=8719c57fb7';
+import { readDirectFields, readPlainFields } from './plain-report.mjs?v=2dadf7323d';
 
 const form = document.getElementById('form');
 const input = document.getElementById('code');
@@ -32,7 +32,7 @@ let sharePayload;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=bef5f49d16', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=3d8b788103', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -252,7 +252,7 @@ function openFragment() {
     generate(location.hash, true);
   } else {
     const saved = history.state?.puaiReceipt;
-    if (Array.isArray(saved) && saved.length >= 16 && saved.length <= 25 && saved[0] === 'v2'
+    if (Array.isArray(saved) && saved.length >= 16 && saved.length <= 26 && saved[0] === 'v2'
         && saved.every(field => typeof field === 'string') && saved.join('').length <= 48000) {
       generate('', false, saved);
       return;

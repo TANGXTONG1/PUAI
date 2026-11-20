@@ -1,0 +1,108 @@
+
+
+def load_font(path=None):
+    # A remote skill read into a notebook has no __file__.
+    here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
+    candidates = [path] if path else [
+        Path.home()/"Library/Fonts/PingFangSC-Regular.ttf", "/System/Library/Fonts/PingFang.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+        "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+        "/System/Library/Fonts/STHeiti Medium.ttc", "C:/Windows/Fonts/msyh.ttc",
+        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
+        here/"SmileySans-Oblique.woff2",
+    ]
+    for filename in candidates:
+        try:
+            f = ImageFont.truetype(str(filename), 24)
+            if len({bytes(f.getmask(ch)) for ch in "中文图"}) == 3:
+                return lru_cache(maxsize=32)(lambda size: ImageFont.truetype(str(filename), size))
+        except OSError:
+            continue
+    if not path:
+        # Data-analysis kernels can have PyMuPDF's CJK font but no system CJK font files.
+        try:
+            try:
+                import pymupdf
+            except ImportError:
+                import fitz as pymupdf
+            embedded = pymupdf.Font(fontname="cjk").buffer
+            face = ImageFont.truetype(BytesIO(embedded), 24)
+            if len({bytes(face.getmask(ch)) for ch in "中文图"}) == 3:
+                return lru_cache(maxsize=32)(lambda size: ImageFont.truetype(BytesIO(embedded), size))
+        except (ImportError, AttributeError, OSError, RuntimeError):
+            pass
+    raise ValueError("找不到可绘制中文的字体。请用 --font 指定 Noto Sans CJK 或包内 SmileySans 字体")
+
+
+def draw_report(r, font):
+    year, theme = r["year"], r["theme"]
+    name, theme_label = EDITIONS[theme]
+    paper, ink, accent, on_accent, pull, on_pull, signal, tint, calendar_ink = PALETTES[theme]
+    commands = []
+
+    def cmd(method, *args, **kwargs):
+        commands.append((method, args, kwargs))
+
+    def text(x, y, value, size, color=ink, bold=False, align="lt"):
+        face = font(size)
+        stroke = 0 if face.getname()[0] == "Smiley Sans" else 1
+        cmd("text", (x, y), str(value), font=face, fill=color, anchor=align,
+            stroke_width=stroke if bold else 0, stroke_fill=color)
+
+    def wrap(value, width, size, emphasis=""):
+        face = font(size)
+        units = []
+        parts = [value]
+        if emphasis and face.getlength(emphasis) <= width:
+            before, match, after = value.partition(emphasis)
+            parts = [before, match, after] if match else parts
+        tokens = [token for index, part in enumerate(parts)
+                  for token in ([part] if len(parts) == 3 and index == 1 else re.findall(r"[A-Za-z0-9_]+|.", part))]
+        for token in tokens:
+            parts = [token] if face.getlength(token) <= width else list(token)
+            for part in parts:
+                if units and re.fullmatch(r"[，。、！？；：…）】」》％,.!?;:%)]", part):
+                    units[-1] += part
+                else:
+                    units.append(part)
+
+        def fit(line_width):
+            rows, current = [], ""
+            for unit in units:
+                if current and face.getlength(current+unit) > line_width:
+                    rows.append(current)
+                    current = ""
+                current += unit
+            return rows + ([current] if current else [])
+
+        rows = fit(width)
+        # Rebalance a stranded final word when the number of lines stays the same.
+        if len(rows) > 1 and face.getlength(rows[-1]) < width * .3:
+            for smaller in range(width-size, int(width*.65), -size):
+                candidate = fit(smaller)
+                if len(candidate) != len(rows):
+                    break
+                rows = candidate
+                if face.getlength(rows[-1]) >= width * .3:
+                    break
+        return rows
+
+    def paragraph(x, y, rows, size, color=ink, bold=False):
+        for row in rows:
+            text(x, y, row, size, color, bold)
+            y += round(size*1.38)
+        return y
+
+    def rect(x, y, w, h, color, outline=None, radius=0):
+        cmd("rounded_rectangle", (x, y, x+w, y+h), radius=radius, fill=color, outline=outline,
+            width=2 if outline else 1)
+
+    def heading(y, title):
+        text(48, y, title, 38, bold=True)
+        rect(48, y+42, round(font(38).getlength(title)), 6, accent)
+        return y+70
+
+    def centered(x, y, value, size, color=ink, bold=False):
+        # Centre the ink, including a mixed Latin/CJK signature, inside the sticker.
+        left, top, right, bottom = font(size).getbbox(value, anchor="lt")
+        text(round(x-(left+right)/2), round(y-(top+bottom)/2), value, size, color, bold)

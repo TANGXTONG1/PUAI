@@ -8,7 +8,7 @@
 
 扫码获取口令，发给自己的 Agent 总结出图。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[领取生成口令](https://xn--sxrw8m230b.com/PUAI/#go)
 
-署名旁会亮出九种人物类型中的一种，比如 **PUAI** 或 **AI因斯坦**。只看一段对话时，类型章写「本次类型」；个性标签另贴在图尾。
+九种人格各有一套固定配色。**PUAI** 用钴蓝和荧光黄，**AI因斯坦** 用青蓝和淡蓝紫。报告从类型标题和本人原话开场，接发言统计、日历和人格标签。单场精选会在标题下注明范围。[看九型对话出图色样](https://xn--sxrw8m230b.com/PUAI/themes/inline-editions.png)
 
 把口令发进常用对话。能运行 Python 并显示图片的客户端会在回复里贴出 PNG。只能回文字的客户端会给一条打开即出图的预览链接。
 
@@ -47,7 +47,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 调用 $puai，用我的聊天原话生成 2026 年度长图，直接在对话里显示，署名「小栗」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=84a706ffe5) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=a51ec0fe17) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>

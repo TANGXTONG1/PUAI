@@ -1,0 +1,123 @@
+"""Official PUAI A poster. In this notebook import show_puai and pass a reviewed report.
+show_puai(receipt, output="/mnt/data/PUAI-2026.png") displays the PNG inline.
+"""
+import argparse
+import calendar
+from collections import Counter, defaultdict
+from datetime import date
+from functools import lru_cache
+from io import BytesIO
+import os
+from pathlib import Path
+import re
+import tempfile
+
+from PIL import Image, ImageDraw, ImageFont
+
+
+EDITIONS = {
+    "puai": ("PUAI", "开喷"),
+    "teach": ("AI的教育", "教学"),
+    "aicu": ("AICU", "急救"),
+    "all": ("AI特全体", "跨模型"),
+    "hush": ("AI在心口难开", "代写"),
+    "einstein": ("AI因斯坦", "追问"),
+    "edison": ("AI迪生", "新点子"),
+    "support": ("AI的供养", "应援"),
+    "free": ("AI咋咋地", "放权"),
+    "": ("AI 相处", ""),
+}
+# Paper, text, signature, on-signature, main sticker, on-sticker,
+# light sticker, type badge, calendar. Keep in sync with the Canvas editions.
+PALETTES = {
+    "puai": ("#F3F6F6", "#142238", "#E5EE79", "#142238", "#16399A", "#F3F6F6", "#C7E1F4", "#DFE6F2", "#2552AC"),
+    "teach": ("#F5FBF4", "#122C23", "#B8F178", "#173023", "#087A54", "#FFFFFF", "#99E7B8", "#D9F2DD", "#006247"),
+    "aicu": ("#FFFAF4", "#322016", "#CEDCE3", "#212C33", "#FF8643", "#301B12", "#FFC79E", "#FFE0C4", "#943C12"),
+    "all": ("#F8F6FF", "#271B39", "#B7F4DC", "#152D28", "#A180F5", "#211435", "#D5C7FA", "#E8E2F7", "#6641AA"),
+    "hush": ("#FFF7F4", "#342020", "#D4C0EE", "#302139", "#FFABA3", "#342020", "#FFD2CC", "#F4DFEB", "#964B54"),
+    "einstein": ("#F2FBFC", "#0C2C34", "#C5D6FF", "#142739", "#32CCDB", "#0C2C34", "#A4EEF0", "#D1EEF1", "#006A78"),
+    "edison": ("#FFFBEE", "#302615", "#62379E", "#FFFFFF", "#FFCA29", "#302615", "#FFE395", "#F7EAC7", "#7E5412"),
+    "support": ("#FFF5F9", "#301E30", "#9A2358", "#FFFFFF", "#F16DBD", "#33182C", "#FEC9E3", "#FFE0EB", "#912755"),
+    "free": ("#FAFBEF", "#262E14", "#A0E3C7", "#152C22", "#C8E73F", "#262E14", "#E3F59E", "#E6EED1", "#556A14"),
+    "": ("#F6F6F4", "#232B30", "#E6E8E1", "#232B30", "#CDD4D6", "#232B30", "#E0E5E4", "#E6EAE8", "#52606A"),
+}
+# Same offline QR as the web poster, for https://xn--sxrw8m230b.com/PUAI/#go
+QR_ROWS = (
+    0x1fc08c87f, 0x105b77041, 0x174ab2b5d, 0x175e3555d, 0x175e3865d, 0x104796541,
+    0x1fd55557f, 0x1284200, 0xbd81d2da, 0x7851fa1c, 0xbd61061f, 0x12b696ea7,
+    0x1e6fda9f0, 0x10e1f1a8, 0xef5bf45c, 0x1a0125695, 0x1bfed05f8, 0x2b6e61d5,
+    0x1d404fe2d, 0xc102d41c, 0xad13afba, 0x1d34bc238, 0x147a53603, 0x12871b037,
+    0x1e718c7f7, 0x1991d16, 0x1fc53b354, 0x1057ecd1c, 0x17578aff2, 0x175968ead,
+    0x17440ecbf, 0x105e870ff, 0x1fcc7e37c,
+)
+FIELDS = "署名 主题 范围 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 发言日期 无日期账 token".split()
+TYPE_NAMES = {label.lower(): key for key, (label, _) in EDITIONS.items() if key}
+TYPE_NAMES["爱因斯坦"] = "einstein"
+UNKNOWN = {"", "?", "无", "未知", "留空", "未提供", "未核准", "未核实", "无法逐条核准", "—", "n/a"}
+TOKEN_MAX = 2**53 - 1
+
+
+def counts(value):
+    match = re.fullmatch(r"([0-9]+):([0-9]+|\?)", value.strip())
+    if not match:
+        raise ValueError("发言账须采用 发言数:命中数，未核准的命中数写 ?")
+    n = int(match[1])
+    hits = None if match[2] == "?" else int(match[2])
+    if not 0 < n <= TOKEN_MAX or hits is not None and hits > n:
+        raise ValueError("发言账的总数或命中数无效")
+    return n, hits
+
+
+def day_key(year, value):
+    if not re.fullmatch(r"\d\d-\d\d", value):
+        raise ValueError("日期格式应为 MM-DD")
+    return date.fromisoformat(f"{year}-{value}")
+
+
+def quote_emphasis(quote, selected):
+    if selected and len(selected) <= 30 and selected in quote:
+        return selected
+    clauses = [s.strip() for s in re.findall(r"[^，,。！？!?；;：:\n]+[，,。！？!?；;：:]*", quote) if s.strip()]
+    if len(clauses) >= 2:
+        ending = clauses[-1]
+        words = ending.rstrip("，,。！？!?；;：:").strip()
+        if 2 <= len(words) and len(ending) <= 12 and words not in {"对吧", "对吗", "好吗", "行吗", "是吗", "好吧", "可以吗"}:
+            return ending
+    return ""
+
+
+def parse_receipt(text):
+    if len(text) > 48000:
+        raise ValueError("报告过长")
+    title = re.search(r"(?im)^\s*(?:#{1,6}\s+)?(?:\*\*)?PUAI\s+(20\d\d)(?:\*\*)?\s*$", text)
+    if not title:
+        raise ValueError("报告首行应为 PUAI 2026")
+    year = int(title[1])
+    values = defaultdict(list)
+    lines = []
+    highlights, repeats = {}, {}
+    quote_number = None
+    for raw in text[title.end():].splitlines():
+        line = raw.strip()
+        if line.startswith(('```', '~~~')) or line == "报告结束":
+            break
+        match = re.match(r"^(?:[-*]\s+)?(?:\*\*)?([^:：*]+?)(?:\*\*)?\s*[:：](?:\*\*)?\s*(.+)$", line)
+        if not match:
+            quote_number = None
+            continue
+        field, value = match[1].lower(), match[2].strip()
+        if field in {"划线", "复读"}:
+            if quote_number is not None:
+                if field == "划线":
+                    highlights[quote_number] = value
+                elif re.fullmatch(r"[0-9]{1,5}", value) and 2 <= int(value) <= 50000:
+                    repeats[quote_number] = int(value)
+            continue
+        quote_number = len(values["原话"]) if field == "原话" else None
+        if field in {"人物类型", "人格类型", "年度类型", "本次类型"}:
+            field = "主题"
+        elif field == "人格标签":
+            field = "标签"
+        if field in FIELDS and value:
+            values[field].append(value)
+            lines.append((field, value))

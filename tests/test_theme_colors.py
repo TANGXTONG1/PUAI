@@ -11,6 +11,19 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import render_chat_png
 
+# Approved A editions in 978f1a5. Keep this fixture independent of both renderers.
+APPROVED_EDITIONS = {
+    "puai": ("PUAI", "#16399A"),
+    "teach": ("AI的教育", "#087A54"),
+    "aicu": ("AICU", "#FF8643"),
+    "all": ("AI特全体", "#A180F5"),
+    "hush": ("AI在心口难开", "#FFABA3"),
+    "einstein": ("AI因斯坦", "#32CCDB"),
+    "edison": ("AI迪生", "#FFCA29"),
+    "support": ("AI的供养", "#F16DBD"),
+    "free": ("AI咋咋地", "#C8E73F"),
+}
+
 
 def luminance(rgb):
     values = [n / 255 for n in ImageColor.getrgb(rgb)]
@@ -19,6 +32,11 @@ def luminance(rgb):
 
 
 class ThemeColors(unittest.TestCase):
+    def test_each_personality_keeps_its_approved_name_and_main_ink(self):
+        actual = {key: (render_chat_png.EDITIONS[key][0], colors[4])
+                  for key, colors in render_chat_png.PALETTES.items() if key}
+        self.assertDictEqual(actual, APPROVED_EDITIONS)
+
     def test_the_nine_editions_have_distinct_main_inks_in_both_renderers(self):
         # Ask the Canvas template for its effective colours with and without a
         # story, the two report shapes used by the live generator and the gallery.
@@ -30,7 +48,8 @@ class ThemeColors(unittest.TestCase):
         const ids = JSON.parse(process.argv[1]);
         const roles = ['base','ink','accent','onAccent','pull','onPull','signal','tint','calendar'];
         const palettes = ids.map(theme => [undefined, {}].map(story =>
-          vm.runInNewContext(definitions + '\\nroles.map(key => colors[key]);', {report: {theme, story}, roles})));
+          vm.runInNewContext(definitions + '\\n[unclassified ? null : edition.name, ...roles.map(key => colors[key])];',
+                             {report: {theme, story}, roles})));
         console.log(JSON.stringify(palettes));
         """
         ids = list(render_chat_png.PALETTES)
@@ -42,7 +61,8 @@ class ThemeColors(unittest.TestCase):
         for theme, variants in zip(ids, json.loads(web)):
             with self.subTest(theme=theme):
                 palette = render_chat_png.PALETTES[theme]
-                self.assertEqual(variants, [list(palette), list(palette)])
+                title = APPROVED_EDITIONS[theme][0] if theme else None
+                self.assertEqual(variants, [[title, *palette], [title, *palette]])
                 base, ink, accent, on_accent, pull, on_pull, signal, tint, calendar = palette
                 for foreground, background in ((ink, base), (on_accent, accent), (on_pull, pull),
                                                (ink, signal), (ink, tint), ("#FFFFFF", calendar)):

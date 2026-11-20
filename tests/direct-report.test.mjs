@@ -1,11 +1,41 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readDirectFields } from '../docs/make/plain-report.mjs';
+import { parsePlainReport, readDirectFields } from '../docs/make/plain-report.mjs';
 import { parseReport } from '../docs/make/report-code.mjs';
 
 function report(link) {
   return parseReport(readDirectFields(link), { allowExcerptsWithoutLedger: true });
 }
+
+test('a single named persona among the tags selects its original edition on both web entry points', () => {
+  const labels = { PUAI: 'puai', AI的教育: 'teach', AICU: 'aicu', AI特全体: 'all',
+    AI在心口难开: 'hush', AI因斯坦: 'einstein', 爱因斯坦: 'einstein', AI迪生: 'edison',
+    AI的供养: 'support', AI咋咋地: 'free' };
+  for (const [label, theme] of Object.entries(labels)) {
+    const plain = parsePlainReport('PUAI 2026\n人格标签：双耳杯、' + label + '\n原话：挑一只耳朵喝。');
+    const link = report('#p?' + new URLSearchParams([['tag','双耳杯'],['tag',label],['q','挑一只耳朵喝。']]));
+    assert.equal(plain.theme, theme, label);
+    assert.deepEqual(plain.keywords, ['双耳杯']);
+    assert.deepEqual(link, plain);
+  }
+  assert.equal(report('#p?q=挑一只。&tag=PUAI&tag=AICU').theme, null);
+  assert.equal(report('#p?q=挑一只。&tag=当场纠偏').theme, null);
+  assert.equal(report('#p?q=挑一只。&tag=PUAI&theme=待定').theme, null);
+  assert.equal(report('#p?q=挑一只。&tag=PUAI&theme=free').theme, 'free');
+});
+
+test('原话划线、复读和接话在网页端保持对应', () => {
+  const card = report('#p?' + new URLSearchParams([
+    ['q','多调研点啊，我缺你这点 token 吗？'], ['repeat','4'], ['mark','我缺你这点 token 吗？'],
+    ['ai','我再看看。'], ['q','这次够了。'], ['mark','新编半句'], ['repeat','0'],
+  ]));
+  assert.deepEqual(card.activity.share_quotes, [
+    {text:'多调研点啊，我缺你这点 token 吗？',repeat_count:4,emphasis:'我缺你这点 token 吗？'},
+    {text:'这次够了。'},
+  ]);
+  assert.deepEqual(card.story.assistant_reply, {after_quote:1,text:'我再看看。'});
+  assert.equal(card.activity.summary, undefined);
+});
 
 test('named links carry a readable scene, preserve speaker turns, and retain the real daily ledger', () => {
   const source = new URLSearchParams([
