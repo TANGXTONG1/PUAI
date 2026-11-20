@@ -12,6 +12,8 @@
 
 把口令发进常用对话。能运行 Python 并显示图片的客户端会在回复里贴出 PNG。只能回文字的客户端会给一条打开即出图的预览链接。
 
+选原话时会把不同聊天里的几件事放在一起，回原文看你接下来怎么说。续聊和分支里重放的老话只算同一件事。同机有多个账号时按本人账号取材。
+
 日历按原消息的发送时间统计。有历史工具时会跨月翻原对话，截图和附件也算一次发言。只找到零散片段时，日历标出已核实的日期。有现成的 ChatGPT 聊天导出（JSON 或 ZIP），也可在支持文件的对话中用它核对整个导出范围。
 
 如果助手打不开技能链接，可把[技能说明文件](https://xn--sxrw8m230b.com/PUAI/skill.txt)作为附件发给它，再发同一句口令。
@@ -47,7 +49,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 调用 $puai，用我的聊天原话生成 2026 年度长图，直接在对话里显示，署名「小栗」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=a51ec0fe17) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=f023ce3337) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>

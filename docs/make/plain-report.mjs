@@ -138,6 +138,10 @@ export function readDirectFields(value) {
   const metadata = ['PUAI 2026'];
   const turns = [];
   for (const [key, content] of new URLSearchParams(query)) {
+    if (key.toLowerCase() === 'year') {
+      if (content !== '2026') throw new Error('这个入口用于 2026 年度报告。');
+      continue;
+    }
     const label = directNames.get(key.toLowerCase());
     if (!label || /[\u0000-\u001f\u007f]/u.test(content)) {
       throw new Error('报告链接含无法识别的字段或换行，请重新生成完整链接。');

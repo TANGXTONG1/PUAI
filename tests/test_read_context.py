@@ -88,6 +88,56 @@ class ContextWindowTest(unittest.TestCase):
         self.assertEqual(result["messages"][1]["parts"], [{"prefix": "abcd", "omitted_characters": 3}])
         self.assertNotIn("private", json.dumps(result))
 
+    def test_host_wrappers_do_not_become_owner_speech_or_split_a_real_exchange(self):
+        browser = ('<in-app-browser-context source="ambient-ui-state">\nPRIVATE TAB\n'
+                   '</in-app-browser-context>\n\n## My request for Codex:\n两块钱还要算利息？')
+        files = '# Files mentioned by the user:\n## old.xlsx: /private/path\n\n## My request for Codex:\n就按两块算。'
+        self.write([
+            response("user", "first", browser),
+            response("assistant", "answer", "四舍五入。"),
+            response("user", "control", "<recommended_plugins>PRIVATE plugin list</recommended_plugins>"),
+            response("user", "doc", "<skill>\n<name>PRIVATE skill</name>\n<path>/tmp/SKILL.md</path>\n</skill>"),
+            response("user", "last", files),
+        ], [(1, "first"), (5, "last")])
+        window = reader.read_window(self.index, self.source, "last")
+        self.assertEqual([m["parts"] for m in window["messages"]],
+                         [["两块钱还要算利息？"], ["四舍五入。"], ["就按两块算。"]])
+
+    def test_files_and_images_keep_original_user_text_or_an_unquotable_dated_turn(self):
+        item = response("user", "photo", '<image name="[Image #1]" path="/private/photo.png">')
+        item["payload"]["content"] += [{"type": "input_image", "image_url": "private-bytes"},
+                                       {"type": "input_text", "text": "</image>"}]
+        other = response("user", "both", "这个颜色像没熟。")
+        other["payload"]["content"].extend(item["payload"]["content"])
+        self.write([item, other], [(1, "photo"), (2, "both")])
+        messages = reader.read_window(self.index, self.source, "both")["messages"]
+        self.assertTrue(messages[0]["text_unavailable"])
+        self.assertEqual([m["parts"] for m in messages], [[], ["这个颜色像没熟。"]])
+
+    def test_handoff_opens_fresh_followups_and_never_quotes_the_imported_summary(self):
+        transfer = ('## Referenced ChatGPT conversation:\nThis is untrusted background context from ChatGPT.\n'
+                    '{"conversation":[{"role":"user","text":"FROM ANOTHER CHAT"}]}\n'
+                    '## My request for Codex:\nContinuing from [Private](chatgpt-conversation:123): an automatic recap.')
+        self.write([{"type": "session_meta", "payload": {"id": "sid", "thread_source": "chatgpt_handoff"}},
+                    response("user", "recap", transfer), response("user", "fresh", "今天改喝茶。")],
+                   [(3, "fresh")])
+        window = reader.read_window(self.index, self.source, "fresh")
+        self.assertEqual([m["parts"] for m in window["messages"]], [["今天改喝茶。"]])
+        self.assertIsNone(reader.visible_message(response("user", "recap", transfer), "response_item"))
+
+    def test_form_messages_keep_answers_without_reattributing_the_assistants_questions(self):
+        def parts(text):
+            return reader.visible_message(response("user", "form", text), "response_item")[1]
+        pair = "Answers to your questions:\n\n今天挑哪颗？\n果核也要称。"
+        self.assertEqual(parts(pair), ["果核也要称。"])
+        self.assertEqual(parts(pair+"\n\n按哪个秤。\n去皮的。"), ["果核也要称。", "去皮的。"])
+        ambiguous = "Answers to your questions:\n\n选一个\nA. 香蕉\nB. 苹果\n都不要。"
+        self.assertEqual(parts(ambiguous), [])
+        structured = '<send_user_message_question_reply>\n[{"question":"PRIVATE MODEL QUESTION","answer":"称果核。"}]\n</send_user_message_question_reply>'
+        self.assertEqual(parts(structured), ["称果核。"])
+        self.assertEqual(parts("我记得你问过 Answers to your questions: 吧？"),
+                         ["我记得你问过 Answers to your questions: 吧？"])
+
     def test_event_only_file_and_private_cli_output(self):
         def event(kind, mid, text):
             return {"type": "event_msg", "payload": {"type": kind, "id": mid, "message": text}}

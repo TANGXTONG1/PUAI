@@ -11,12 +11,78 @@ from collections import Counter
 import json
 import os
 from pathlib import Path
+import re
 import sys
 
 
 INJECTED = ("[System Error]", "<environment_context>", "<INSTRUCTIONS>", "# AGENTS.md",
             "<subagent_notification>", "<permissions instructions>", "<paseo-system",
             "<turn_aborted>", "Message Type: ", "The user approved the plan. Implement it now.")
+
+REQUEST_HEADING = re.compile(r"(?m)^## My request for Codex:[ \t]*\r?$")
+HANDOFF_LINK = re.compile(r"^Continuing from \[[^\n]*?\]\(chatgpt-conversation:[^\n]*?\):")
+
+
+def is_user_session(meta):
+    """Handoff rollouts can have genuine new turns after the transferred context."""
+    return (meta.get("thread_source") in (None, "user", "chatgpt_handoff") and
+            not isinstance(meta.get("source"), dict))
+
+
+def owner_text(part):
+    """Extract owner text from host envelopes, keeping its original punctuation."""
+    head = part.lstrip()
+    if head.startswith(INJECTED):
+        return ""
+    if head.startswith(("<recommended_plugins>", "<codex_delegation>", "<send_user_message_question_reply>")):
+        return ""
+    if head.startswith("<skill>") and "<path>" in head and "</skill>" in head:
+        return ""
+    if head.startswith(("<in-app-browser-context", "# Files mentioned by the user:", "## Referenced ChatGPT conversation:")):
+        # Desktop puts selected files, tabs or a serialized transcript above this
+        # heading. None of that is a quotation or a separate user interaction.
+        heading = REQUEST_HEADING.search(head)
+        if not heading:
+            return ""
+        request = head[heading.end():].lstrip("\r\n")
+        if head.startswith("## Referenced ChatGPT conversation:") and HANDOFF_LINK.match(request.lstrip()):
+            return ""
+        return request
+    return part
+
+
+def form_answers(part):
+    """Return the answer fields of a host form, None for ordinary text, [] if ambiguous."""
+    head = part.strip()
+    tag = "send_user_message_question_reply"
+    if head.startswith("<" + tag + ">"):
+        if not head.endswith("</" + tag + ">"):
+            return []
+        try:
+            entries = json.loads(head[len(tag)+2: -len(tag)-3])
+        except ValueError:
+            return []
+        if not isinstance(entries, list) or not all(isinstance(e, dict) and isinstance(e.get("answer"), str)
+                                                   and isinstance(e.get("question"), str) for e in entries):
+            return []
+        return [e["answer"] for e in entries if e["answer"].strip()]
+    lines = head.splitlines()
+    if not lines or lines[0] not in ("Answers to your questions:", "Answers to your questions："):
+        return None
+    groups = re.split(r"\n[ \t]*\n", "\n".join(lines[1:]).strip())
+    pairs = [g.splitlines() for g in groups]
+    # Text-form records only distinguish question from answer via these two
+    # lines. Extra list items or multi-line prose cannot be safely attributed.
+    return [pair[1] for pair in pairs] if all(len(pair) == 2 for pair in pairs) else []
+
+
+def is_form_record(payload):
+    texts = [part.get("text") for part in payload.get("content", []) if isinstance(part, dict)]
+    if isinstance(payload.get("message"), str):
+        texts.append(payload["message"])
+    return any(isinstance(t, str) and t.lstrip().startswith(
+        ("Answers to your questions:\n", "Answers to your questions：\n", "<send_user_message_question_reply>"))
+        for t in texts)
 
 
 def read_index(index, source, message_id):
@@ -56,13 +122,18 @@ def visible_message(record, family):
     if payload.get("replayed") or payload.get("is_replay") or payload.get("recipient") not in (None, "all"):
         return None
     kind = payload.get("type")
+    has_attachment = False
     if family == "response_item" and kind == "message":
         role = payload.get("role")
-        parts = [p["text"] for p in payload.get("content", [])
+        content = payload.get("content", [])
+        has_attachment = any(isinstance(p, dict) and p.get("type") in ("input_image", "input_file", "input_audio")
+                             for p in content)
+        parts = [p["text"] for p in content
                  if isinstance(p, dict) and p.get("type") in ("input_text", "output_text", "text")
                  and isinstance(p.get("text"), str) and p["text"]]
     elif family == "event_msg" and kind in ("user_message", "agent_message"):
         role = "user" if kind == "user_message" else "assistant"
+        has_attachment = bool(payload.get("images") or payload.get("local_images"))
         parts = [payload["message"]] if isinstance(payload.get("message"), str) and payload["message"] else []
     else:
         return None
@@ -73,9 +144,22 @@ def visible_message(record, family):
     if role == "assistant" and (not parts or payload.get("phase") not in (None, "final", "final_answer")
                                 or payload.get("channel") not in (None, "final", "assistant")):
         return None
-    if role == "user" and parts:
-        parts = [part for part in parts if not part.lstrip().startswith(INJECTED)]
-        if not parts:
+    if role == "user":
+        was_ui_answer = False
+        if has_attachment:
+            parts = [p for p in parts if not re.fullmatch(r"</image>|<image\s+[^>]*>", p.strip())]
+        owner_parts = []
+        for part in parts:
+            answers = form_answers(part)
+            if answers is not None:
+                was_ui_answer = True
+                owner_parts.extend(answers)
+            else:
+                cleaned = owner_text(part)
+                if cleaned.strip():
+                    owner_parts.append(cleaned)
+        parts = owner_parts
+        if not (parts or has_attachment or was_ui_answer):
             return None
     message_id = payload.get("id") or payload.get("message_id")
     return role, parts, message_id
@@ -144,9 +228,12 @@ def read_window(index, source, message_id, budget=4000):
                 session_id = meta.get("session_id") or meta.get("id")
                 if session_id and target.get("session_id") and session_id != target["session_id"]:
                     raise ValueError("session identity does not match locator")
-                agent_source = isinstance(meta.get("source"), dict) and "subagent" in meta["source"]
-                if meta.get("thread_source") not in (None, "user") or agent_source:
+                if not is_user_session(meta):
                     raise ValueError("source is not an ordinary user session")
+                if target.get("owner_group"):
+                    from collect_history import codex_owner_group
+                    if target["owner_group"] != codex_owner_group(meta):
+                        raise ValueError("creator group no longer matches the indexed session")
             message = visible_message(raw, family)
             if message is None:
                 continue
@@ -190,6 +277,8 @@ def read_window(index, source, message_id, budget=4000):
         raise ValueError("target disappeared while reading")
     result = {"target_line": anchor, "before": before, "after": after,
               "omitted_assistant_answers": dict(omitted), "messages": window}
+    if is_form_record(anchor_record.get("payload") or {}):
+        result["input_method"] = "question_form"
     if target.get("client") == "codex" and target.get("date"):
         result["target_date"] = target["date"]
     return result

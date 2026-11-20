@@ -7,6 +7,11 @@ function report(link) {
   return parseReport(readDirectFields(link), { allowExcerptsWithoutLedger: true });
 }
 
+test('the redundant year emitted by chat clients opens the current poster', () => {
+  assert.deepEqual(report('#p?year=2026&q=挑一只。'), report('#p?q=挑一只。'));
+  assert.throws(() => report('#p?year=2025&q=挑一只。'), /2026/);
+});
+
 test('a single named persona among the tags selects its original edition on both web entry points', () => {
   const labels = { PUAI: 'puai', AI的教育: 'teach', AICU: 'aicu', AI特全体: 'all',
     AI在心口难开: 'hush', AI因斯坦: 'einstein', 爱因斯坦: 'einstein', AI迪生: 'edison',

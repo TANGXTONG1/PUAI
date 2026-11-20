@@ -185,6 +185,36 @@ class CollectionTest(unittest.TestCase):
                              check=True, capture_output=True)
         self.assertEqual(json.loads(run.stdout)["days"], "01-01:2:?,01-02:1:?,01-03:1:?")
 
+    def test_multigeneration_fork_replayed_with_fresh_ids_and_times(self):
+        def context(turn):
+            return {"type": "turn_context", "payload": {"turn_id": turn}}
+        def start(turn, epoch):
+            return {"type": "event_msg", "payload": {"type": "task_started", "turn_id": turn, "started_at": epoch}}
+        root = [meta("root"), context("original"),
+                codex_turn("user","PRIVATE same", "a1"), codex_turn("user","PRIVATE same", "a2")]
+        self.write("archived_sessions/rollout-original.jsonl", root)
+        self.write("archived_sessions/rollout-fork.jsonl", [
+            meta("first", forked_from_id="root", timestamp="2026-01-05T00:00:00Z"), context("original"),
+            codex_turn("user","PRIVATE same","reissued1", "2026-01-05T00:00:00Z"),
+            codex_turn("user","PRIVATE same","reissued2", "2026-01-05T00:00:00Z"),
+            start("new", 1768179600), context("new"), codex_turn("user","PRIVATE same", None, "2026-01-12T00:00:00Z")])
+        self.write("archived_sessions/rollout-earlier-name.jsonl", [
+            meta("grandchild", forked_from_id="first", timestamp="2026-02-01T00:00:00Z"), context("original"),
+            codex_turn("user","PRIVATE same", "reissued3","2026-02-01T00:00:00Z"),
+            codex_turn("user","PRIVATE same", "reissued4","2026-02-01T00:00:00Z"), context("new"),
+            codex_turn("user","PRIVATE same", "reissued5","2026-02-01T00:00:00Z"),
+            context("followup"),codex_turn("user","PRIVATE same","genuinely-new","2026-02-02T00:00:00Z")])
+        self.write("archived_sessions/rollout-other.jsonl", [
+            meta("unrelated"), context("original"), codex_turn("user","PRIVATE same","other")])
+        summary, rows = self.collect("codex", "--root", self.root)
+        self.assertEqual(summary["user_turns_before_editorial_filter"], 5)
+        self.assertEqual(summary["conversation_families"], 2)
+        self.assertEqual(summary["skipped"]["inherited_fork_copies"], 5)
+        self.assertCountEqual([row["date"] for row in rows], ["2026-01-01"]*3 + ["2026-01-12","2026-02-02"])
+        self.assertTrue(all(row["conversation_id"] == "root" for row in rows if row["session_id"] in {"first","grandchild"}))
+        newest = next(row for row in rows if row["id"] == "genuinely-new")
+        self.assertEqual(self.window(newest)[-1], ("user", ["PRIVATE same"]))
+
     def test_fork_replay_cannot_move_an_original_turn_to_another_year(self):
         self.write("sessions/2026/05/10/rollout-child.jsonl", [meta("fork", forked_from_id="original"),
                    codex_turn("user","PRIVATE OLD","old","2026-05-10T00:00:00Z"),codex_turn("user","PRIVATE NEW","new","2026-05-10T00:00:00Z")])
@@ -194,7 +224,7 @@ class CollectionTest(unittest.TestCase):
         self.assertEqual([r["id"] for r in rows],["new"])
         self.assertEqual(summary["user_turns_before_editorial_filter"],1)
 
-    def test_chatgpt_active_branch_zipped_shards_and_sources(self):
+    def test_chatgpt_keeps_unique_owner_inputs_across_branches_and_zipped_shards(self):
         def node(role,text,parent,children,mid,**more):
             return {"parent":parent, "children":children,
                     "message":{"id":mid,"author":{"role":role},"create_time":1767227400,
@@ -202,7 +232,8 @@ class CollectionTest(unittest.TestCase):
         scope={"conversation_id":"one","current_node":"q2","mapping":{
             "r":{"parent":None,"children":["q"],"message":None},
             "q":node("user","PRIVATE January","r",["old","new"],"uid"),
-            "old":node("user","PRIVATE alternate","q",[],"dropped"),
+            "old":node("user","PRIVATE alternate","q",["old-a"],"sibling"),
+            "old-a":node("assistant","PRIVATE on original branch","old",[],"sibling-answer"),
             "new":node("assistant","PRIVATE published reply","q",["q2"],"aid"),
             "q2":node("user","PRIVATE next","new",[],"last")}}
         additional={"conversation_id":"two","current_node":"q","mapping":{
@@ -213,9 +244,146 @@ class CollectionTest(unittest.TestCase):
             archive.writestr("export/conversations-001.json",json.dumps([scope,additional]))
             archive.writestr("shared_conversations.json",json.dumps(["unrelated"]))
         summary, rows=self.collect("chatgpt","--export",zipped)
-        self.assertEqual([r["id"] for r in rows],["uid","last","other"])
+        self.assertCountEqual([r["id"] for r in rows],["uid","sibling","last","other"])
         self.assertEqual(summary["threads"],2)
-        self.assertEqual(self.window(rows[0]),[("user",["PRIVATE January"]),("assistant",["PRIVATE published reply"]),("user",["PRIVATE next"])])
+        by = {r["id"]:r for r in rows}
+        self.assertEqual(self.window(by["uid"]),[("user",["PRIVATE January"]),("assistant",["PRIVATE published reply"]),("user",["PRIVATE next"])])
+        self.assertEqual(self.window(by["sibling"]),[("user",["PRIVATE January"]),("user",["PRIVATE alternate"]),
+                                                     ("assistant",["PRIVATE on original branch"])])
+
+    def test_missing_active_selection_and_broken_graph_preserve_authored_dates_without_crossing_branches(self):
+        def node(mid, parent, day):
+            return {"parent":parent, "message":{"id":mid, "author":{"role":"user"},
+                    "create_time":f"2026-03-{day:02d}T09:00:00Z", "content":{"content_type":"text","parts":[mid]}}}
+        good = {"r":node("first",None,1), "l":node("left","r",2),"a":node("right","r",3)}
+        bad = {"x":node("orphan","missing",4), "y":node("cycle","y",5)}
+        f=self.root/"conversations.json"; f.write_text(json.dumps([{"id":"complete","mapping":good},
+                                                                 {"id":"gaps","mapping":bad}]))
+        inventory, rows=self.collect("chatgpt","--export",f)
+        by={r["id"]:r for r in rows}
+        self.assertEqual(set(by),{"first","left","right","orphan","cycle"})
+        self.assertEqual(self.window(by["first"]),[("user",["first"])])
+        self.assertEqual(self.window(by["left"]),[("user",["first"]),("user",["left"])])
+        self.assertEqual(self.window(by["cycle"]),[("user",["cycle"])])
+        self.assertEqual(self.window(by["orphan"]),[("user",["orphan"])])
+        inv,ex=self.root/"inventory",self.root/"exclude"; inv.write_text(json.dumps(inventory));ex.write_text("[]")
+        ledger=json.loads(subprocess.check_output([sys.executable,str(SCRIPTS/"collect_history.py"),"--calendar-from",str(self.index),
+                                                  "--inventory",str(inv),"--exclude-ids",str(ex)]))
+        self.assertEqual((ledger["dated_user_messages"],ledger["dates"]),(3,"03-04,03-05"))
+
+    def test_separate_chatgpt_export_folders_in_one_archive_cannot_become_one_person(self):
+        combined=self.root/"combined.zip"
+        with ZipFile(combined,"w") as archive:
+            for account in ("a","b"):
+                message={"id":account, "author":{"role":"user"}, "create_time":1767227400,
+                         "content":{"content_type":"text","parts":["普通周末提问"]}}
+                source=[{"id":account,"current_node":"m","mapping":{"m":{"parent":None,"message":message}}}]
+                archive.writestr(f"{account}/conversations.json",json.dumps(source))
+        proc = subprocess.run([sys.executable,str(SCRIPTS/"collect_history.py"),"--client","chatgpt",
+                               "--year","2026","--export",str(combined),"--output",str(self.index)],
+                              capture_output=True)
+        self.assertNotEqual(proc.returncode,0)
+        self.assertIn("分别",proc.stderr.decode())
+        self.assertFalse(self.index.exists())
+
+    def test_claude_input_history_recovers_original_inputs_without_inventing_assistant_or_frequencies(self):
+        def history(sid, when, text):
+            return {"sessionId": sid, "timestamp": when, "display": text, "pastedContents": {"1": {"content": "PRIVATE pasted material"}}}
+        when = 1772409600000  # 2026-03-02 UTC
+        item = {"type": "user", "sessionId": "A", "uuid": "native", "timestamp": when,
+                "message": {"role": "user", "content": "先把果核称了。"}}
+        self.write("projects/work/A.jsonl", [item])
+        first = history("B", when + 86400000, "还给果核发工资？")
+        self.write("history.jsonl", [history("A", when, "先把果核称了。"), first, first,
+                   history("B", when+86400001, "[Image #1] 这两个怎么都在打卡？"),
+                   history("B", when+86400002, "[Pasted text #1 +12 lines]"),
+                   history("B", when+86400003, "/clear"), history("B", when+86400004, "!pwd")])
+        summary, rows = self.collect("claude", "--root", self.root)
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(rows[0]["id"], "native")
+        self.assertEqual(summary["input_history_messages"], 3)
+        self.assertEqual([r.get("evidence_level") for r in rows], [None, "input_history", "input_history", "input_history"])
+        self.assertEqual(rows[3]["text"], "")
+        self.assertEqual(rows[3]["input_method"], "attachment_or_paste")
+        self.assertEqual(self.window(rows[3]), [("user", [])])
+        self.assertEqual(rows[2]["text"], "这两个怎么都在打卡？")
+        self.assertNotIn("PRIVATE", self.index.read_text())
+        self.window(rows[1])
+        w = json.loads((self.root/(rows[1]["id"]+"-window")).read_text())
+        self.assertEqual([q["parts"] for q in w["messages"]], [["还给果核发工资？"]])
+        self.assertEqual(w["evidence_level"], "input_history")
+        self.assertFalse(w["assistant_context_available"])
+        inv, ex = self.root/"inventory", self.root/"excluded"
+        inv.write_text(json.dumps(summary)); ex.write_text("[]")
+        result = subprocess.run([sys.executable,str(SCRIPTS/"collect_history.py"),"--calendar-from",str(self.index),
+            "--inventory",str(inv),"--exclude-ids",str(ex)], capture_output=True, check=True)
+        calendar = json.loads(result.stdout)
+        self.assertEqual((calendar["dated_user_messages"], calendar["days"], calendar["dates"]), (1, "03-02:1:?", "03-03"))
+
+    def test_claude_original_media_only_and_input_journal_copy_are_one_turn(self):
+        when = 1772409600000
+        self.write("projects/work/photo.jsonl", [{"type":"user","sessionId":"photo","uuid":"upload","timestamp":when,
+            "message":{"role":"user","content":[{"type":"image","source":{"type":"base64","data":"PRIVATE"}}]}}])
+        self.write("history.jsonl", [{"sessionId":"photo","timestamp":when,"display":"[Image #1]"}])
+        summary, rows = self.collect("claude","--root",self.root)
+        self.assertEqual([(r["id"], r["text"]) for r in rows], [("upload","")])
+        self.assertNotIn("PRIVATE", self.index.read_text())
+        self.assertEqual(summary["input_history_messages"], 0)
+        self.assertEqual(self.window(rows[0]), [("user", [])])
+
+    def test_owner_partitions_do_not_merge_other_accounts_or_guess_legacy_ownership(self):
+        for sid, owner in [("same-a", "private-user-a"), ("same-b", "private-user-a"),
+                           ("other", "private-user-b"), ("old", None)]:
+            where = {"creator_user_id": owner} if owner else {}
+            self.write(f"sessions/2026/01/01/rollout-{sid}.jsonl",
+                       [meta(sid, **where), codex_turn("user", "同一句话", sid, timestamp=WHEN)])
+        summary, rows = self.collect("codex", "--root", self.root)
+        by = {r["session_id"]: r["owner_group"] for r in rows}
+        self.assertEqual(by["same-a"], by["same-b"])
+        self.assertNotEqual(by["other"], by["same-a"])
+        self.assertEqual(by["old"], "unknown")
+        self.assertEqual(summary["owner_groups"][by["same-a"]], {"messages": 2, "threads": 2})
+        self.assertNotIn("private-user", json.dumps(summary) + self.index.read_text())
+        inv = self.root / "inventory"; inv.write_text(json.dumps(summary))
+        def subset(flag, value, name):
+            path = self.root/name
+            cmd = [sys.executable, str(SCRIPTS/"collect_history.py"), "--scope-index", str(self.index),
+                   "--inventory", str(inv), flag, value, "--output", str(path)]
+            return subprocess.run(cmd, capture_output=True), path
+        a, scoped = subset("--owner-session", "same-b", "just-a")
+        self.assertEqual(a.returncode, 0, a.stderr)
+        filtered = json.loads(a.stdout)
+        self.assertEqual((filtered["threads"], filtered["days"]), (2, 1))
+        self.assertEqual({r["owner_group"] for r in map(json.loads, scoped.read_text().splitlines())}, {by["same-a"]})
+        inv2 = self.root/"scoped-inventory"; inv2.write_text(a.stdout.decode())
+        exclusions = self.root/"excluded"; exclusions.write_text("[]")
+        calendar = subprocess.run([sys.executable,str(SCRIPTS/"collect_history.py"), "--calendar-from",str(scoped),
+              "--inventory",str(inv2),"--exclude-ids",str(exclusions)], capture_output=True, check=True)
+        self.assertEqual(json.loads(calendar.stdout)["dated_user_messages"], 2)
+        b, old = subset("--owner-group", "unknown", "just-old")
+        self.assertEqual(b.returncode, 0, b.stderr)
+        self.assertEqual(json.loads(old.read_text())["session_id"], "old")
+        bad, omitted = subset("--owner-session", "old", "no-guess")
+        self.assertNotEqual(bad.returncode, 0)
+        self.assertFalse(omitted.exists())
+
+        self.index.write_text(self.index.read_text()+'\n')
+        bad, omitted = subset("--owner-group", by["same-a"], "altered")
+        self.assertNotEqual(bad.returncode, 0)
+        self.assertFalse(omitted.exists())
+
+    def test_matching_one_native_claude_turn_keeps_additional_same_word_submissions_and_dates(self):
+        now = 1772409600000
+        word = "还在算？"
+        self.write("projects/work/A.jsonl", [{"type": "user", "sessionId": "A", "uuid": "native",
+                        "timestamp": "2026-03-02T00:00:00+00:00", "message": {"role":"user","content":word}}])
+        stamps = [now+350, now+9000, now+300000, now+35*86400000]
+        self.write("history.jsonl", [{"sessionId": "A", "timestamp": t, "display": word} for t in stamps])
+        summary, rows = self.collect("claude", "--root", self.root)
+        extra = [r for r in rows if r.get("evidence_level") == "input_history"]
+        self.assertEqual([r["timestamp"] for r in extra], stamps[1:])
+        self.assertEqual(set(r["date"] for r in extra), {"2026-03-02", "2026-04-06"})
+        self.assertEqual(summary["input_history_messages"], 3)
 
     def test_claude_collect_only_human_main_transcript(self):
         def item(role,mid,content,**flags):
