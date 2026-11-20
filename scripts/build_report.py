@@ -404,8 +404,18 @@ def validate_report(report, today=None, now=None):
         string(moment["text"], 90, f"{path}.text")
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
     if "share_story" in report:
-        story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story")
+        story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story",
+                    optional=["habits"])
         refs(story["persona_evidence_ids"], "share_story.persona_evidence_ids", required=True)
+        habit_texts = set()
+        for index, habit in enumerate(array(story.get("habits", []), 0, 3, "share_story.habits")):
+            path = f"share_story.habits[{index}]"
+            obj(habit, ["text", "evidence_ids"], path)
+            wording = string(habit["text"], 24, f"{path}.text").strip()
+            if wording in habit_texts:
+                raise ReportError(f"{path}.text: duplicate habit")
+            habit_texts.add(wording)
+            refs(habit["evidence_ids"], f"{path}.evidence_ids", required=True)
         selected = array(story["moment_indices"], 0, 3, "share_story.moment_indices")
         for pos, index in enumerate(selected):
             if type(index) is not int or not 0 <= index < len(report["moments"]):
@@ -515,6 +525,8 @@ def public_report(report, compact=False, include_story=True):
                 "persona": report["identity"]["subtitle"],
                 "scenes": [{"text": line} for line in scene_lines if len(line) <= 24][:2],
             }
+            if report["share_story"].get("habits"):
+                public["story"]["habits"] = [item["text"].strip() for item in report["share_story"]["habits"]]
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])
         return public

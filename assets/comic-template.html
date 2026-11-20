@@ -213,22 +213,28 @@ const shareQr=[
 ];
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
-const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
+const a=report.activity,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
+const s=a?.summary&&(a.summary.messages>0||a.coverage==='complete')?a.summary:null;
 const shortDate=d=>d?Number(d.slice(5,7))+'.'+d.slice(8):'暂无';
-const analysisRange=rhythm?.analysis_start?shortDate(rhythm.analysis_start)+'—'+shortDate(rhythm.analysis_end):'暂无可计算记录';
 const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
+const profile=a?.daily_profile;
+const habits=profile?.habits??story?.habits??[];
+// Both the native and web data contain every observed day in the counted period,
+// including months outside the three calendars selected for display.
+const activeDays=profile?.active_days??s?.active_days;
+const peakDay=profile?.peak??[...dayMap.values()].reduce((peak,day)=>
+ day.count>0&&(!peak||day.count>peak.count||day.count===peak.count&&day.date<peak.date)?day:peak,null);
 const markers=new Map([...new Set(quotes.map(q=>q.date).filter(Boolean))].sort().map((d,i)=>[d,i+1]));
 const roastKnown=Boolean(s&&Object.hasOwn(s,'roast_messages'));
 const reviewed=isRoast?(roastKnown?s.roast_messages:null):(a?.theme_stats?.messages??null);
+const themeDays=profile?profile.theme_days:isRoast?s?.roast_days:
+ (a?.theme_stats?.days?Object.values(a.theme_stats.days).filter(n=>n>0).length:null);
 const ratio=reviewed!==null&&s?.messages>0?reviewed/s.messages:null;
 const percent=ratio===null?null:Math.round(ratio*1000)/10;
 const tokenUsage=a?.token_usage;
-const spanDays=rhythm?.analysis_start&&rhythm?.analysis_end?Math.round((Date.parse(rhythm.analysis_end+'T00:00:00Z')-Date.parse(rhythm.analysis_start+'T00:00:00Z'))/86400000)+1:null;
 function tokenAmount(n){const scale=n>=1e8?100000000:n>=1e4?10000:1,unit=scale===100000000?'亿':scale===10000?'万':'';const v=Number((BigInt(n)*100n)/BigInt(scale))/100;return v.toLocaleString('zh-CN',{maximumFractionDigits:2})+unit}
 const tokenLabel=tokenUsage?(tokenUsage.coverage==='partial'?'≥':'约')+tokenAmount(tokenUsage.total_tokens)+' token':null;
-const monthLabel=months.map(m=>Number(m.month.slice(5))+'月').join('、');
-const partialCalendar=Boolean(rhythm&&rhythm.analysis_months.length>months.length);
-const scope=months.length?(partialCalendar?'日历选展：':'阶段月份：')+monthLabel:'没有可用的月份记录';
+const partialCalendar=(rhythm?.analysis_months?.length??0)>months.length;
 function font(size,weight=400,family=fontFamily){ctx.font=weight+' '+size+'px '+family;ctx.textBaseline='top'}
 function text(str,x,y,size=24,color=ink,weight=400,family=fontFamily){font(size,weight,family);ctx.fillStyle=color;ctx.fillText(String(str),x,y)}
 function box(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
@@ -281,6 +287,10 @@ function fitCentered(label,cx,y,width,size,color,weight) {
   const measured=ctx.measureText(label).width;
   centered(label,cx,y,Math.min(size,size*width/Math.max(measured,1)),color,weight);
 }
+function fitLeft(label,x,y,width,size,color,weight) {
+  font(size,weight);
+  text(label,x,y,Math.min(size,size*width/Math.max(1,ctx.measureText(label).width)),color,weight);
+}
 function smallMark() {
   if(isRoast) return;
   const glyphs={tick:'✓',plus:'+',copies:'≡',ellipsis:'…',therefore:'∴',asterisk:'＊',heart:'♥',arrow:'↗'};
@@ -301,18 +311,72 @@ for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
  const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,dayState(date).roast?colors.onCalendar:paper,700)}
 }
 const hits=monthHits(m);
-const stats=hits===null ? (isRoast?'未核验':m.messages+' 条') : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
+const stats=hits===null ? m.messages+' 条发言' : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
 fitCentered(stats,cx,y+270,w-4,type.meta,ink,700);
-const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)
+if(hits!==null){const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)}
 }
-function comicActivity(y){
+function comicUsage(y,draw){
+ const hasRing=ratio!==null;
+ const total=tokenLabel??(s?.messages??0).toLocaleString('zh-CN')+' 条指令';
+ const caption=tokenUsage?'和 AI 对话，烧了':'记录里，你发出了';
+ const extra=[];
+ if(s&&tokenUsage)extra.push(s.messages.toLocaleString('zh-CN')+' 条指令');
+ if(hasRing)extra.push((!profile&&reviewed>0?'至少 ':'')+reviewed.toLocaleString('zh-CN')+' 条'+edition.keyword);
+ if(draw){
+   if(hasRing){
+     box(48,y,514,154,0,colors.pull);
+     text(caption,74,y+17,34,colors.onPull,600);
+     fitLeft(total,74,y+72,462,type.stat,colors.onPull,700);
+     const cx=720,cy=y+72,r=65;
+     ctx.strokeStyle=pale;ctx.lineWidth=12;ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.stroke();
+     if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}
+     centered('约',cx,cy-40,26,muted,650);
+     fitCentered(percent+'%',cx,cy-7,110,44,ink,800);
+     centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,y+157,32,ink,650);
+   }else{
+     box(48,y,804,104,0,colors.pull);
+     text(caption,74,y+30,34,colors.onPull,600);
+     fitCentered(total,617,y+24,410,type.stat,colors.onPull,700);
+   }
+   if(extra.length)fitLeft(extra.join(' · '),48,y+(hasRing?172:119),hasRing?512:804,type.meta,ink,600);
+ }
+ return y+(hasRing?232:extra.length?178:139);
+}
+function dailyFact(label,value,x,y,width){
+ text(label,x,y,32,muted,600);
+ fitLeft(value,x,y+42,width,46,ink,750);
+}
+function comicActivity(y,draw){
+ const stackFacts=months.length===1&&activeDays>0&&Boolean(peakDay);
+ const showFacts=activeDays>0&&Boolean(peakDay);
+ const top=stackFacts?125:showFacts?245:125;
+ if(!draw)return y+top+365;
 comicTitle('发言日历',48,y);
-const items=[['发言',{count:1,roast:0,known:true}],[edition.keyword,{count:1,roast:1,known:true}],['0 条',{count:0,roast:0,known:true}],['缺记录',{count:0,roast:0,known:false}]];
-if(!isRoast && reviewed===null) items.splice(1,1);
-items.forEach(([label,state],i)=>{const xx=48+i*816/items.length;comicCell(xx,y+80,21,state);text(label,xx+30,y+72,type.meta,muted,500)});
-if(partialCalendar)right('部分月份',852,y+8,type.meta,muted,500);
-const w=(804-24*(months.length-1))/Math.max(months.length,1);months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+132,w));
-if(!months.length)text('暂无日期记录',48,y+132,type.meta,muted);return months.length?470:190
+const hasThemeDays=reviewed!==null||months.some(m=>monthHits(m)!==null)||[...dayMap.keys()].some(d=>dayState(d).roast>0);
+const items=[['发言',{count:1,roast:0,known:true}]];
+if(hasThemeDays)items.push([edition.keyword,{count:1,roast:1,known:true}]);
+if(a?.coverage==='complete')items.push(['0 条',{count:0,roast:0,known:true}]);
+items.push(['缺记录',{count:0,roast:0,known:false}]);
+const legendY=y+(showFacts&&!stackFacts?190:74);
+items.forEach(([label,state],i)=>{const xx=48+i*816/items.length;comicCell(xx,legendY+8,21,state);text(label,xx+30,legendY,type.meta,muted,500)});
+const range=rhythm?.analysis_start&&rhythm?.analysis_end?shortDate(rhythm.analysis_start)+' – '+shortDate(rhythm.analysis_end):'';
+if(range)right(range,852,y+4,type.meta,muted,600);
+if(showFacts){
+ const activityValue=activeDays+' 天'+(Number.isInteger(themeDays)?' · '+themeDays+' 天'+edition.keyword:'');
+ const peakValue=shortDate(peakDay.date)+' · '+peakDay.count.toLocaleString('zh-CN')+' 条';
+ if(stackFacts){
+   line(400,y+top+8,400,y+top+309,pale,2);
+   dailyFact('有发言的日子',activityValue,446,y+top+33,400);
+   dailyFact('单日最高发言',peakValue,446,y+top+173,400);
+ }else{
+   dailyFact('有发言的日子',activityValue,48,y+72,325);
+   line(385,y+76,385,y+158,pale,2);
+   dailyFact('单日最高发言',peakValue,419,y+72,433);
+ }
+}
+const w=stackFacts?306:(804-24*(months.length-1))/months.length;
+months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+top,w));
+return y+top+365;
 }
 function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
@@ -353,6 +417,15 @@ function comicScenes(y,draw){
  });
  return y+32;
 }
+function comicHabits(y,draw){
+ if(draw)comicTitle('日常用法',48,y);
+ let next=y;
+ habits.forEach((habit,index)=>{
+   if(index){if(draw)line(264,next,852,next,pale,2);next+=14}
+   next+=storyText(habit,264,next,588,37,600,ink,draw)+15;
+ });
+ return next+24;
+}
 function drawShareFooter(y){
  const shareInk='#182437';
  box(0,y,900,shareFooterHeight,0,'#FBFBF8');
@@ -378,19 +451,10 @@ if(draw){
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
 const personaHeight=story?comicPersona(222,draw):0;
-const showStats=!story||Boolean(s||tokenUsage);
-if(draw&&showStats){
- ctx.save();ctx.translate(0,personaHeight);
- box(48,230,514,176,0,colors.pull);text(tokenUsage?'和 AI 对话，烧了':'你向 AI 发出了',74,252,34,colors.onPull,600);text(tokenLabel||(s?s.messages.toLocaleString('zh-CN')+' 条指令':'暂无消息统计'),74,314,type.stat,colors.onPull,700);
- const cx=730,cy=310,r=72;ctx.strokeStyle=pale;ctx.lineWidth=13;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,1.5*Math.PI);ctx.stroke();if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}centered(percent===null?'未核验':'约',cx,cy-42,30,muted,600);centered(percent===null?'—':percent+'%',cx,cy-4,54,ink,800);centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,410,32,ink,600);
- text((tokenUsage&&s?s.messages.toLocaleString('zh-CN')+'条指令 · ':'')+(reviewed!==null?(reviewed===0&&!isRoast?'核验 0':'至少'+reviewed)+'条'+edition.keyword:edition.keyword+'未核验'),48,435,type.meta,ink,600)
- ctx.restore();
-}
-let y=(showStats?508:230)+personaHeight;
-if(!story||months.length){
- if(draw)comicActivity(y);
- y+=(months.length?470:190)+28;
-}
+let y=230+personaHeight;
+if(s||tokenUsage)y=comicUsage(y,draw);
+if(months.length)y=comicActivity(y,draw);
+if(habits.length)y=comicHabits(y,draw);
 if(story?.scenes.length)y=comicScenes(y,draw);
 if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
 quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
@@ -411,16 +475,27 @@ const newline=String.fromCharCode(10);
 const personaSummary=story?[personaLabel+'：'+story.persona]:[];
 const sceneSummary=story?.scenes.length?['经典场景',...story.scenes.map(item=>item.text)]:[];
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
-const summary=[owner+'的'+reportTitle,...personaSummary,introduction,demoLabel,'最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),...sceneSummary,...(!story||quotes.length?['金句：']:[]),...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),...tagSummary,'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
-const readableSummary=isRoast&&!isSpecimen&&rhythm?summary:[
+const dailySummary=[];
+if(activeDays>0)dailySummary.push('有发言的日子：'+activeDays+' 天。');
+if(activeDays>0&&Number.isInteger(themeDays))dailySummary.push('其中有 '+themeDays+' 天'+edition.keyword+'。');
+if(peakDay)dailySummary.push('单日最高发言：'+peakDay.date+'，'+peakDay.count+' 条。');
+if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messages+' 条发言没有日期，已计入指令总数。');
+if(habits.length)dailySummary.push('日常用法',...habits);
+const readableSummary=[
  owner+'的'+reportTitle,...personaSummary,demoLabel,
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
- s?'指令总数：'+s.messages:'',
- tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+'；覆盖状态：'+tokenUsage.coverage+'。':'',
- reviewed!==null?'主题指令已核验 '+reviewed+' 条。每条用户消息计一次。':'',
+ rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
+ s?'记录中的指令总数：'+s.messages+' 条。':'',
+ tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+(tokenUsage.coverage==='partial'?'（已核对部分）':'')+'。':'',
+ tokenUsage&&!profile?'用量范围 '+tokenUsage.scope+'，缓存输入已包含。':'',
+ reviewed!==null&&percent!==null?'已核验的'+edition.keyword+'指令：'+reviewed+' / '+s.messages+' 条，约占 '+percent+'%。':'',
+ ...dailySummary,
+ partialCalendar?'日历选展了其中三个活跃月份。':'',
+ !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。占比按整个分析期的用户消息数计算，缺记录的日期不计作停用。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
- ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text),
+ ...sceneSummary,...(quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),
+ ...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':'')),
  ...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;

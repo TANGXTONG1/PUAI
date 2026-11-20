@@ -103,15 +103,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 <body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制给 ChatGPT</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
 <script>// Shared by the public site and the offline report's copy button.
 function puaiPortablePrompt(nickname = '') {
-  const owner = String(nickname).trim() || '我';
+  const owner = Array.from(String(nickname).trim().replace(/[|｜]/g, '·').replace(/\s+/g, ' ')).slice(0, 16).join('') || '我';
   return [
-    '直接生成我的 2026 AI 聊天年度报告。我授权你在已有访问范围内，先回顾我的相关历史聊天、记忆、当前项目里能归属我的互动，以及已有的脱敏工作摘要。宿主有历史检索就主动用；新对话也先做这一步。只取能说明我平时怎么用 AI 的动作。排除这条口令、参考图、他人的发言和示例。',
-    '先去掉人名、公司、项目、文件和业务细节，再用一句有梗的话概括我的用法，给 1–2 个短标签。若能核对我说过的原文，可选 1–2 个适合公开的连续片段，逐字保留；涉及隐私就换句或省略。只有习惯或工作摘要也直接出图，两格原话留空。记忆与摘要不能还原成引语，不猜使用天数或 token。',
-    '如果所有可用来源都看不到我和 AI 相处的任何具体行为，只提示我在已有上下文的项目或旧对话里发同一条口令即可。不要要求我粘聊天、上传记录、填问卷或确认是否开始。',
-    '主题 ID 选最贴近的一种：puai 吐槽 AI，teach 教 AI 做事，aicu 紧急求救，all 多模型互评，hush 斟酌措辞，einstein 追问原理，edison 发散点子，support 鼓励 AI，free 放手让 AI 拍板。',
-    '署名用' + JSON.stringify(owner) + '。人格≤60字，原话每条≤80字，标签每个≤6字。用以下模板给我成图链接；两格原话和第二个标签都可留空，保留全部分隔符，不填占位词：',
-    '[打开我的报告](<https://xn--sxrw8m230b.com/PUAI/make/#v1｜主题ID｜署名｜人格｜原话一｜原话二｜标签一｜标签二>)',
-    '链接一行写完。普通中英文直接保留；字段内的半角空格写 %20、% 写 %25、# 写 %23、( 和 ) 写 %28 和 %29、< 和 > 写 %3C 和 %3E。避免选含竖线或换行的片段。最后另给一个代码块，写一行从 v1 开始的备用报告码，字段保留原始文字、空格和标点，不做网址转义。附上[粘贴报告码出图](https://xn--sxrw8m230b.com/PUAI/make/)供链接打不开时使用。'
+    '生成我的 2026 AI 年度报告，署名' + JSON.stringify(owner) + '。我授权你在已有访问范围内主动查找本人历史聊天、项目互动、记忆和脱敏工作摘要。新对话也先检索；跨月份回看较早、中段、近期和发言密集的对话，别只搜吐槽或只用最近一条。有消息原文就打开；工作内容只提炼我怎么用 AI。排除这条口令、示例、他人发言、AI 回复、工具事件与历史重放。',
+    '先定人格和主题：puai 吐槽 AI、teach 教 AI 做事、aicu 紧急求救、all 多模型互评、hush 斟酌措辞、einstein 追问原理、edison 发散点子、support 鼓励 AI、free 让 AI 拍板。普通修改要求不能算骂。给一句带动作的人格短评（≤60字），挑出不同场合下 2–3 个有依据的日常用法（各≤24字）、2–3 句能独立成立的本人原话（各≤80字）及 1–3 个标签（各≤6字）。习惯写我具体干了什么；单次表现别写成“总是”。原话逐字保留连续片段，不能改写或从摘要复原。删去涉及人名、公司、项目、路径和业务的整句。',
+    '必须先数后写。以实际能逐条核对的 2026 本人消息为范围，每条只计一次，同一原消息在多个来源出现只计一次。按同一时区把消息逐日合并，日期账格式 MM-DD:N:H，多日用英文逗号连接（格式示意 03-08:4:1,03-09:2:?，不用这组示意数）。N 是当天全部可核对的本人发言数，H 是其中符合主主题的条数；整组逐条复核后才写 H（可以为 0），未核全写 ?。可确定属于当年但无具体日期的其余原消息单列为 N:H。记忆和摘要只支撑习惯；不把片段、标签、选句数量当作发言数。token 仅填同范围真实用量日志核准的整数，没有就留空。',
+    '先在对话里交付一小段能直接读的报告：写人格；写本次可数的发言总数（含无日期项）；有日期就写活跃日、峰值日和峰值条数；逐日都核完时加上其中有几天命中主题；整批都核完主题时写命中条数/发言总数及百分比；有 token 就写。再写日常用法、金句和标签。金句优先挑说法反转、态度最鲜明的。有依据的项目必须同时进入下方报告码。每句引语选自一条已入账的不同消息。有原文无日期也照数；只有行为摘要则写有依据的日常，数字和引语留空。至少有可数的发言或一个具体用法；所有来源都无具体行为才提示去常聊的旧对话或有历史的项目再发同一口令。无需用户粘贴、上传聊天或填问卷。',
+    '按顺序填写以下 16 格；空字段保留分隔符，不写占位词。引语有可核日期且在日期账里时，以 MM-DD~ 开头，再接原文。实际输出一行可点击链接：',
+    '[打开我的报告](<https://xn--sxrw8m230b.com/PUAI/make/#v2｜主题ID｜署名｜人格｜日期账｜无日期账｜token｜习惯一｜习惯二｜习惯三｜引语一｜引语二｜引语三｜标签一｜标签二｜标签三>)',
+    '普通中英文直接保留；链接字段内半角空格、%、#、(、)、<、> 分别写 %20、%25、%23、%28、%29、%3C、%3E。字段避开竖线和换行。最后给一个代码块，附同内容从 v2 开始的单行备用报告码，保留原文空格和标点，不做网址转义。再附[粘贴报告码出图](https://xn--sxrw8m230b.com/PUAI/make/)。'
   ].join('\n');
 }
 
@@ -249,22 +249,28 @@ const shareQr=[
 ];
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
-const a=report.activity,s=a?.summary,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
+const a=report.activity,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
+const s=a?.summary&&(a.summary.messages>0||a.coverage==='complete')?a.summary:null;
 const shortDate=d=>d?Number(d.slice(5,7))+'.'+d.slice(8):'暂无';
-const analysisRange=rhythm?.analysis_start?shortDate(rhythm.analysis_start)+'—'+shortDate(rhythm.analysis_end):'暂无可计算记录';
 const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
+const profile=a?.daily_profile;
+const habits=profile?.habits??story?.habits??[];
+// Both the native and web data contain every observed day in the counted period,
+// including months outside the three calendars selected for display.
+const activeDays=profile?.active_days??s?.active_days;
+const peakDay=profile?.peak??[...dayMap.values()].reduce((peak,day)=>
+ day.count>0&&(!peak||day.count>peak.count||day.count===peak.count&&day.date<peak.date)?day:peak,null);
 const markers=new Map([...new Set(quotes.map(q=>q.date).filter(Boolean))].sort().map((d,i)=>[d,i+1]));
 const roastKnown=Boolean(s&&Object.hasOwn(s,'roast_messages'));
 const reviewed=isRoast?(roastKnown?s.roast_messages:null):(a?.theme_stats?.messages??null);
+const themeDays=profile?profile.theme_days:isRoast?s?.roast_days:
+ (a?.theme_stats?.days?Object.values(a.theme_stats.days).filter(n=>n>0).length:null);
 const ratio=reviewed!==null&&s?.messages>0?reviewed/s.messages:null;
 const percent=ratio===null?null:Math.round(ratio*1000)/10;
 const tokenUsage=a?.token_usage;
-const spanDays=rhythm?.analysis_start&&rhythm?.analysis_end?Math.round((Date.parse(rhythm.analysis_end+'T00:00:00Z')-Date.parse(rhythm.analysis_start+'T00:00:00Z'))/86400000)+1:null;
 function tokenAmount(n){const scale=n>=1e8?100000000:n>=1e4?10000:1,unit=scale===100000000?'亿':scale===10000?'万':'';const v=Number((BigInt(n)*100n)/BigInt(scale))/100;return v.toLocaleString('zh-CN',{maximumFractionDigits:2})+unit}
 const tokenLabel=tokenUsage?(tokenUsage.coverage==='partial'?'≥':'约')+tokenAmount(tokenUsage.total_tokens)+' token':null;
-const monthLabel=months.map(m=>Number(m.month.slice(5))+'月').join('、');
-const partialCalendar=Boolean(rhythm&&rhythm.analysis_months.length>months.length);
-const scope=months.length?(partialCalendar?'日历选展：':'阶段月份：')+monthLabel:'没有可用的月份记录';
+const partialCalendar=(rhythm?.analysis_months?.length??0)>months.length;
 function font(size,weight=400,family=fontFamily){ctx.font=weight+' '+size+'px '+family;ctx.textBaseline='top'}
 function text(str,x,y,size=24,color=ink,weight=400,family=fontFamily){font(size,weight,family);ctx.fillStyle=color;ctx.fillText(String(str),x,y)}
 function box(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
@@ -317,6 +323,10 @@ function fitCentered(label,cx,y,width,size,color,weight) {
   const measured=ctx.measureText(label).width;
   centered(label,cx,y,Math.min(size,size*width/Math.max(measured,1)),color,weight);
 }
+function fitLeft(label,x,y,width,size,color,weight) {
+  font(size,weight);
+  text(label,x,y,Math.min(size,size*width/Math.max(1,ctx.measureText(label).width)),color,weight);
+}
 function smallMark() {
   if(isRoast) return;
   const glyphs={tick:'✓',plus:'+',copies:'≡',ellipsis:'…',therefore:'∴',asterisk:'＊',heart:'♥',arrow:'↗'};
@@ -337,18 +347,72 @@ for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
  const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,dayState(date).roast?colors.onCalendar:paper,700)}
 }
 const hits=monthHits(m);
-const stats=hits===null ? (isRoast?'未核验':m.messages+' 条') : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
+const stats=hits===null ? m.messages+' 条发言' : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
 fitCentered(stats,cx,y+270,w-4,type.meta,ink,700);
-const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)
+if(hits!==null){const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)}
 }
-function comicActivity(y){
+function comicUsage(y,draw){
+ const hasRing=ratio!==null;
+ const total=tokenLabel??(s?.messages??0).toLocaleString('zh-CN')+' 条指令';
+ const caption=tokenUsage?'和 AI 对话，烧了':'记录里，你发出了';
+ const extra=[];
+ if(s&&tokenUsage)extra.push(s.messages.toLocaleString('zh-CN')+' 条指令');
+ if(hasRing)extra.push((!profile&&reviewed>0?'至少 ':'')+reviewed.toLocaleString('zh-CN')+' 条'+edition.keyword);
+ if(draw){
+   if(hasRing){
+     box(48,y,514,154,0,colors.pull);
+     text(caption,74,y+17,34,colors.onPull,600);
+     fitLeft(total,74,y+72,462,type.stat,colors.onPull,700);
+     const cx=720,cy=y+72,r=65;
+     ctx.strokeStyle=pale;ctx.lineWidth=12;ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.stroke();
+     if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}
+     centered('约',cx,cy-40,26,muted,650);
+     fitCentered(percent+'%',cx,cy-7,110,44,ink,800);
+     centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,y+157,32,ink,650);
+   }else{
+     box(48,y,804,104,0,colors.pull);
+     text(caption,74,y+30,34,colors.onPull,600);
+     fitCentered(total,617,y+24,410,type.stat,colors.onPull,700);
+   }
+   if(extra.length)fitLeft(extra.join(' · '),48,y+(hasRing?172:119),hasRing?512:804,type.meta,ink,600);
+ }
+ return y+(hasRing?232:extra.length?178:139);
+}
+function dailyFact(label,value,x,y,width){
+ text(label,x,y,32,muted,600);
+ fitLeft(value,x,y+42,width,46,ink,750);
+}
+function comicActivity(y,draw){
+ const stackFacts=months.length===1&&activeDays>0&&Boolean(peakDay);
+ const showFacts=activeDays>0&&Boolean(peakDay);
+ const top=stackFacts?125:showFacts?245:125;
+ if(!draw)return y+top+365;
 comicTitle('发言日历',48,y);
-const items=[['发言',{count:1,roast:0,known:true}],[edition.keyword,{count:1,roast:1,known:true}],['0 条',{count:0,roast:0,known:true}],['缺记录',{count:0,roast:0,known:false}]];
-if(!isRoast && reviewed===null) items.splice(1,1);
-items.forEach(([label,state],i)=>{const xx=48+i*816/items.length;comicCell(xx,y+80,21,state);text(label,xx+30,y+72,type.meta,muted,500)});
-if(partialCalendar)right('部分月份',852,y+8,type.meta,muted,500);
-const w=(804-24*(months.length-1))/Math.max(months.length,1);months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+132,w));
-if(!months.length)text('暂无日期记录',48,y+132,type.meta,muted);return months.length?470:190
+const hasThemeDays=reviewed!==null||months.some(m=>monthHits(m)!==null)||[...dayMap.keys()].some(d=>dayState(d).roast>0);
+const items=[['发言',{count:1,roast:0,known:true}]];
+if(hasThemeDays)items.push([edition.keyword,{count:1,roast:1,known:true}]);
+if(a?.coverage==='complete')items.push(['0 条',{count:0,roast:0,known:true}]);
+items.push(['缺记录',{count:0,roast:0,known:false}]);
+const legendY=y+(showFacts&&!stackFacts?190:74);
+items.forEach(([label,state],i)=>{const xx=48+i*816/items.length;comicCell(xx,legendY+8,21,state);text(label,xx+30,legendY,type.meta,muted,500)});
+const range=rhythm?.analysis_start&&rhythm?.analysis_end?shortDate(rhythm.analysis_start)+' – '+shortDate(rhythm.analysis_end):'';
+if(range)right(range,852,y+4,type.meta,muted,600);
+if(showFacts){
+ const activityValue=activeDays+' 天'+(Number.isInteger(themeDays)?' · '+themeDays+' 天'+edition.keyword:'');
+ const peakValue=shortDate(peakDay.date)+' · '+peakDay.count.toLocaleString('zh-CN')+' 条';
+ if(stackFacts){
+   line(400,y+top+8,400,y+top+309,pale,2);
+   dailyFact('有发言的日子',activityValue,446,y+top+33,400);
+   dailyFact('单日最高发言',peakValue,446,y+top+173,400);
+ }else{
+   dailyFact('有发言的日子',activityValue,48,y+72,325);
+   line(385,y+76,385,y+158,pale,2);
+   dailyFact('单日最高发言',peakValue,419,y+72,433);
+ }
+}
+const w=stackFacts?306:(804-24*(months.length-1))/months.length;
+months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+top,w));
+return y+top+365;
 }
 function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
@@ -389,6 +453,15 @@ function comicScenes(y,draw){
  });
  return y+32;
 }
+function comicHabits(y,draw){
+ if(draw)comicTitle('日常用法',48,y);
+ let next=y;
+ habits.forEach((habit,index)=>{
+   if(index){if(draw)line(264,next,852,next,pale,2);next+=14}
+   next+=storyText(habit,264,next,588,37,600,ink,draw)+15;
+ });
+ return next+24;
+}
 function drawShareFooter(y){
  const shareInk='#182437';
  box(0,y,900,shareFooterHeight,0,'#FBFBF8');
@@ -414,19 +487,10 @@ if(draw){
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
 const personaHeight=story?comicPersona(222,draw):0;
-const showStats=!story||Boolean(s||tokenUsage);
-if(draw&&showStats){
- ctx.save();ctx.translate(0,personaHeight);
- box(48,230,514,176,0,colors.pull);text(tokenUsage?'和 AI 对话，烧了':'你向 AI 发出了',74,252,34,colors.onPull,600);text(tokenLabel||(s?s.messages.toLocaleString('zh-CN')+' 条指令':'暂无消息统计'),74,314,type.stat,colors.onPull,700);
- const cx=730,cy=310,r=72;ctx.strokeStyle=pale;ctx.lineWidth=13;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,1.5*Math.PI);ctx.stroke();if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}centered(percent===null?'未核验':'约',cx,cy-42,30,muted,600);centered(percent===null?'—':percent+'%',cx,cy-4,54,ink,800);centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,410,32,ink,600);
- text((tokenUsage&&s?s.messages.toLocaleString('zh-CN')+'条指令 · ':'')+(reviewed!==null?(reviewed===0&&!isRoast?'核验 0':'至少'+reviewed)+'条'+edition.keyword:edition.keyword+'未核验'),48,435,type.meta,ink,600)
- ctx.restore();
-}
-let y=(showStats?508:230)+personaHeight;
-if(!story||months.length){
- if(draw)comicActivity(y);
- y+=(months.length?470:190)+28;
-}
+let y=230+personaHeight;
+if(s||tokenUsage)y=comicUsage(y,draw);
+if(months.length)y=comicActivity(y,draw);
+if(habits.length)y=comicHabits(y,draw);
 if(story?.scenes.length)y=comicScenes(y,draw);
 if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
 quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
@@ -447,16 +511,27 @@ const newline=String.fromCharCode(10);
 const personaSummary=story?[personaLabel+'：'+story.persona]:[];
 const sceneSummary=story?.scenes.length?['经典场景',...story.scenes.map(item=>item.text)]:[];
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
-const summary=[owner+'的'+reportTitle,...personaSummary,introduction,demoLabel,'最早可见记录：'+(rhythm?.first_seen||'暂无')+'；首个可见密集月：'+(rhythm?.dense_start_month||'未识别')+'；记录截至：'+(rhythm?.last_seen||'暂无'),'统计区间：'+analysisRange+'；跨度'+spanDays+'个日历日。消息比例分母为整个分析期内的用户消息条数。',scope,(s?s.messages:'未提供')+' 条用户消息；'+(roastKnown?'至少'+s.roast_messages+'条检出吐槽或责骂':'吐槽消息未核验')+'；'+(percent===null?'无可计算比例':'已核验比例 '+percent+'%'),tokenUsage?'日志token总量：'+tokenUsage.total_tokens+'，缓存输入已包含，不额外相加；'+tokenUsage.coverage+'，'+tokenUsage.scope+'。这是可核验日志用量，不是费用。':'没有可核验token总量，不作估算。',...months.map(m=>m.month+'：用户消息 '+m.messages+' 条，吐槽 '+(Object.hasOwn(m,'roast_messages')?m.roast_messages:'未核验')+' 条'),...sceneSummary,...(!story||quotes.length?['金句：']:[]),...quotes.map(q=>markers.get(q.date)+'. '+q.date+(q.kind==='rewrite'?'（改写）':'（原话）')+' '+q.text+(q.repeat_count?'（原话复读最多：'+q.repeat_count+' 次）':'')),...tagSummary,'按 '+(a?.timezone||'未提供时区')+' 日期去重。密集月按至少14个活跃日且跨3个ISO自然周识别；从首个可见密集月到最后记录日计算整个阶段，不代表其间一直高频。日历最多选展3个月，不决定统计分母。最早可见不等于第一次使用AI；换Agent或客户端可能产生空档，缺失记录不当作停用。没有达标月份时仅统计当前片段，不推断密集起点。未检出骂不等于确认没有骂。'].join(newline);
-const readableSummary=isRoast&&!isSpecimen&&rhythm?summary:[
+const dailySummary=[];
+if(activeDays>0)dailySummary.push('有发言的日子：'+activeDays+' 天。');
+if(activeDays>0&&Number.isInteger(themeDays))dailySummary.push('其中有 '+themeDays+' 天'+edition.keyword+'。');
+if(peakDay)dailySummary.push('单日最高发言：'+peakDay.date+'，'+peakDay.count+' 条。');
+if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messages+' 条发言没有日期，已计入指令总数。');
+if(habits.length)dailySummary.push('日常用法',...habits);
+const readableSummary=[
  owner+'的'+reportTitle,...personaSummary,demoLabel,
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
- s?'指令总数：'+s.messages:'',
- tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+'；覆盖状态：'+tokenUsage.coverage+'。':'',
- reviewed!==null?'主题指令已核验 '+reviewed+' 条。每条用户消息计一次。':'',
+ rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
+ s?'记录中的指令总数：'+s.messages+' 条。':'',
+ tokenUsage?'日志 token 总量：'+tokenUsage.total_tokens+(tokenUsage.coverage==='partial'?'（已核对部分）':'')+'。':'',
+ tokenUsage&&!profile?'用量范围 '+tokenUsage.scope+'，缓存输入已包含。':'',
+ reviewed!==null&&percent!==null?'已核验的'+edition.keyword+'指令：'+reviewed+' / '+s.messages+' 条，约占 '+percent+'%。':'',
+ ...dailySummary,
+ partialCalendar?'日历选展了其中三个活跃月份。':'',
+ !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。占比按整个分析期的用户消息数计算，缺记录的日期不计作停用。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
- ...sceneSummary,...(!story||quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text),
+ ...sceneSummary,...(quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),
+ ...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':'')),
  ...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
