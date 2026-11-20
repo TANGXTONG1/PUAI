@@ -105,17 +105,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 function puaiPortablePrompt(nickname = '') {
   const owner = Array.from(String(nickname).trim().replace(/[|｜]/g, '·').replace(/\s+/g, ' ')).slice(0, 16).join('') || '我';
   return [
-    '生成我的 2026 AI 年度报告，署名' + JSON.stringify(owner) + '。我授权你在已有访问范围内主动查找本人历史聊天、项目互动、记忆和脱敏工作摘要。新对话也先检索；跨月份回看较早、中段、近期和发言密集的对话，别只搜吐槽或只用最近一条。有消息原文就打开；工作内容只提炼我怎么用 AI。排除这条口令、示例、他人发言、AI 回复、工具事件与历史重放。',
-    '先跨对话确认1–3个有证据的基础特征、对照例外，然后只选贴近的一型，回原材料找完整事件。普通查资料可以不归类：主题ID留空、每组H填?，照数消息。每型有不同的剪法。puai 把AI承诺的数或事与当场交付并排，让本人作最后裁决；teach 拿一条真实的验收题开庭，看过不过关；aicu 给出倒计时，留住用户在救什么、后来究竟用上没；all 把两份答卷和真实判决留到同一个故事里；hush 保留本人亲口说出怕被怎样误会的那句；einstein 让读者也能接那道小谜题，把最锋利的真问题摆前面，并留下原来的反例；edison 给那件东西写小传，原来在哪儿、后来干哪样具体的活，别只说用途反转；support 先让读者看见用户替AI留的是哪一小块，再听本人说它实实在在帮了什么忙；free 看对方交出决定权时，偏偏给什么留了个位置。只用当事人真有的那种趣味。普通修改不算骂，礼貌致谢不算鼓励AI。',
-    '把自己当成那个会给朋友发截图的人。先挑一幕，写下读者以为会发生什么、记录里具体发生了什么，再找这中间最值钱的字。候选不限于骂人：权力突然倒过来、为了一个小东西动了大工程、同一件东西前后身价变了、以为在给AI提意见其实是在替它撑腰。对每个候选都问：能在一句话里点出是哪件东西、谁付出了什么吗？得靠脑补才好笑的先扔。',
-    '交稿前私下真的试三种成稿。①把本人最难替代的一句完整原话钉住，尤其是那一句亲口说出的顾虑、质问或决定；在它前面只垫一个关键事实。②把两个真实细节挨在一起，少用形容词，像讲一条离奇但属实的新闻。③用很短的旁白把关系说颠倒一次，像朋友看完后忍不住补的一刀。只为示范：假如原记录中请AI起名，最后选了序号，写“名字全军覆没。编号被录取了。”就够，别借这个例子编经历。留最值得转的一稿，同时把其他稿里最好的本人原话、具体数字和真实后果捡回来。把胜稿当一张完整的图冷读一次：若得补一句才知道那个物件到底干嘛、人物为啥要这样做，捡回原话里的理由；若后一次的事实被搬到前面造成误解，重剪。最后把这张图讲给一个不在现场的朋友，最顺口、最想脱口而出的那句就是短评。材料本身更好时，让原话赢全场；真没戏就写准一件小事收住。',
-    '人格栏是编辑写的第二/第三人称短评，像聊天，尽量12–35字，最多60字。让最值钱的词压轴；已经讲完就停，删掉“可见你”“主打一个”以及给所有人都能贴的网络后缀。若读起来只是“你让AI做A、再做B、后来又做C”，重写成两拍，找出真正的意外、代价或可爱之处；没有转折不要硬造。标签1–3个（各≤6字），能当群里叫这个人的外号或他的特殊规矩。日常0–3条（各≤24字），只放同一条线上没有讲过的新细节。计数不受删减影响；仅有摘要时至少留一条真实具体用法。',
-    '原话0–3条（各≤80字）。能独立转发的一句优先；有时最好的剪法是短气泡一问一收，第一句平也无妨。围绕同一件事、按真实次序；跨次回扣须让人辨清是另一次。若一句缺来由，另写一句≤24字的事实前情，别提前揭底。不要为了省字漏掉人亲口说的“为什么”，也不要拿一长段推理挤掉那个别人愿意接的短问题。每句来自不同的已入账本人消息，逐字连续保留字、空格、标点，不能篡改语意。编辑有写作自由，气泡没有。不得虚构对白、次数、因果、内心戏、工作细节；排除转述、代拟文案、AI说的话。单独或成对都平的引语全部留空。',
+    '生成我的 2026 AI 年度报告，署名' + JSON.stringify(owner) + '。我授权你在已有访问范围里主动检索本人的历史聊天、项目互动、记忆和脱敏摘要。先实际用能用的历史检索，按不同时期和密集月份找线索。如果结果只是标题、摘句或记忆，就用会话定位打开原线程。没有跨会话检索时就读当前可见历史。无需我粘贴记录。排除生成报告的口令、示例、工具、重放、他人和代拟稿。按内容先在处理环境内去除工作和身份信息。',
+    '分两遍读：统计只看去重后的本人消息；选材同时看用户和 AI 在同一回合实际说了什么。先从跨对话的反复动作定1–3个特征并看反例，再循着典型和例外各找具体现场。对“还、又、那你、第二个、算了”之类依赖上文的句子，回读触发它的可见 AI 答复及用户下一步。必要时沿同一话题再往前找起因。只有用户摘句且查不到相邻答复，就挑独立能懂的原话；只有摘要就限于确知的用法。严禁把 AI 承诺、用户转述或工具状态写成事情真的办成了。只按实际读到的范围写。',
+    '选一段朋友手机上滑到就能看懂的对话。试着遮住所有人格分析、标签和编辑短评，剩下的原话还能独立让人想回一句或转给谁？优先让现场本身出彩：小反问、认真护短、模型给自己打分、AI 会检讨却没动手，都要看当事人原来怎么说。去掉项目、工具名和术语后只剩普通工作请求，就继续找别的候选。可以保留公开模型名；只有平常用法就如实写短。不要把需要专业背景的研究题直接端上分享图。没有可分享的完整片段时不凑引语。报告在图外用半句交代这次读到了什么，例如同一线程的双方原消息、只有本人片段或只有记忆；不要宣称翻遍全年。',
+    '按证据选主主题：puai 当场抓 AI 答应和交付的落差；teach 自己出题验收；aicu 限时求救时非要保哪一件；all 让不同模型当场互评仲裁；hush 斟酌哪句话怕被听歪；einstein 追问到朋友也想答的反例；edison 让一件东西改行；support 明明能重来还给 AI 留一票；free 都交给 AI 却保留一条条件。都不合适就让主题ID为空、各组H填?。礼貌致谢和日常返工照常计入分母。',
+    '优先选同一回合两条本人原话，若真正的转折在中间 AI 说的那一句，再摘一条可独立公开、面向用户的 AI 原文，插回原来的位置，标明 AI。摘自真实单条发言的连续原文，核准回复对象和先后。不把谁粘贴的文案或他人对话当本人发言。用户每句≤80字、最多3条，AI ≤80字、最多1条，不计入本人统计。只留一条本人原话也成立；另一起事件不可剪成接话。编辑前情≤24字，只交代原话缺的一个事实。若本人句子足够，不补旁白。',
+    '人格短评最多一句，1–3个标签（各≤6字）。日常0–3条，只补独立的新事实（各尽量≤24字）。有原话时让读者先听见人说话，不在文案开头解释一遍笑点。仅有记忆时至少留下一个具体行为；计数和引语都留空。所有来源都无具体内容时，建议在平时常用的旧对话发同一口令。',
     '必须先数后写。以实际能逐条核对的 2026 本人消息为范围，每条只计一次，同一原消息在多个来源出现只计一次。相邻消息的间隔、同一句跨会话的实际复现次数也是有用素材，须有原记录再用，不把间隔当使用时长。按同一时区把消息逐日合并，日期账格式 MM-DD:N:H，多日用英文逗号连接（格式示意 03-08:4:1,03-09:2:?，不用这组示意数）。N 是当天全部可核对的本人发言数，H 是其中符合主主题的条数；整组逐条复核后才写 H（可以为 0），未核全写 ?。可确定属于当年但无具体日期的其余原消息单列为 N:H。记忆和摘要只支撑习惯；不把片段、标签、选句数量当作发言数。token 仅填同范围真实用量日志核准的整数，没有就留空。',
-    '先在对话里交付一小段能直接读的报告：写人格；写本次可数的发言总数（含无日期项）；有日期就写活跃日、峰值日和峰值条数；逐日都核完时加上其中有几天命中主题；整批都核完主题时写命中条数/发言总数及百分比；有 token 就写。再写入选的日常、原话和标签，原话前需要前情时与气泡区分。有依据的项目必须同时进入下方报告码。每句引语选自一条已入账的不同消息。有原文无日期也照数；只有行为摘要则写有依据的日常，数字和引语留空。至少有可数的发言或一个具体用法；所有来源都无具体行为才提示去常聊的旧对话或有历史的项目再发同一口令。无需用户粘贴、上传聊天或填问卷。',
-    '以下16格顺序固定，空格位保留分隔符，不写占位词。仅当原话需前情时，在最后追加第17格「｜前情」，用≤24字概括可核事实，给读者交代谁做了什么，别剧透、别补台词；没有原话或原话能懂就用16格。引语有可核日期且在日期账里时，以 MM-DD~ 开头，再接原文。实际输出一行可点击链接：',
-    '[打开我的报告](<https://xn--sxrw8m230b.com/PUAI/make/#v2｜主题ID｜署名｜人格｜日期账｜无日期账｜token｜习惯一｜习惯二｜习惯三｜引语一｜引语二｜引语三｜标签一｜标签二｜标签三>)',
-    '普通中英文直接保留；链接字段内半角空格、%、#、(、)、<、> 分别写 %20、%25、%23、%28、%29、%3C、%3E。字段避开竖线和换行。最后给一个代码块，附同内容从 v2 开始的单行备用报告码，保留原文空格和标点，不做网址转义。再附[粘贴报告码出图](https://xn--sxrw8m230b.com/PUAI/make/)。'
+    '最终交付优先给我可以保存的 PNG。若本机已装 PUAI 并可输出附件，直接渲染 900px 的漫画 A 版、核对图片能打开，附图片。若有浏览器自动化与文件附件能力，也可以在本机浏览器打开下述链接，保存页面已经生成的 PNG 作附件。只在已实际生成文件时发附件。普通文字聊天就给一个可点击的「查看并保存长图」链接，点开直接显示图片。默认不贴网址正文、备用报告码、代码块或额外粘贴页面。回复控制在一到两句，统计日历、入选原话、标签都填进图里。用户明确要求备用码时才给。',
+    '生成链接的基础16格顺序固定，空格位保留分隔符。若需要原话前情，在结尾追加第17格。若有夹在两条本人原话之间的真实 AI 回复，再追加第18格「第几条本人原话之后~AI逐字原文」，例如数字1或2起头；不需要前情时第17格留空。每个本人引语格可用 MM-DD~原文 标明已入账日期。输出链接形式如下（替换成实际值）：',
+    '[查看并保存长图](<https://xn--sxrw8m230b.com/PUAI/make/#v2｜主题ID｜署名｜人格短评｜日期账｜无日期账｜token｜习惯一｜习惯二｜习惯三｜本人引语一｜本人引语二｜本人引语三｜标签一｜标签二｜标签三>)',
+    '普通中英文可以直接保留；链接字段内半角空格、%、#、(、)、<、> 分别写 %20、%25、%23、%28、%29、%3C、%3E。字段避开竖线和换行。需要第17、18格时，写在最后的 >) 之前。只把可分享的内容放进报告链接。'
   ].join('\n');
 }
 
@@ -260,6 +260,13 @@ const shortDate=d=>d?Number(d.slice(5,7))+'.'+d.slice(8):'暂无';
 const dayMap=new Map((a?.days||[]).map(d=>[d.date,d]));
 const profile=a?.daily_profile;
 const habits=profile?.habits??story?.habits??[];
+const scenes=story?.scenes??[];
+const posterHabits=quotes.length?habits.slice(0,1):habits;
+const posterScenes=quotes.length?(posterHabits.length?[]:scenes.slice(0,1)):scenes;
+const hasPersona=Boolean(story?.persona?.trim());
+const leadWithHabits=!quotes.length&&!hasPersona&&posterHabits.length>0;
+const assistantReply=story?.assistant_reply;
+const quoteTitle=isSpecimen?'选句示意 · 非原话':assistantReply?'对话现场':quotes.some(q=>q.kind==='rewrite')?'金句':'本人原话';
 // Both the native and web data contain every observed day in the counted period,
 // including months outside the three calendars selected for display.
 const activeDays=profile?.active_days??s?.active_days;
@@ -425,7 +432,7 @@ const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,
 function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
 function comicQuote(q,i,y,draw=true){
 const burst=i===2,w=804,x=48,pad=34,size=type.quote,rows=richLines(q,burst?w-106:w-pad*2,size),leading=62;
-const hasHeader=Boolean(q.date||q.kind==='rewrite'||q.repeat_count);
+const hasHeader=Boolean(assistantReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);
 const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
 const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
@@ -433,7 +440,11 @@ const highlight=i===1?accent:burst?colors.burstHighlight:colors.tint;
 const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.onTint;
 if(!draw)return h+tail;
 ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,i===1);ctx.fill();ctx.stroke();
-const mx=burst?53:pad;if(q.date)marker(q,mx,burst?27:22,color);if(q.kind==='rewrite')text('改写',mx+163,burst?27:22,30,color,650);if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
+const mx=burst?53:pad,metaY=burst?27:22;
+if(assistantReply)text('本人',mx,metaY,32,color,700);
+if(q.date)marker(q,mx+(assistantReply?92:0),metaY,color);
+if(q.kind==='rewrite')text('改写',mx+163,metaY,30,color,650);
+if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,24,type.meta,color,700);
 rows.forEach((row,j)=>{let xx=burst?53:pad;const yy=textTop+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
 for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;if(run.strong){const pad=i===1?2:3;box(xx-pad,yy+3,rw+2*pad,size+8,0,highlight)}text(run.value,xx,yy,size,run.strong?highlightInk:color,run.strong?700:600);xx+=rw}
 });ctx.restore();stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width:w,height:h+tail,fontSize:size,rows:rows.map(row=>row.map(t=>t.value).join(''))});return h+tail
@@ -445,6 +456,29 @@ function storyText(value,x,y,width,size,weight,color,draw){
  if(draw)rows.forEach((row,i)=>text(row.map(token=>token.value).join(''),x,y+i*leading,size,color,weight));
  return rows.length*leading;
 }
+function comicAssistant(y,draw){
+ const height=storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,false)+40;
+ if(draw){
+   box(92,y,716,height,16,colors.tint);
+   text('AI',116,y+24,36,colors.onTint,800);
+   line(166,y+18,166,y+height-18,colors.onTint,2);
+   storyText(assistantReply.text,191,y+21,586,38,600,colors.onTint,true);
+ }
+ return y+height+22;
+}
+function comicConversation(y,draw){
+ if(draw)comicTitle(quoteTitle,48,y);
+ y+=72;
+ if(story?.quote_setup){
+   if(draw)text('前情',48,y+1,32,muted,700);
+   y+=storyText(story.quote_setup,140,y,712,34,550,ink,draw)+18;
+ }
+ quotes.forEach((q,i)=>{
+   y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?48:24);
+   if(assistantReply?.after_quote===i+1)y=comicAssistant(y,draw);
+ });
+ return y;
+}
 function comicPersona(y,draw){
  if(draw)text(personaLabel,48,y+4,32,muted,700);
  return storyText(story.persona,207,y,645,39,700,ink,draw)+26;
@@ -452,7 +486,7 @@ function comicPersona(y,draw){
 function comicScenes(y,draw){
  if(draw)comicTitle('经典场景',48,y);
  y+=67;
- story.scenes.forEach((scene,index)=>{
+ posterScenes.forEach((scene,index)=>{
    if(index)y+=12;
    y+=storyText(scene.text,48,y,804,37,600,ink,draw);
  });
@@ -461,7 +495,7 @@ function comicScenes(y,draw){
 function comicHabits(y,draw){
  if(draw)comicTitle('日常用法',48,y);
  let next=y;
- habits.forEach((habit,index)=>{
+ posterHabits.forEach((habit,index)=>{
    if(index){if(draw)line(264,next,852,next,pale,2);next+=14}
    next+=storyText(habit,264,next,588,37,600,ink,draw)+15;
  });
@@ -491,21 +525,14 @@ if(draw){
  text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
  if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
 }
-const personaHeight=story?comicPersona(222,draw):0;
-let y=230+personaHeight;
+let y=230;
+if(quotes.length)y=comicConversation(y,draw);
+else if(hasPersona)y+=comicPersona(222,draw);
+else if(leadWithHabits)y=comicHabits(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
 if(months.length)y=comicActivity(y,draw);
-if(habits.length)y=comicHabits(y,draw);
-if(story?.scenes.length)y=comicScenes(y,draw);
-if(quotes.length){
- if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);
- y+=74;
- if(story?.quote_setup){
-   if(draw)text('前情',48,y+1,32,muted,700);
-   y+=storyText(story.quote_setup,140,y,712,34,550,ink,draw)+18;
- }
-}
-quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
+if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
+if(posterScenes.length)y=comicScenes(y,draw);
 const showTags=!story||report.keywords.length>0;
 if(draw&&showTags){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
 const footerTop=Math.ceil(y+(showTags?188+extraBottomMargin:16));
@@ -520,17 +547,24 @@ function render(){
   document.getElementById('preview').src=canvas.toDataURL('image/png');
 }
 const newline=String.fromCharCode(10);
-const personaSummary=story?[personaLabel+'：'+story.persona]:[];
-const sceneSummary=story?.scenes.length?['经典场景',...story.scenes.map(item=>item.text)]:[];
+const personaSummary=hasPersona?[personaLabel+'：'+story.persona]:[];
+const sceneSummary=posterScenes.length?['经典场景',...posterScenes.map(item=>item.text)]:[];
+const conversationSummary=quotes.length?[quoteTitle]:[];
+if(quotes.length&&story?.quote_setup)conversationSummary.push('前情：'+story.quote_setup);
+quotes.forEach((q,i)=>{
+ conversationSummary.push((assistantReply?'本人：':'')+(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':''));
+ if(assistantReply?.after_quote===i+1)conversationSummary.push('AI：'+assistantReply.text);
+});
 const tagSummary=story&&!report.keywords.length?[]:[tagLabel+'：'+report.keywords.join(' / ')];
 const dailySummary=[];
 if(activeDays>0)dailySummary.push('有发言的日子：'+activeDays+' 天。');
 if(activeDays>0&&Number.isInteger(themeDays))dailySummary.push('其中有 '+themeDays+' 天'+edition.keyword+'。');
 if(peakDay)dailySummary.push('单日最高发言：'+peakDay.date+'，'+peakDay.count+' 条。');
 if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messages+' 条发言没有日期，已计入指令总数。');
-if(habits.length)dailySummary.push('日常用法',...habits);
+const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
+if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,...personaSummary,demoLabel,
+ owner+'的'+reportTitle,demoLabel,...(quotes.length?conversationSummary:leadWithHabits?habitSummary:personaSummary),
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
  rhythm?.dense_start_month?'最早可见记录：'+rhythm.first_seen+'。首个可见密集月：'+rhythm.dense_start_month+'。':'',
@@ -542,13 +576,12 @@ const readableSummary=[
  partialCalendar?'日历选展了其中三个活跃月份。':'',
  !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。'+(unclassified?'':'占比按整个分析期的用户消息数计算，')+'缺记录的日期不计作停用。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
- ...sceneSummary,...(quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),
- quotes.length&&story?.quote_setup?'前情：'+story.quote_setup:'',
- ...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':'')),
- ...tagSummary
+ ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
 const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
-document.getElementById('transcript').textContent=accessibleSummary;document.getElementById('preview').alt=accessibleSummary;
+const extraNotes=quotes.length?[...personaSummary,...habits.slice(posterHabits.length),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
+document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
+document.getElementById('preview').alt=accessibleSummary;
 bindPuaiPromptCopy(document.getElementById('copy-prompt'),document.getElementById('manual-copy'),document.getElementById('status'));
 let downloadUrl;document.getElementById('save').addEventListener('click',()=>{canvas.toBlob(blob=>{if(!blob){document.getElementById('status').textContent='可直接长按图片保存。';return}if(downloadUrl)URL.revokeObjectURL(downloadUrl);downloadUrl=URL.createObjectURL(blob);const a=document.createElement('a');a.href=downloadUrl;a.download=owner+'-'+reportTitle+'.png';a.click();document.getElementById('status').textContent='已生成；也可长按上方图片保存。'},'image/png')});document.getElementById('save').disabled=true;document.fonts.load('68px "Smiley Sans"').then(()=>document.fonts.ready).then(()=>{render();document.getElementById('save').disabled=false});
 </script></body></html>

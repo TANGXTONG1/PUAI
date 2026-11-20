@@ -148,7 +148,7 @@ def reviewed_message_ids(activity, field, messages_by_id):
 
 
 def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False):
-    """Validate the private activity and report whether its lead quote is in the analysis period."""
+    """Return the selected quotes' instants, with None for quotes outside the analysis period."""
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
         optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
     zone = string(activity["timezone"], 100, "activity.timezone")
@@ -197,7 +197,7 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
             for mid in theme_ids:
                 if not any(evidence[eid]["type"] == "provided" for eid in messages_by_id[mid]["evidence_ids"]):
                     raise ReportError("activity.theme_message_ids: counted messages need provided records")
-    lead_quote_in_period = False
+    quote_instants = []
     if "share_quotes" in activity:
         analysis_months = set(derive_rhythm(active_dates)["analysis_months"])
         seen_quotes = set()
@@ -224,8 +224,8 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
                         raise ReportError(f"{rewrite_path}.emphasis: must be a contiguous substring of text")
             if mid not in messages_by_id:
                 raise ReportError(f"{path}.message_id: unknown message ID {mid!r}")
-            if index == 0:
-                lead_quote_in_period = message_months[mid] in analysis_months
+            quote_instants.append(activity_timestamp(messages_by_id[mid]["timestamp"], path)
+                                  if message_months[mid] in analysis_months else None)
             if mid in seen_quotes:
                 raise ReportError(f"{path}.message_id: duplicate shared quote message ID")
             seen_quotes.add(mid)
@@ -265,7 +265,35 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
         string(highlight["title"], 18, f"{path}.title")
         string(highlight["text"], 90, f"{path}.text")
         refs(highlight["evidence_ids"], f"{path}.evidence_ids", required=True)
-    return lead_quote_in_period
+    return quote_instants
+
+
+def contains_exchange(excerpt, before, answer, after):
+    """Match the three selected excerpts inside the ordered, speaker-marked source."""
+    rows = re.split(r"^(用户|AI|user|assistant)[：:][ \t]*", excerpt, flags=re.M | re.I)
+    turns = [("user" if role.lower() in {"用户", "user"} else "assistant", body)
+             for role, body in zip(rows[1::2], rows[2::2])]
+    return any(
+        left[0] == right[0] == "user" and middle[0] == "assistant"
+        and before in left[1] and answer in middle[1] and after in right[1]
+        for left, middle, right in zip(turns, turns[1:], turns[2:]))
+
+
+def validate_assistant_reply(reply, quotes, instants, evidence, refs, mode):
+    path = "share_story.assistant_reply"
+    obj(reply, ["after_quote", "text", "evidence_ids"], path)
+    pos = reply["after_quote"]
+    if type(pos) is not int or pos not in (1, 2) or len(instants) <= pos or not all(instants[:pos+1]):
+        raise ReportError(f"{path}.after_quote: place the reply between two visible selected user quotes")
+    if instants[pos-1] > instants[pos]:
+        raise ReportError(f"{path}: the surrounding user quotes must be in chronological order")
+    answer = string(reply["text"], 80, f"{path}.text")
+    ids = refs(reply["evidence_ids"], f"{path}.evidence_ids", required=True)
+    types = {"provided", "demo"} if mode == "demo" else {"provided"}
+    if not any(evidence[eid]["type"] in types and
+               contains_exchange(evidence[eid]["excerpt"], quotes[pos-1]["text"], answer, quotes[pos]["text"])
+               for eid in ids):
+        raise ReportError(f"{path}: cite a single role-marked user / AI / user transcript with all three excerpts in order")
 
 
 def summarize_activity(activity):
@@ -415,7 +443,7 @@ def validate_report(report, today=None, now=None):
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
     if "share_story" in report:
         story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story",
-                    optional=["habits", "quote_setup"])
+                    optional=["habits", "quote_setup", "assistant_reply"])
         refs(story["persona_evidence_ids"], "share_story.persona_evidence_ids", required=True)
         if "quote_setup" in story:
             path = "share_story.quote_setup"
@@ -442,15 +470,18 @@ def validate_report(report, today=None, now=None):
     closing = obj(report["closing"], ["text", "evidence_ids"], "closing")
     string(closing["text"], 80, "closing.text")
     refs(closing["evidence_ids"], "closing.evidence_ids")
-    lead_quote_in_period = False
+    quote_instants = []
     if "activity" in report:
-        lead_quote_in_period = validate_activity(
+        quote_instants = validate_activity(
             report["activity"], start, end, mode, evidence, refs, now or datetime.now(timezone.utc),
             theme=report.get("theme"), has_story=has_share_story)
         if unclassified and "roast_message_ids" in report["activity"]:
             raise ReportError("activity.roast_message_ids: omit reviewed theme counts when report.theme is null")
-    if "quote_setup" in report.get("share_story", {}) and not lead_quote_in_period:
+    if "quote_setup" in report.get("share_story", {}) and not (quote_instants and quote_instants[0]):
         raise ReportError("share_story.quote_setup: select a lead quote within the analysis period")
+    if "assistant_reply" in report.get("share_story", {}):
+        validate_assistant_reply(report["share_story"]["assistant_reply"], report.get("activity", {}).get("share_quotes", []),
+                                 quote_instants, evidence, refs, mode)
     return report
 
 
@@ -551,6 +582,9 @@ def public_report(report, compact=False, include_story=True):
                 public["story"]["habits"] = [item["text"].strip() for item in report["share_story"]["habits"]]
             if "quote_setup" in report["share_story"]:
                 public["story"]["quote_setup"] = report["share_story"]["quote_setup"]["text"].strip()
+            if "assistant_reply" in report["share_story"]:
+                reply = report["share_story"]["assistant_reply"]
+                public["story"]["assistant_reply"] = {key: reply[key] for key in ("after_quote", "text")}
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])
         return public

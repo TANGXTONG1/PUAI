@@ -93,6 +93,24 @@ test('前情只为已入选的原话提供背景，不能独立刊出或超过24
   assert.throws(() => report('v1｜puai｜我｜先夸后骂｜原话｜｜标签｜｜前情'));
 });
 
+test('AI 原话可以插在前两条或后两条本人发言之间，计数仍然只数用户', () => {
+  const text = '我选第二个~我自己写的。';
+  for (const after of [1, 2]) {
+    const input = [...fields, '', after + '~' + text];
+    const parsed = report(input.join('｜'));
+    assert.deepEqual(parsed.story.assistant_reply, { after_quote: after, text });
+    assert.equal(parsed.activity.summary.messages, 15);
+    assert.equal(parsed.activity.share_quotes.length, 3);
+    assert.deepEqual(report('#' + input.map(encodeURIComponent).join('|')), parsed);
+  }
+  for (const invalid of ['没有位置', '0~少一条', '3~多一条', '1~', '1~' + '字'.repeat(81)]) {
+    assert.throws(() => report([...fields, '', invalid].join('｜')), /AI/);
+  }
+  const noSecond = [...fields];
+  noSecond.fill('', 11, 13);
+  assert.throws(() => report([...noSecond, '', '1~这是一条回复'].join('｜')), /AI/);
+});
+
 test('v2 可不归类，保留日历和习惯，未分类的发言不能带主题计数', () => {
   const draft = [...fields];
   draft[1] = '';

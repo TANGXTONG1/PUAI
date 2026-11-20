@@ -14,21 +14,32 @@ function quoteMatches(turn, quote, borrowedSpans) {
 
 // Two short excerpts can each match multiple messages. Try all distinct assignments
 // before rejecting an otherwise valid set of at most three quote bubbles.
-function hasDistinctSources(matches, used = new Set(), index = 0) {
-  if (index === matches.length) return true;
-  for (const turn of matches[index]) {
-    if (used.has(turn.id)) continue;
-    used.add(turn.id);
-    if (hasDistinctSources(matches, used, index + 1)) return true;
-    used.delete(turn.id);
+function hasDistinctSources(matches, accepts, chosen = []) {
+  if (chosen.length === matches.length) return accepts(chosen);
+  for (const turn of matches[chosen.length]) {
+    if (chosen.includes(turn.id)) continue;
+    if (hasDistinctSources(matches, accepts, [...chosen, turn.id])) return true;
   }
   return false;
+}
+
+function hasExchange(sessions, beforeId, response, afterId) {
+  return sessions.some(({turns}) => {
+    const start = turns.findIndex(turn => turn.id === beforeId);
+    if (start < 0) return false;
+    let matchedReply = false;
+    for (const turn of turns.slice(start + 1)) {
+      if (turn.role === 'user') return turn.id === afterId && matchedReply;
+      if (turn.role === 'assistant' && turn.text.includes(response)) matchedReply = true;
+    }
+    return false;
+  });
 }
 
 export function auditReport(context, key, code) {
   const fields = readFields(code);
   assert.equal(fields[0], 'v2', '测试使用 v2 报告码');
-  const { activity, theme } = parseReport(fields);
+  const { activity, theme, story } = parseReport(fields);
   assert.equal(theme, key.expected_theme, '主题与材料不符');
   assert.equal(activity.token_usage, undefined, '材料没有 token 用量记录');
 
@@ -51,7 +62,10 @@ export function auditReport(context, key, code) {
   assert.equal(activity.daily_profile.undated_messages, undated, '无日期发言数不符');
   const matches = activity.share_quotes.map(quote =>
     turns.filter(turn => quoteMatches(turn, quote, key.borrowed_spans ?? {})));
-  assert.ok(hasDistinctSources(matches), '每条原话须能匹配不同的本人消息、连续原文和对应日期');
+  const reply = story.assistant_reply;
+  assert.ok(hasDistinctSources(matches, ids => !reply || hasExchange(context.sessions,
+    ids[reply.after_quote - 1], reply.text, ids[reply.after_quote])),
+    '每条原话须能匹配不同的本人消息、连续原文和对应日期；AI 回复须来自两条本人发言之间的同一段对话');
 }
 
 function readJSON(path) {

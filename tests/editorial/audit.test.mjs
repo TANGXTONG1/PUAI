@@ -46,3 +46,15 @@ test('无日期摘要只作行为依据', () => {
   code[5] = '2:?';
   assert.throws(() => auditReport(memory, key, code.join('｜')), /总数/);
 });
+
+test('AI 回复需要在同一会话中找到位置，不能从下文、其他会话或用户转述中借来', () => {
+  verify({ 11: '03-02~我想换题。', 16: '', 17: '1~还是旧答案。' });
+  for (const text of ['再试一次。', '我想换题。', '下次再说。']) {
+    assert.throws(() => verify({ 11: '03-02~我想换题。', 16: '', 17: '1~' + text }), /AI 回复/);
+  }
+  assert.throws(() => verify({ 16: '', 17: '1~还是旧答案。' }), /AI 回复/);
+  const differentThreads = { sessions: [{ turns: [turns[0], turns[1]] }, { turns: [turns[2], turns[3]] }] };
+  const draft = [...fields, '', '1~还是旧答案。'];
+  draft[11] = '03-02~我想换题。';
+  assert.throws(() => auditReport(differentThreads, key, draft.join('｜')), /AI 回复/);
+});
