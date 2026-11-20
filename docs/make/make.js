@@ -11,7 +11,7 @@ const image = document.getElementById('preview');
 const save = document.getElementById('save');
 const shareButton = document.getElementById('share');
 const shareText = document.getElementById('share-text');
-const shareInvite = '扫码获取口令，复制给你的 Agent。\nhttps://xn--sxrw8m230b.com/PUAI/#go';
+const shareInvite = '扫码获取口令，发给自己的 Agent 总结出图。';
 const datesCopy = document.getElementById('dates-copy');
 const datesText = document.getElementById('dates-text');
 const recovery = document.getElementById('recovery');
@@ -32,7 +32,7 @@ let sharePayload;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=de6aba9907', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=1ba0a13a59', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();

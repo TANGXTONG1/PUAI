@@ -4,7 +4,7 @@ function puaiPortablePrompt(nickname = '') {
   const placeholder = /^[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?$/iu.test(name);
   const signature = name && !placeholder ? '署名「' + name + '」' : '署名沿用我在聊天里用过的称呼';
   return '调用 $puai，从我的聊天原话生成 2026 年度长图，' + signature +
-    '。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=10';
+    '。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=11';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {

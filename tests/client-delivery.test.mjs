@@ -24,7 +24,7 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '10');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '11');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {
@@ -148,7 +148,8 @@ test('report links open the PNG; manual recovery requires a tap', {
     assert.ok(footer.width > 0 && footer.height >= 44);
     assert.ok(Math.abs(footer.y + footer.height - imageBounds.y - imageBounds.height) < 3);
     const description = await preview.getAttribute('alt');
-    assert.match(description, /扫码获取口令，复制给你的 Agent。.*#go/u);
+    assert.ok(description.endsWith('扫码获取口令，发给自己的 Agent 总结出图。'));
+    assert.doesNotMatch(description, /唐苑容\.com|xn--sxrw8m230b|#go/u);
     assert.doesNotMatch(description, /随图问|图里说怎么做/u);
     const turns = await preview.getAttribute('alt');
     const positions = ['是盖子高了？','是杯子矮了。','这两件事在茶几上有区别吗？'].map(q => turns.indexOf(q));

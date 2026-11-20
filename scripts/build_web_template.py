@@ -42,7 +42,7 @@ def main():
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(root / relative, target)
     shutil.copyfile(root / "SKILL.md", docs / "skill.txt")
-    for script in ("render_chat_png.py", "collect_history.py", "read_context.py"):
+    for script in ("render_chat_png.py", "collect_history.py", "read_context.py", "browse_history.py"):
         shutil.copyfile(root / "scripts" / script, docs / script)
     make = docs / "make"
     # The date-recovery button sends the originating chat to the same skill as go.txt.

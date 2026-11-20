@@ -551,9 +551,8 @@ def draw_report(r, font):
         y += 170
     footer_height = 228
     rect(0,y,900,footer_height,"#FBFBF8")
-    text(48,y+31,"扫码获取口令",46,bold=True)
-    text(48,y+98,"复制给你的 Agent。",34)
-    text(48,y+160,"唐苑容.com/PUAI/#go",30)
+    text(48,y+49,"扫码获取口令",46,bold=True)
+    text(48,y+124,"发给自己的 Agent 总结出图。",34)
     cell = 5
     modules = len(QR_ROWS)
     qr_size = (modules+8)*cell

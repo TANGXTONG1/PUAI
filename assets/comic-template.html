@@ -183,8 +183,7 @@ const extraBottomMargin=24;
 const shareFooterHeight=228;
 const shareGuide='扫图底二维码获取口令 ↓';
 const shareTitle='扫码获取口令';
-const shareNext='复制给你的 Agent。';
-const sharePage='唐苑容.com/PUAI/#go';
+const shareNext='发给自己的 Agent 总结出图。';
 // Static QR for https://xn--sxrw8m230b.com/PUAI/#go with a four-module quiet zone at draw time.
 const shareQr=[
  '111111100000010001100100001111111',
@@ -607,9 +606,8 @@ function comicHabits(y,draw){
 function drawShareFooter(y){
  const shareInk='#182437';
  box(0,y,900,shareFooterHeight,0,'#FBFBF8');
- text(shareTitle,48,y+31,46,shareInk,750);
- text(shareNext,48,y+98,34,shareInk,600);
- text(sharePage,48,y+160,30,shareInk,550);
+ text(shareTitle,48,y+49,46,shareInk,750);
+ text(shareNext,48,y+124,34,shareInk,600);
 
  const cell=5,quiet=4,qrSize=(shareQr.length+quiet*2)*cell;
  const x=852-qrSize,top=y+Math.floor((shareFooterHeight-qrSize)/2);
@@ -698,7 +696,7 @@ const readableSummary=[
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
  ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
-const accessibleSummary=readableSummary+newline+shareTitle+'，'+shareNext+' https://'+sharePage;
+const accessibleSummary=readableSummary+newline+shareTitle+'，'+shareNext;
 const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.filter(habit=>!posterHabits.includes(habit)),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
 document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
 document.getElementById('preview').alt=accessibleSummary;

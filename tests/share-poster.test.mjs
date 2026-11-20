@@ -65,7 +65,7 @@ test('转发按钮只在点按时交出当前 PNG，取消或缺少分享能力�
         const payload=output.shared[0];
         assert.deepEqual([payload.name,payload.mime,payload.active,output.sameImage],['小橘-2026-PUAI.png','image/png',true,true]);
         invite=payload.text;
-        assert.equal(invite,'扫码获取口令，复制给你的 Agent。\nhttps://xn--sxrw8m230b.com/PUAI/#go');
+        assert.equal(invite,'扫码获取口令，发给自己的 Agent 总结出图。');
         assert.ok(!invite.includes('连果核') && !invite.includes('小橘'));
       } else if(mode==='cancel'){
         assert.deepEqual([output.shared.length,output.copied.length,output.status],[1,0,'']);
