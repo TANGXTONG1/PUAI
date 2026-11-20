@@ -81,6 +81,8 @@ def parse_receipt(text):
         if not match:
             continue
         field, value = match[1].lower(), match[2].strip()
+        if field in {"人物类型", "人格类型", "年度类型", "本次类型"}:
+            field = "主题"
         if field in FIELDS and value:
             values[field].append(value)
             lines.append((field, value))
@@ -96,7 +98,9 @@ def parse_receipt(text):
 
     theme = first("主题").lower()
     theme = {v[0].lower(): k for k, v in EDITIONS.items()}.get(theme, theme)
-    if theme in {"未归类", "无", "ai相处报告"}:
+    if theme == "爱因斯坦":
+        theme = "einstein"
+    elif theme in {"待定", "未归类", "无", "ai相处报告"}:
         theme = ""
     if theme not in EDITIONS:
         raise ValueError("未知主题")
@@ -261,12 +265,21 @@ def draw_report(r, font):
             size -= 1
         return size
 
+    scope_title = {"thread": "本次对话精选", "fragments": "聊天片段精选"}.get(r["scope"])
+    type_caption = "本次类型" if scope_title else "年度类型"
+    type_name = name if theme else "待定"
+    caption_width = round(font(26).getlength(type_caption))
+    type_width = round(font(34).getlength(type_name))
+    type_left = 852 - (16 + caption_width + 12 + type_width + 16)
+    rect(type_left, 36, 852-type_left, 56, tint, ink)
+    centered(type_left+16+caption_width/2, 64, type_caption, 26)
+    centered(852-16-type_width/2, 64, type_name, 34, bold=True)
+
     badge = r["name"]+"的"
-    badge_size = fitted(badge, 760, 36)
+    badge_size = fitted(badge, type_left-22-48-44, 34)
     badge_w = round(font(badge_size).getlength(badge))+44
     rect(48, 36, badge_w, 56, accent)
     centered(48+badge_w/2, 64, badge, badge_size, on_accent, True)
-    scope_title = {"thread": "本次对话精选", "fragments": "聊天片段精选"}.get(r["scope"])
     title = scope_title or (f"{name} 报告" if theme else f"{name}报告")
     title = f"{year} {title}"
     text(48, 115, title, fitted(title, 804, 68), bold=True)

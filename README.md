@@ -8,6 +8,8 @@
 
 点「复制给 ChatGPT」，发到你常用的 AI 对话。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[做我的年度报告](https://xn--sxrw8m230b.com/PUAI/)
 
+署名旁会亮出九种人物类型中的一种，比如 **PUAI** 或 **AI因斯坦**。只看一段对话时，类型章写「本次类型」；个性标签另贴在图尾。
+
 有历史检索的客户端会跨月份打开原对话。若当前对话只能看到一段，成图会署「本次对话精选」或「聊天片段精选」。也可在有文件工具的对话里使用已有的 ChatGPT 聊天导出（JSON 或 ZIP），沿用同一句口令。
 
 如果助手打不开技能链接，可把[技能说明文件](https://xn--sxrw8m230b.com/PUAI/skill.txt)作为附件发给它，再发同一句口令。
@@ -43,7 +45,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 调用 $puai，从我的聊天原话生成 2026 年度长图，署名「小栗」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=483047a8b0) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=b824a54ab1) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>

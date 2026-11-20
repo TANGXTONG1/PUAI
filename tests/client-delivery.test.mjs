@@ -24,7 +24,7 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '7');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '8');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {

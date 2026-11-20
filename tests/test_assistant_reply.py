@@ -164,7 +164,8 @@ class AssistantReplyTests(unittest.TestCase):
                     self.assertEqual(turns, sorted(turns))
                     self.assertLess(alt.index("AI：第二张。"), alt.index("那是你刚做的。"))
                 elif index == 1:
-                    self.assertEqual(labels[2:4], ["日常用法", "给清单补漏"])
+                    i = labels.index("日常用法")
+                    self.assertEqual(labels[i+1], "给清单补漏")
                     self.assertEqual(alt.count("给清单补漏"), 1)
                     self.assertNotIn("人格", alt)
                 else:

@@ -2,10 +2,10 @@ import { parseReport } from './report-code.mjs?v=ffbab029bc';
 
 const themeNames = new Map([
   ['ai的教育','teach'], ['ai特全体','all'], ['ai在心口难开','hush'],
-  ['ai因斯坦','einstein'], ['ai迪生','edison'], ['ai的供养','support'],
-  ['ai咋咋地','free'], ['未归类',''], ['无',''], ['ai相处报告','']
+  ['ai因斯坦','einstein'], ['爱因斯坦','einstein'], ['ai迪生','edison'], ['ai的供养','support'],
+  ['ai咋咋地','free'], ['未归类',''], ['待定',''], ['无',''], ['ai相处报告','']
 ]);
-const fieldPattern = /^(署名|主题|范围|短评|主场景|用法|原话|AI|AI收尾|前情|标签|发言日期|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
+const fieldPattern = /^(署名|主题|(?:人物|人格|年度|本次)类型|范围|短评|主场景|用法|原话|AI|AI收尾|前情|标签|发言日期|日期账|无日期账|Token)\s*[:：]\s*(.*)$/iu;
 const repeated = new Set(['用法', '原话', '标签']);
 const title = /^(?:#{1,6}\s+)?(?:\*\*|__|`)?PUAI\s*2026(?:\*\*|__|`)?$/iu;
 const unknownStat = /^[（(]?(?:[-—–]+|N\/A|无|不详|未知|留空|未提供|无记录|暂无|未核[实准]?|未核[验对]|未统计|无法(?:逐条)?核[实准验对]|缺少数据)[）)]?$/iu;
@@ -28,7 +28,7 @@ function collectFields(lines, start) {
     if (/^(?:```|~~~)|^(?:报告结束|结束|END|END PUAI)$/iu.test(line) || title.test(line)) break;
     const match = reportLine(line);
     if (!match || !match[2]) continue;
-    const name = match[1].toLowerCase();
+    const name = match[1].endsWith('类型') ? '主题' : match[1].toLowerCase();
     if (['发言日期','日期账','无日期账','token'].includes(name) && unknownStat.test(match[2].trim())) continue;
     if (name === 'ai收尾') {
       const after = values.get('原话')?.length ?? 0;

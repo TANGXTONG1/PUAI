@@ -173,6 +173,9 @@ const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
 const demoLabel=report.mode==='demo'?(isSpecimen?'演示数据':story?'虚拟人物样例':'虚构演示'):'';
 const scopeTitle={thread:'本次对话精选',fragments:'聊天片段精选'}[report.scope];
+const typeCaption=scopeTitle?'本次类型':'年度类型';
+const typeName=Object.hasOwn(editions,report.theme)?edition.name:unclassified?'待定':'';
+const sourceLabel=demoLabel||(report.mode==='self_report'?'自述':'');
 const reportTitle=report.year+' '+(scopeTitle||(unclassified?'AI 相处报告':edition.name+' 报告'));
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':scopeTitle?'片段标签':story?'人格标签':'用户人格';
@@ -276,9 +279,34 @@ function box(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(
 function line(x1,y1,x2,y2,color=pale,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
 function centered(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-ctx.measureText(String(str)).width/2,y,size,color,weight)}
 function right(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-ctx.measureText(String(str)).width,y,size,color,weight)}
-function nameBadge(){
-ctx.save();font(34,600);ctx.textBaseline='alphabetic';const label=isSpecimen?owner:owner+'的',m=ctx.measureText(label),w=m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44;
-ctx.translate(48,36);box(0,0,w,56,0,accent);ctx.fillStyle=colors.onAccent;ctx.fillText(label,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(56+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()
+function headerBadges(){
+  ctx.save();
+  const top=36, height=56;
+  let nameRight=852;
+  if(typeName){
+    font(26,600);const captionWidth=Math.ceil(ctx.measureText(typeCaption).width);
+    font(34,750);const nameWidth=Math.ceil(ctx.measureText(typeName).width);
+    const width=16+captionWidth+12+nameWidth+16, x=852-width;
+    box(x,top,width,height,0,colors.tint);
+    ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(x+1,top+1,width-2,height-2);
+    for(const [label,offset,size,weight] of [[typeCaption,16,26,600],[typeName,16+captionWidth+12,34,750]]){
+      font(size,weight);ctx.textBaseline='alphabetic';
+      const m=ctx.measureText(label);
+      ctx.fillStyle=ink;
+      ctx.fillText(label,x+offset,top+(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+    }
+    nameRight=x-22;
+  }
+  const label=isSpecimen?owner:owner+'的';
+  font(34,600);ctx.textBaseline='alphabetic';
+  let m=ctx.measureText(label);
+  const size=Math.min(34,34*(nameRight-48-44)/Math.max(1,m.actualBoundingBoxLeft+m.actualBoundingBoxRight));
+  font(size,600);ctx.textBaseline='alphabetic';m=ctx.measureText(label);
+  const width=m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44;
+  box(48,top,width,height,0,accent);ctx.fillStyle=colors.onAccent;
+  ctx.fillText(label,48+(width+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,
+    top+(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+  ctx.restore();
 }
 function marker(q,x,y,color=ink){box(x,y,32,32,16,color);centered(markers.get(q.date),x+16,y+3,24,colors.markerForeground[color]||paper,600);text(q.date.slice(5).replace('-','.'),x+44,y,32,color,550)}
 const stickerLayouts=[];
@@ -589,15 +617,18 @@ function drawShareFooter(y){
 }
 function drawPoster(draw=true){
 if(draw){
- stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);smallMark();nameBadge();
+ stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);if(!typeName)smallMark();headerBadges();
  font(type.title,800);const titleWidth=ctx.measureText(reportTitle).width;
  text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
- if(demoLabel)right(demoLabel,852,44,type.meta,story?ink:accent,700);else if(report.mode==='self_report')right('自述',852,44,type.meta,story?ink:accent,700);
+ if(sourceLabel){
+   if(typeName)text(sourceLabel,48,199,type.meta,story?muted:accent,700);
+   else right(sourceLabel,852,44,type.meta,story?ink:accent,700);
+ }
 }
-let y=230;
+let y=sourceLabel&&typeName?274:230;
 if(lead&&!quotesFirst)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
-else if(!lead&&hasPersona)y+=comicPersona(222,draw);
+else if(!lead&&hasPersona)y+=comicPersona(y-8,draw);
 else if(leadWithHabits)y=comicHabits(y,draw);
 if(lead&&quotesFirst)y=comicLead(y,draw);
 if(s||tokenUsage)y=comicUsage(y,draw);
@@ -645,7 +676,7 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,demoLabel,quotesFirst?'':lead,
+ owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',sourceLabel,quotesFirst?'':lead,
  ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),quotesFirst?lead:'',
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',

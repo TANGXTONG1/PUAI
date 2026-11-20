@@ -12,7 +12,7 @@
 | `year` | 整数，2000–2100 | 用户指定的回顾年份 |
 | `mode` | `demo` / `excerpt` / `self_report` / `full` | 口径；由页面显示固定标记 |
 | `scope` | 可选，`history` / `thread` / `fragments` | 打开多个不同现场并确认跨期行为后用 history。仅能核对一个线程或同一现场用 thread，零散线索用 fragments。后两种在图上分别题作「本次对话精选」「聊天片段精选」。日期账单独记录可数的发言。 |
-| `theme` | 可选，九种主题字符串或显式 null（见下） | 按互动中反复出现的动作定主题。新 A 版证据不足时显式填 null，保留用量和日历。缺少该字段的旧报告沿用原主题表现。 |
+| `theme` | 可选，九种主题字符串或显式 null（见下） | 跨期回顾按多个现场的重复行为定年度类型，单次对话或摘句按当场行为定本次类型。显式 null 表示「待定」。主题独立于个性标签和发言账，旧报告仍可读取。 |
 | `period` | `{start,end}`，ISO 日期 | 来源材料覆盖日期；两端须在 `year` 内且不晚于今天 |
 | `person` | 公开为 `{name}`，1–16 字 | 先从本人聊天核对分享称呼。留空、缺少 `name` 或收到旧版 XXX 占位符时统一显示为“我”。 |
 | `identity` | `{title,subtitle}`，分别 1–12、1–60 字 | `subtitle` 写一句有动作的人格摘要，`title` 保留给旧版 |
@@ -25,7 +25,7 @@
 | `evidence` | 证据对象数组，最多 500 条 | 非演示报告至少一条 |
 | `activity` | 可选，见下文 | 用户消息的逐日活跃记录；没有可靠时间戳时省略，旧版输入无需改动 |
 
-主题 ID 为 `puai`（PUAI）、`teach`（AI的教育）、`aicu`（AICU）、`all`（AI特全体）、`hush`（AI在心口难开）、`einstein`（AI因斯坦）、`edison`（AI迪生）、`support`（AI的供养）、`free`（AI咋咋地）。识别与选句标准见 [SKILL.md](../SKILL.md)。保留已观察到的主题与旧版品牌标题之间的区别：省略主题表示未提供分类；旧图继续以“PUAI 报告”署名。
+主题 ID 为 `puai`（PUAI）、`teach`（AI的教育）、`aicu`（AICU）、`all`（AI特全体）、`hush`（AI在心口难开）、`einstein`（AI因斯坦）、`edison`（AI迪生）、`support`（AI的供养）、`free`（AI咋咋地）。清单填「主题：einstein」或「主题：puai」等所选 ID，直达链接使用同值的 `theme` 参数。识别与选句标准见 [SKILL.md](../SKILL.md)。保留已观察到的主题与旧版品牌标题之间的区别：省略主题表示未提供分类；旧图继续以“PUAI 报告”署名。
 
 每条证据为 `{id,source,excerpt,type}`：
 
@@ -46,7 +46,7 @@
 
 ## 人格、日常用法、场景和标签
 
-从本人不同对话里的实际动作提炼 `keywords` 和 `identity.subtitle`，依特征回查原对话、比较候选，按展示顺序填 `activity.share_quotes`。私有选择清单可以只关联人格依据：
+先把九型之一写在根字段 `theme`。页眉用它显示正式类型。再从本人实际动作提炼 `keywords` 和 `identity.subtitle`，依特征回查原对话、比较候选，按展示顺序填 `activity.share_quotes`。私有选择清单可以只关联人格依据：
 
 ```json
 "share_story": {

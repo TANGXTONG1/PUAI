@@ -57,3 +57,68 @@ test('A 版把原话放在短评前，短贴左右对齐，旧链接仍可完整
     await browser.close();
   }
 });
+
+test('九型独立署在图上，精选保留范围标题，兼容旧 JSON', {
+  skip: !chromium && 'Install playwright-core to run the browser integration.',
+}, async () => {
+  const frame = await readFile(new URL('../docs/make/poster-frame.txt', import.meta.url), 'utf8');
+  const themes = {puai:'PUAI', teach:'AI的教育', aicu:'AICU', all:'AI特全体', hush:'AI在心口难开',
+    einstein:'AI因斯坦', edison:'AI迪生', support:'AI的供养', free:'AI咋咋地'};
+  const browser = await chromium.launch({executablePath: process.env.PUAI_CHROMIUM});
+  const owner = '画了一整个下午还在琢磨吃什么的人';
+  try {
+    const page = await browser.newPage({viewport:{width:390, height:844}});
+    await page.addInitScript(() => {
+      window.ink = [];
+      const paint = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function(value, x, y, ...extra) {
+        const m = this.measureText(value), point = new DOMPoint(x, y).matrixTransform(this.getTransform());
+        window.ink.push({value, x:point.x-m.actualBoundingBoxLeft, end:point.x+m.actualBoundingBoxRight, y:point.y});
+        return paint.call(this, value, x, y, ...extra);
+      };
+    });
+    const cases = Object.entries(themes).map(([theme, value], i) => ({
+      theme, value, scope:['fragments','thread','history'][i%3],
+    }));
+    cases.push({theme:null,value:'待定',scope:'fragments'}, {theme:'hush',value:themes.hush,mode:'demo'},
+      {theme:'einstein',value:themes.einstein,mode:'self_report'}, {});
+    for (const {theme, value, scope, mode} of cases) {
+      const report = parseReport(readDirectFields('#p?' + new URLSearchParams({name:owner, q:'真的吗？', tag:'装盘高手'})),
+        {allowExcerptsWithoutLedger:true});
+      if (theme === undefined) delete report.theme;
+      else report.theme = theme;
+      if (scope) report.scope = scope;
+      else delete report.scope;
+      if (mode) report.mode = mode;
+      await page.goto('about:blank');
+      await page.setContent(frame.replace('__REPORT_JSON__', () => JSON.stringify(report)));
+      await page.waitForFunction(() => document.querySelector('#preview')?.naturalWidth === 900);
+      const [ink,alt] = await Promise.all([
+        page.evaluate(() => window.ink),
+        page.locator('#preview').getAttribute('alt'),
+      ]);
+      if (!value) {
+        assert.ok(alt.includes('2026 PUAI 报告'));
+        assert.ok(!ink.some(t => t.value === '年度类型'));
+        continue;
+      }
+      const isPartial = scope === 'fragments' || scope === 'thread';
+      const label = isPartial ? '本次类型' : '年度类型';
+      const nick = ink.find(t => t.value === owner+'的');
+      const caption = ink.find(t => t.value === label);
+      const type = ink.find(t => t.value === value);
+      assert.ok(nick && caption && type, [theme, scope, label, value].join(' / '));
+      assert.ok(nick.end + 20 <= caption.x && caption.end < type.x && type.end <= 852);
+      assert.ok(type.y <= 92);
+      assert.ok(alt.includes(label+'：'+value));
+      assert.ok(ink.some(t => t.value === '装盘高手'));
+      if (isPartial) assert.ok(alt.includes(scope === 'thread' ? '本次对话精选' : '聊天片段精选'));
+      if (mode) {
+        const source = ink.find(t => t.value === (mode === 'demo' ? '虚拟人物样例' : '自述'));
+        assert.ok(source && source.y > 92);
+      }
+    }
+  } finally {
+    await browser.close();
+  }
+});

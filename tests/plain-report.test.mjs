@@ -118,3 +118,13 @@ test('date-only evidence survives a pasted receipt alongside six quotes', () => 
   assert.equal(card.activity.share_quotes.length, 6);
   assert.equal(card.activity.summary, undefined);
 });
+
+test('中文报告单的人物类型可单独识别，普通标签仍保留原意', () => {
+  for (const field of ['年度类型','人物类型','本次类型','人格类型']) {
+    const report = parsePlainReport(['PUAI 2026', field+'：爱因斯坦','原话：这两颗果核算谁的？','标签：果核精算师'].join('\n'));
+    assert.equal(report.theme, 'einstein');
+    assert.deepEqual(report.keywords, ['果核精算师']);
+  }
+  assert.equal(parsePlainReport('PUAI 2026\n人物类型：待定\n原话：这里也算吗？').theme, null);
+  assert.equal(parsePlainReport('PUAI 2026\n标签：PUAI\n原话：这里也算吗？').theme, null);
+});

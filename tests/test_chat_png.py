@@ -47,6 +47,42 @@ class ChatPngTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.parse_receipt(RECEIPT.replace("11-04:3:2", "11-04:3:7"))
 
+    def test_type_is_visible_on_the_header_separate_from_signature_and_traits(self):
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        draw_text = ImageDraw.ImageDraw.text
+        nickname = "很长的一串昵称"*2+"唐某"
+        themes = {"puai": "PUAI", "einstein": "AI因斯坦", "teach": "AI的教育",
+                  "aicu": "AICU", "edison": "AI迪生", "free": "AI咋咋地",
+                  "hush": "AI在心口难开", "all": "AI特全体", "support": "AI的供养", "": "待定"}
+        for key, value in themes.items():
+            for scope, caption in [("history", "年度类型"), ("thread", "本次类型"), ("fragments", "本次类型")]:
+                with self.subTest(key=key, scope=scope):
+                    receipt = f"PUAI 2026\n范围：{scope}\n署名：{nickname}\n标签：小算盘\n原话：算盘得响。"
+                    if key:
+                        receipt += "\n主题："+key
+                    bounds = {}
+                    def observe(draw, xy, label, *args, **kwargs):
+                        bounds[label] = draw.textbbox(xy, label, font=kwargs["font"], anchor=kwargs["anchor"])
+                        return draw_text(draw, xy, label, *args, **kwargs)
+                    with patch.object(ImageDraw.ImageDraw, "text", observe):
+                        img = renderer.draw_report(renderer.parse_receipt(receipt), font)
+                    self.assertEqual(img.width, 900)
+                    self.assertLessEqual(bounds[nickname+"的"][2], bounds[caption][0]-12)
+                    self.assertLess(bounds[caption][2], bounds[value][0])
+                    self.assertLess(bounds[value][1], 95)
+                    self.assertLessEqual(bounds[value][2], 852)
+                    self.assertGreater(bounds["小算盘"][1], bounds[value][3])
+                    self.assertGreater(len(img.crop(bounds[value]).getcolors(90000)), 2)
+
+    def test_receipt_accepts_explicit_persona_type_labels(self):
+        for field in ("人物类型", "人格类型", "年度类型", "本次类型", "主题"):
+            for spelling, key in (("AI因斯坦", "einstein"), ("爱因斯坦", "einstein"),
+                                  ("PUAI", "puai"), ("待定", "")):
+                with self.subTest(field=field, spelling=spelling):
+                    receipt = f"PUAI 2026\n{field}：{spelling}\n原话：这是真的吗？"
+                    self.assertEqual(renderer.parse_receipt(receipt)["theme"], key)
+        self.assertEqual(renderer.parse_receipt("PUAI 2026\n标签：AI因斯坦\n原话：这是真的吗？")["theme"], "")
+
     def test_unledgered_quote_lead_and_explicit_ai_ending(self):
         r = renderer.parse_receipt("PUAI 2026\n原话：11-06~又丢了？\nAI收尾：你刚才已经给我了。")
         self.assertEqual(r["total"], 0)
