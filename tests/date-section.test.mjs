@@ -34,6 +34,7 @@ test('A版在 PNG 上绘制日期栏，区分日期线索、完整日账和无�
       ['q=02-05~甲&q=02-05~乙&q=丙', ['片段日期','核实 1 天','2 / 3 句原话有日期','02 月'], ['单日最高发言','有发言的日子']],
       ['dates=02-05,02-05,07-15', ['片段日期','核实 2 天','02 月','07 月'], ['单日最高发言','有发言的日子']],
       ['dates=02-05,07-15&days=07-15:11:?', ['发言日历','单日最高发言','另有 1 个已知日期','11 条指令'], ['片段日期']],
+      ['dates=07-16&days=07-15:11:?', ['发言日历','另有 1 个已知日期','11 条指令'], ['片段日期']],
     ]) {
       const report = parseReport(readDirectFields('#p?' + query), { allowExcerptsWithoutLedger: true });
       await page.goto('about:blank');
@@ -43,6 +44,15 @@ test('A版在 PNG 上绘制日期栏，区分日期线索、完整日账和无�
       for (const label of included) assert.ok(labels.includes(label), JSON.stringify({ label, labels }));
       for (const label of excluded) assert.ok(!labels.includes(label), label);
       assert.match(await page.locator('#preview').getAttribute('alt'), new RegExp(included[0]));
+      if (query.startsWith('dates=07-16')) {
+        const colors = await page.evaluate(() => ['15','16','17'].map(day => {
+          comicCell(1,1,23,dayState('2026-07-'+day));
+          return Array.from(ctx.getImageData(9,11,1,1).data);
+        }));
+        assert.deepEqual(colors[1], colors[0], 'a verified date with unknown volume gets a speaking-day dot');
+        assert.notDeepEqual(colors[1], colors[2], 'the surrounding unknown date stays unmarked');
+        assert.equal(report.activity.daily_profile.dated_messages, 11);
+      }
     }
   } finally {
     await browser.close();

@@ -148,6 +148,18 @@ class ChatPngTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.parse_receipt("PUAI 2026\n原话：甲。\n发言日期：02-30")
 
+    def test_observed_day_in_a_counted_month_is_also_inked(self):
+        source = "PUAI 2026\n主题：puai\n日期账：09-10:5:?\n发言日期：09-12"
+        report = renderer.parse_receipt(source)
+        font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        with patch.object(ImageDraw.ImageDraw, "ellipse") as dots:
+            renderer.draw_report(report, font)
+        # The month grid uses 23px dots; ignore legends and the decorative graphics.
+        painted = [call for call in dots.call_args_list if call.args[0][2]-call.args[0][0] == 23
+                   and call.kwargs.get("fill") == renderer.PALETTES["puai"][1]]
+        self.assertEqual(len(painted), 2)
+        self.assertEqual((len(report["days"]), report["total"]), (1, 5))
+
     def test_turn_selection_and_invalid_empty_source(self):
         self.assertIsNone(renderer.parse_receipt(
             "PUAI 2026\n原话：11-06~后来的问题。\nAI：不在其间。\n原话：11-01~早来的问题。")["reply"])

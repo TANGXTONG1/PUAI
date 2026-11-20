@@ -26,6 +26,8 @@ node scripts/export_png.mjs --input /path/report.html --output /path/report.png 
 
 ## 在对话里显示图片
 
+用网页工具读取远程 skill 的 ChatGPT 也可能有可执行 Python 的数据分析工具。先实际调用它。若内核没有随包文件，将 SKILL.md 末尾的「离线对话画布」代码放入单元，调用 `puai_card(...)`。消息、日期和图片留在内核内，Python 无需联网。程序使用本机可读中文字体，也支持从已装 PyMuPDF 读取内置 CJK 字体。输出为 MIME 类型 `image/png` 的像素。ChatGPT 有 /mnt/data 时同时传 `output="/mnt/data/PUAI-2026.png"`（同名文件已存在时换新文件名），令回复正文也能内嵌同一张图。程序另附于 `scripts/notebook_card.py`。
+
 有原生图片输出工具时，直接发送成品 PNG 的图像数据。交互式 Python 宿主可在生成报告的同一个 notebook 单元或后续单元运行以下代码。将脚本所在目录加入导入路径，文件名使用实际成品。
 
 ```python

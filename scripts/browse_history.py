@@ -30,6 +30,8 @@ def browse(index, terms, page, limit):
         for line in stream:
             row = json.loads(line)
             message = row["text"]
+            if not message:  # Attachment-only turns count in the calendar but supply no quote.
+                continue
             match = pattern.search(message) if pattern else None
             if pattern and not match:
                 continue

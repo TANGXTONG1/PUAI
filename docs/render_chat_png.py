@@ -204,6 +204,19 @@ def load_font(path=None):
                 return lru_cache(maxsize=32)(lambda size: ImageFont.truetype(str(filename), size))
         except OSError:
             continue
+    if not path:
+        # Data-analysis kernels can have PyMuPDF's CJK font but no system CJK font files.
+        try:
+            try:
+                import pymupdf
+            except ImportError:
+                import fitz as pymupdf
+            embedded = pymupdf.Font(fontname="cjk").buffer
+            face = ImageFont.truetype(BytesIO(embedded), 24)
+            if len({bytes(face.getmask(ch)) for ch in "中文图"}) == 3:
+                return lru_cache(maxsize=32)(lambda size: ImageFont.truetype(BytesIO(embedded), size))
+        except (ImportError, AttributeError, OSError, RuntimeError):
+            pass
     raise ValueError("找不到可绘制中文的字体。请用 --font 指定 Noto Sans CJK 或包内 SmileySans 字体")
 
 
@@ -464,7 +477,7 @@ def draw_report(r, font):
                         continue
                     dt = date(year, month, day)
                     record = days.get(dt)
-                    fill = calendar_ink if record and record[1] else ink if dt in calendar_dates else None
+                    fill = calendar_ink if record and record[1] else ink if dt in calendar_dates or dt in observed_dates else None
                     px, py = left+week*step,top+54+weekday*step
                     dot(px,py,diameter,fill)
                     if dt in markers:

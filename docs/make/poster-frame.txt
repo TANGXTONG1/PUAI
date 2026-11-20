@@ -106,8 +106,8 @@ function puaiPortablePrompt(nickname = '') {
   const name = Array.from(String(nickname).trim().replace(/\s+/g, ' ')).slice(0, 16).join('');
   const placeholder = /^[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?$/iu.test(name);
   const signature = name && !placeholder ? '署名「' + name + '」' : '署名沿用我在聊天里用过的称呼';
-  return '调用 $puai，从我的聊天原话生成 2026 年度长图，' + signature +
-    '。未安装请先读取这份 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=11';
+  return '调用 $puai，用我的聊天原话生成 2026 年度长图，直接在对话里显示，' + signature +
+    '。未安装先读 skill，读不到就告诉我。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=12';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {
@@ -373,9 +373,10 @@ const introduction=report.mode==='demo'?'示例对话生成，数据与原话均
 function dots(x,y,w,h,color=accent){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
 function dayState(date) {
   const entry=dayMap.get(date);
-  const known=Boolean(entry || a?.coverage==='complete' && date>=report.period.start && date<=report.period.end);
+  const spoken=Boolean(entry?.count || observedDaySet.has(date));
+  const known=Boolean(spoken || entry || a?.coverage==='complete' && date>=report.period.start && date<=report.period.end);
   const hits=isRoast?(entry?.roast_count||0):(a?.theme_stats?.days?.[date]||0);
-  return {known,count:entry?.count||0,roast:hits};
+  return {known,spoken,roast:hits};
 }
 function monthHits(m) {
   return isRoast?(m.roast_messages??null):(a?.theme_stats?.months?.[m.month]??null);
@@ -397,7 +398,7 @@ function smallMark() {
 }
 function comicTitle(label,x,y){text(label,x,y,type.section,ink,800);font(type.section,800);line(x,y+48,x+ctx.measureText(label).width,y+48,accent,7)}
 function comicCell(x,y,size,state){
-ctx.fillStyle=state.roast?colors.calendar:state.count?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=state.roast?colors.calendar:state.spoken?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
 if(!state.known){ctx.strokeStyle=colors.outline;ctx.lineWidth=1.2;ctx.stroke();line(x+5,y+size-5,x+size-5,y+5,colors.outline,1)}
 }
 function comicCalendar(m,x,y,w,observedOnly=false){
@@ -405,9 +406,9 @@ const month=Number(m.month.slice(5)),cx=x+w/2;centered(String(month).padStart(2,
 const first=new Date(Date.UTC(report.year,month-1,1)),last=new Date(Date.UTC(report.year,month,0)),monday=new Date(first);monday.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);
 const weeks=Math.floor((last-monday)/86400000/7)+1,step=28,size=23,gx=cx-(weeks*step-5)/2,gy=y+58;
 for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
- const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;const state=observedOnly?{known:observedDaySet.has(date),count:observedDaySet.has(date),roast:0}:dayState(date);
+ const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;const state=observedOnly?{known:observedDaySet.has(date),spoken:observedDaySet.has(date),roast:0}:dayState(date);
  comicCell(px,py,size,state);
- const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,state.roast?colors.onCalendar:state.count?paper:ink,700)}
+ const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,state.roast?colors.onCalendar:state.spoken?paper:ink,700)}
 }
 if(observedOnly){
  if(observedMonths.length>1)fitCentered('核实 '+m.knownDays+' 天',cx,y+270,w-4,type.meta,ink,700);
@@ -456,10 +457,10 @@ function comicActivity(y,draw){
  if(!draw)return y+top+365;
 comicTitle('发言日历',48,y);
 const hasThemeDays=reviewed!==null||months.some(m=>monthHits(m)!==null)||[...dayMap.keys()].some(d=>dayState(d).roast>0);
-const items=[['发言',{count:1,roast:0,known:true}]];
-if(hasThemeDays)items.push([edition.keyword,{count:1,roast:1,known:true}]);
-if(a?.coverage==='complete')items.push(['0 条',{count:0,roast:0,known:true}]);
-items.push(['缺记录',{count:0,roast:0,known:false}]);
+const items=[['发言',{spoken:true,roast:0,known:true}]];
+if(hasThemeDays)items.push([edition.keyword,{spoken:true,roast:1,known:true}]);
+if(a?.coverage==='complete')items.push(['0 条',{spoken:false,roast:0,known:true}]);
+items.push(['缺记录',{spoken:false,roast:0,known:false}]);
 const legendY=y+(showFacts&&!stackFacts?190:74);
 items.forEach(([label,state],i)=>{const xx=48+i*816/items.length;comicCell(xx,legendY+8,21,state);text(label,xx+30,legendY,type.meta,muted,500)});
 const range=rhythm?.analysis_start&&rhythm?.analysis_end?shortDate(rhythm.analysis_start)+' – '+shortDate(rhythm.analysis_end):'';
@@ -505,8 +506,8 @@ function comicObservedDates(y,draw){
      observedMonths.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+201,w,true));
    }
    const x=single?446:48, legendY=y+(single?255:146);
-   comicCell(x,legendY+6,21,{count:1,known:true});text('已核实',x+30,legendY,30,muted);
-   comicCell(x+170,legendY+6,21,{count:0,known:false});text('缺日期',x+200,legendY,30,muted);
+   comicCell(x,legendY+6,21,{spoken:true,known:true});text('已核实',x+30,legendY,30,muted);
+   comicCell(x+170,legendY+6,21,{spoken:false,known:false});text('缺日期',x+200,legendY,30,muted);
  }
  return y+(single?372:526);
 }

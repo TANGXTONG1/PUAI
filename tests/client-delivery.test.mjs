@@ -24,7 +24,8 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '11');
+  assert.ok(auto.includes('直接在对话里显示'));
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '12');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {
@@ -178,6 +179,21 @@ test('report links open the PNG; manual recovery requires a tap', {
     await page.locator('#retry').click();
     await ready();
 
+    await page.goto(base);
+    await form.waitFor();
+    // A browser-capable agent can return these bytes as a chat image without Python.
+    await page.locator('#code').fill('PUAI 2026\n署名：试映员\n原话：灯泡还能领年终奖？\n日期账：07-15:3:?');
+    await page.locator('button[type="submit"]').click();
+    await ready();
+    const src = await preview.getAttribute('src');
+    assert.match(src, /^data:image\/png;base64,/);
+    const pixels = Buffer.from(src.split(',')[1], 'base64');
+    assert.equal(pixels.subarray(1,4).toString(), 'PNG');
+    assert.equal(pixels.readUInt32BE(16), 900);
+    assert.ok((await preview.getAttribute('alt')).includes('3 条'));
+    assert.ok(requested.every(url => !decodeURIComponent(url).includes('年终奖')));
+
+    await page.goto('about:blank');
     await page.goto(base);
     await form.waitFor();
     const old = 'v1｜puai｜样例｜先约法三章｜今天可以只改错字吗｜｜错字巡逻｜';

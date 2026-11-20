@@ -2,7 +2,7 @@
 """Index one authorized history locally. Stdout contains counts only; JSONL contains private text."""
 import argparse
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import hashlib
 import json
 import os
@@ -10,9 +10,6 @@ from pathlib import Path
 import re
 from zipfile import ZipFile, BadZipFile
 from zoneinfo import ZoneInfo
-
-from read_context import visible_message, pack_message, INJECTED
-
 
 EXPORT_NAME = re.compile(r"conversations(?:[-_]\d+)?\.json\Z", re.I)
 CLAUDE_WRAPPERS = ("<local-command-", "<command-name>", "<command-message>", "<system-reminder>",
@@ -22,6 +19,8 @@ HIDDEN = ("is_visually_hidden_from_conversation", "is_user_system_message", "is_
 
 def date_in_zone(value, zone):
     try:
+        if isinstance(value, str) and re.fullmatch(r"\d{10}(?:\.\d+)?|\d{13}", value):
+            value = float(value)
         if isinstance(value, str):
             dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
             if dt.tzinfo is None:
@@ -29,6 +28,8 @@ def date_in_zone(value, zone):
         else:
             if type(value) not in (float, int):
                 return None
+            if abs(value) >= 100_000_000_000:  # Millisecond Unix timestamps in chat history.
+                value /= 1000
             dt = datetime.fromtimestamp(value, timezone.utc)
         return dt.astimezone(zone).date().isoformat()
     except (ValueError, OverflowError, OSError):
@@ -42,6 +43,8 @@ def local_id(session, line, parts):
 
 
 def codex_rows(path, stats):
+    from read_context import visible_message
+
     by_family = {"response_item": [], "event_msg": []}
     with path.open("rb") as fin:
         header = json.loads(next(fin, b"{}"))
@@ -87,6 +90,8 @@ def codex_rows(path, stats):
 
 
 def claude_messages(path, stats):
+    from read_context import INJECTED
+
     visible_ancestor = {}
     with path.open("rb") as fin:
         for line, raw in enumerate(fin, 1):
@@ -178,8 +183,14 @@ def chatgpt_messages(thread, member, stats):
                 or msg.get("channel") not in (None, "final") or any(metadata.get(k) for k in HIDDEN)
                 or content.get("content_type") not in ("text", "multimodal_text")):
             continue
-        parts = [p for p in content.get("parts", []) if isinstance(p, str) and p.strip()]
-        if parts:
+        raw_parts = content.get("parts") or []
+        parts = [p for p in raw_parts if isinstance(p, str) and p.strip()]
+        # A sent screenshot or file is a user turn even when no caption can be quoted.
+        has_upload = role == "user" and (
+            any(isinstance(p, dict) and p.get("content_type") in ("image_asset_pointer", "audio_asset_pointer",
+                "video_asset_pointer") and p.get("asset_pointer") for p in raw_parts)
+            or any(isinstance(a, dict) and a.get("id") for a in (metadata.get("attachments") or [])))
+        if parts or has_upload:
             row = {"role": role, "session_id": sid, "id": msg.get("id") or key, "node": key,
                    "ordinal": ordinal, "timestamp": msg.get("create_time"), "text": "\n".join(parts)}
             if member:
@@ -229,6 +240,8 @@ def claude_branch(target, rows):
 
 
 def read_shared_window(target, source, budget):
+    from read_context import pack_message
+
     prior, following, anchor = [], [], None
     seen = set()
     rows = shared_messages(target["client"], source, Counter(), target)
@@ -255,7 +268,7 @@ def read_shared_window(target, source, budget):
         raise ValueError("original message not found on the active branch")
     messages = []
     for row in prior + [anchor] + following:
-        rendered = pack_message(row["role"], [row["text"]], row.get("line", row.get("ordinal")),
+        rendered = pack_message(row["role"], [row["text"]] if row["text"] else [], row.get("line", row.get("ordinal")),
                                 budget, row["id"], row["timestamp"])
         if "node" in row:
             rendered["node"] = row["node"]
@@ -302,20 +315,28 @@ def readable_records(client, path, stats):
         stats["unreadable_sources"] += 1
 
 
+def coverage_key(kind, value):
+    return hashlib.sha256(f"{kind}/{value}".encode("utf-8")).hexdigest()
+
+
 def collect(client, paths, year, zone, out):
     daily, months, sessions, seen = Counter(), Counter(), set(), set()
+    unplaced = defaultdict(set)
+    incomplete = set()
     checksum = hashlib.sha256()
     stats = Counter()
     if client == "codex":
         paths = sorted(paths, key=codex_source_order)
     for path in paths:
         path = path.absolute()
+        error_keys = ("unreadable_records", "unreadable_sources", "unverifiable_fork_turns")
+        before = sum(stats[k] for k in error_keys)
         for row in readable_records(client, path, stats):
             if row.pop("role", "user") != "user" or row["id"] in seen:
                 continue
             day = date_in_zone(row["timestamp"], zone)
             if not day:
-                stats["undated_turns"] += 1
+                unplaced[row["id"]].add(row["session_id"])
                 continue
             seen.add(row["id"])
             if int(day[:4]) != year:
@@ -327,11 +348,17 @@ def collect(client, paths, year, zone, out):
             line = json.dumps(row, ensure_ascii=False) + "\n"
             checksum.update(line.encode("utf-8"))
             out.write(line)
+        if sum(stats[k] for k in error_keys) > before:
+            incomplete.add(coverage_key("source", path))
+    for mid in unplaced.keys() - seen:
+        stats["undated_turns"] += 1
+        incomplete.update(coverage_key("thread", sid) for sid in unplaced[mid])
     return {"client": client, "year": year, "source_files_considered": len(paths),
             "user_turns_before_editorial_filter": sum(months.values()),
             "threads": len(sessions), "days": len(daily), "months": dict(sorted(months.items())),
             "daily_before_editorial_filter": dict(sorted(daily.items())), "index_sha256": checksum.hexdigest(),
-            "first": min(daily, default=None), "last": max(daily, default=None), "skipped": dict(stats)}
+            "first": min(daily, default=None), "last": max(daily, default=None), "skipped": dict(stats),
+            "incomplete_scope_digests": sorted(incomplete)}
 
 
 def reviewed_calendar(index, inventory_path, exclusions_path):
@@ -344,19 +371,80 @@ def reviewed_calendar(index, inventory_path, exclusions_path):
     remaining = set(excluded)
     checksum = hashlib.sha256()
     daily = Counter()
+    observed = set()
+    incomplete = set(inventory.get("incomplete_scope_digests", []))
+    # Legacy inventories identified missing dates but did not locate the affected threads.
+    legacy_gap = "incomplete_scope_digests" not in inventory and any(
+        inventory.get("skipped", {}).get(key) for key in ("undated_turns", "unreadable_records", "unreadable_sources",
+                                                         "unverifiable_fork_turns"))
     with index.open(encoding="utf-8") as stream:
         for line in stream:
             checksum.update(line.encode("utf-8"))
             row = json.loads(line)
             if row["id"] in remaining:
                 remaining.remove(row["id"])
+            elif legacy_gap or (incomplete and (coverage_key("source", row["source"]) in incomplete or
+                                                coverage_key("thread", row["session_id"]) in incomplete)):
+                observed.add(row["date"])
             else:
                 daily[row["date"]] += 1
     if checksum.hexdigest() != inventory.get("index_sha256") or remaining:
         raise ValueError("use the original full inventory and exclusion IDs belonging to it")
     dates = ",".join(f"{day[5:]}:{count}:?" for day, count in sorted(daily.items()))
     return {"year": inventory["year"], "active_days": len(daily),
-            "dated_user_messages": sum(daily.values()), "days": dates}
+            "dated_user_messages": sum(daily.values()), "days": dates,
+            "dates": ",".join(day[5:] for day in sorted(observed))}
+
+
+def host_calendar(path, year, zone):
+    """Aggregate the host's private projection of eligible messages without reading their text."""
+    threads = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(threads, list):
+        raise ValueError("expected array of threads")
+    members, complete, dates = {}, set(), {}
+    for thread in threads:
+        sid = thread["id"]
+        if (not isinstance(sid, str) or not sid or sid in members or
+                not isinstance(thread["messages"], list) or type(thread["complete"]) is not bool):
+            raise ValueError("merge each thread's pages before marking coverage")
+        members[sid] = set()
+        if thread["complete"]:
+            complete.add(sid)
+        for row in thread["messages"]:
+            if row["role"] != "user":
+                continue
+            mid = row["id"]
+            if not isinstance(mid, str) or not mid:
+                raise ValueError("a verifiable message ID is required")
+            members[sid].add(mid)
+            day = date_in_zone(row.get("timestamp"), zone)
+            if row.get("date"):
+                local = date.fromisoformat(row["date"]).isoformat()
+                if day and day != local:
+                    raise ValueError("source timestamp disagrees with the specified local date")
+                day = local
+            if day:
+                if mid in dates and dates[mid] != day:
+                    raise ValueError("conflicting dates on repeated message ID")
+                dates[mid] = day
+    # A missing timestamp in a complete thread can fall on any day. Retain its verified
+    # dates as observations until the source's message metadata resolves the gap.
+    counted_ids = set()
+    for sid in complete:
+        if members[sid].issubset(dates):
+            counted_ids.update(members[sid])
+    daily, observed = Counter(), set()
+    for mid, day in dates.items():
+        if int(day[:4]) == year:
+            if mid in counted_ids:
+                daily[day] += 1
+            else:
+                observed.add(day)
+    missing = set().union(*members.values()).difference(dates)
+    return {"year": year, "timezone": str(zone), "dated_user_messages": sum(daily.values()),
+            "days": ",".join(f"{day[5:]}:{n}:?" for day, n in sorted(daily.items())),
+            "dates": ",".join(day[5:] for day in sorted(observed)),
+            "missing_message_dates": len(missing)}
 
 
 def main():
@@ -364,6 +452,7 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--client", choices=("codex", "claude", "chatgpt"))
     mode.add_argument("--calendar-from", type=Path, help="complete private index for the publication calendar")
+    mode.add_argument("--host-ledger", type=Path, help="private per-thread role, ID and date metadata from host tools")
     parser.add_argument("--inventory", type=Path, help="saved collection summary matching that index")
     parser.add_argument("--exclude-ids", type=Path, help="reviewed JSON array of ineligible message IDs")
     parser.add_argument("--year", type=int)
@@ -373,6 +462,12 @@ def main():
     parser.add_argument("--output", type=Path, help="new private JSONL file (never overwritten)")
     args = parser.parse_args()
     try:
+        if args.host_ledger:
+            if (not args.year or not args.timezone or args.inventory or args.exclude_ids
+                    or args.export or args.output or args.root):
+                parser.error("--host-ledger requires --year and --timezone only")
+            print(json.dumps(host_calendar(args.host_ledger, args.year, ZoneInfo(args.timezone))))
+            return
         if args.calendar_from:
             if not (args.inventory and args.exclude_ids):
                 parser.error("--calendar-from requires --inventory and --exclude-ids")
@@ -392,7 +487,7 @@ def main():
             args.output.unlink(missing_ok=True)
             raise
         print(json.dumps(result, ensure_ascii=False))
-    except (OSError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, TypeError, KeyError) as exc:
         parser.exit(1, "Could not collect authorized history: " + type(exc).__name__ + ".\n")
 
 

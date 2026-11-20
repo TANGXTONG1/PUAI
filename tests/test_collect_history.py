@@ -76,10 +76,13 @@ class CollectionTest(unittest.TestCase):
             codex_turn("user", "PRIVATE followup", "b"),
             codex_turn("user", "PRIVATE report command", "control"),
             codex_turn("user", "PRIVATE another day", "c", "2026-01-02T14:00:00Z"),
+        ])
+        self.write("archived_sessions/rollout-incomplete.jsonl", [
+            meta("incomplete"), codex_turn("user", "PRIVATE observed", "obs", "2026-01-08T00:00:00Z"),
             codex_turn("user", "PRIVATE undated", "unknown", None),
         ])
         summary, rows = self.collect("codex", "--root", self.root)
-        self.assertEqual(summary["daily_before_editorial_filter"], {"2026-01-01": 3, "2026-01-02": 1})
+        self.assertEqual(summary["daily_before_editorial_filter"], {"2026-01-01": 3, "2026-01-02": 1, "2026-01-08": 1})
         self.assertEqual(summary["skipped"]["undated_turns"], 1)
         inventory = self.root / "inventory.json"
         inventory.write_text(json.dumps(summary))
@@ -90,6 +93,7 @@ class CollectionTest(unittest.TestCase):
         result = subprocess.run(command, check=True, capture_output=True)
         self.assertNotIn(b"PRIVATE", result.stdout + result.stderr)
         self.assertEqual(json.loads(result.stdout)["days"], "01-01:2:?,01-02:1:?")
+        self.assertEqual(json.loads(result.stdout)["dates"], "01-08")
         exclusions.write_text('["not-in-this-index"]')
         self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
         exclusions.write_text("[]")
@@ -112,6 +116,74 @@ class CollectionTest(unittest.TestCase):
         self.assertEqual(window["target_date"], "2026-01-01")
         self.assertEqual(window["messages"][-1]["record_timestamp"], epoch)
         self.assertNotIn("record_timestamp", window["messages"][0])
+
+    def test_host_calendar_splits_complete_sessions_from_search_hits(self):
+        epoch = 1767202200
+        def user(mid, **when):
+            return {"id": mid, "role": "user", **when}
+        ledger = [{"id": "history-page-1", "complete": True, "messages": [
+            user("a", timestamp=epoch), user("b", timestamp=(epoch + 1000) * 1000),
+            user("c", date="2026-01-02"), {"id": "reply", "role": "assistant", "date": "2026-01-02"}]},
+            {"id": "history-page-2", "complete": True, "messages": [
+                user("d", timestamp="2026-01-03T01:30:00+09:00"), user("a", timestamp=epoch),
+                user("old", date="2025-01-01")]},
+            {"id": "search-only", "complete": False, "messages": [
+                user("e", date="2026-01-04"), user("f", date="2026-01-04"),
+                user("x", date="2026-01-05"), user("d", date="2026-01-03")]},
+            {"id": "time-missing", "complete": True, "messages": [
+                user("unknown"), user("late", date="2026-01-07")]}]
+        path = self.root / "native.json"
+        path.write_text(json.dumps(ledger))
+        command = [sys.executable, str(SCRIPTS/"collect_history.py"), "--host-ledger", str(path),
+                   "--year", "2026", "--timezone", "Asia/Shanghai"]
+        def aggregate():
+            return json.loads(subprocess.run(command, check=True, capture_output=True).stdout)
+        result = aggregate()
+        self.assertEqual(result["days"], "01-01:2:?,01-02:1:?,01-03:1:?")
+        self.assertEqual(result["dates"], "01-04,01-05,01-07")
+        self.assertEqual(result["missing_message_dates"], 1)
+        path.write_text(json.dumps([ledger[2]]))
+        self.assertEqual(aggregate()["days"], "")
+        self.assertEqual(aggregate()["dates"], "01-03,01-04,01-05")
+        ledger[2]["messages"].append(user("d", date="2026-03-03"))
+        path.write_text(json.dumps(ledger))
+        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
+    def test_chatgpt_frequency_includes_media_only_days_across_threads(self):
+        epoch = 1767202200  # Shanghai Jan 1, before midnight in UTC
+        def node(mid, parent, timestamp, parts, role="user", **metadata):
+            return {"parent": parent, "message": {"id": mid, "author": {"role": role},
+                    "metadata": metadata, "create_time": timestamp,
+                    "content": {"content_type": "multimodal_text", "parts": parts}}}
+
+        photo = {"content_type": "image_asset_pointer", "asset_pointer": "PRIVATE-photo"}
+        first = {"id": "one", "current_node": "reply", "mapping": {
+            "q": node("q", None, epoch, ["PRIVATE text"]),
+            "p": node("p", "q", epoch + 86400, ["", photo]),
+            "reply": node("reply", "p", epoch + 86401, ["PRIVATE reply"], role="assistant")}}
+        second = {"id": "two", "current_node": "empty", "mapping": {
+            "b": node("b", None, epoch, ["PRIVATE more"]),
+            "f": node("f", "b", epoch + 172800, [""], attachments=[{"id": "PRIVATE-file"}]),
+            "hidden": node("hidden", "f", epoch + 259200, [photo], is_hidden=True),
+            "empty": node("empty", "hidden", epoch + 259200, [""])}}
+        export = self.root / "history.zip"
+        with ZipFile(export, "w") as archive:
+            archive.writestr("conversations-1.json", json.dumps([first]))
+            archive.writestr("conversations-2.json", json.dumps([first, second]))
+        inventory, rows = self.collect("chatgpt", "--export", export)
+        expected = {"2026-01-01": 2, "2026-01-02": 1, "2026-01-03": 1}
+        self.assertEqual(inventory["daily_before_editorial_filter"], expected)
+        self.assertEqual((inventory["threads"], inventory["days"]), (2, 3))
+        self.assertEqual([r["id"] for r in rows if not r["text"]], ["p", "f"])
+        self.assertNotIn("PRIVATE-photo", self.index.read_text())
+        self.assertEqual(self.window(rows[0]), [("user", ["PRIVATE text"]), ("user", [])])
+        inv, exclusions = self.root / "inventory.json", self.root / "exclude.json"
+        inv.write_text(json.dumps(inventory))
+        exclusions.write_text("[]")
+        run = subprocess.run([sys.executable, str(SCRIPTS/"collect_history.py"), "--calendar-from",
+                              str(self.index), "--inventory", str(inv), "--exclude-ids", str(exclusions)],
+                             check=True, capture_output=True)
+        self.assertEqual(json.loads(run.stdout)["days"], "01-01:2:?,01-02:1:?,01-03:1:?")
 
     def test_fork_replay_cannot_move_an_original_turn_to_another_year(self):
         self.write("sessions/2026/05/10/rollout-child.jsonl", [meta("fork", forked_from_id="original"),
