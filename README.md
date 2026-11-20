@@ -43,7 +43,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 调用 $puai，从我的聊天原话生成 2026 年度长图，署名「XXX」。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=99807fec5b) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=355d6a31f7) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>
