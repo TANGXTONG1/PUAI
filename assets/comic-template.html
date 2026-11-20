@@ -118,7 +118,8 @@ const editions = {
   free:     {name:'AI咋咋地',keyword:'放权',accent:'#436414',signal:'#C8E73F',tint:'#E5F4AD',mark:'arrow'}
 };
 const selectedKey=Object.hasOwn(editions,report.theme)?report.theme:'puai';
-const edition=editions[selectedKey],isRoast=selectedKey==='puai';
+const unclassified=report.theme===null;
+const edition=editions[selectedKey],isRoast=selectedKey==='puai'&&!unclassified;
 const story=report.story;
 const storyPalettes = {
   cobalt: { // 白瓷钴蓝
@@ -171,7 +172,7 @@ const fontFamily='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Smiley San
 const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
 const demoLabel=report.mode==='demo'?(isSpecimen?'演示数据':story?'虚拟人物样例':'虚构演示'):'';
-const reportTitle=report.year+' '+edition.name+' 报告';
+const reportTitle=report.year+' '+(unclassified?'AI 相处报告':edition.name+' 报告');
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
@@ -456,7 +457,14 @@ if(s||tokenUsage)y=comicUsage(y,draw);
 if(months.length)y=comicActivity(y,draw);
 if(habits.length)y=comicHabits(y,draw);
 if(story?.scenes.length)y=comicScenes(y,draw);
-if(quotes.length){if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);y+=74}
+if(quotes.length){
+ if(draw)comicTitle(isSpecimen?'选句示意 · 非原话':'金句',48,y);
+ y+=74;
+ if(story?.quote_setup){
+   if(draw)text('前情',48,y+1,32,muted,700);
+   y+=storyText(story.quote_setup,140,y,712,34,550,ink,draw)+18;
+ }
+}
 quotes.forEach((q,i)=>{y+=comicQuote(q,i,y,draw)+(i===quotes.length-1?42:28)});
 const showTags=!story||report.keywords.length>0;
 if(draw&&showTags){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
@@ -492,9 +500,10 @@ const readableSummary=[
  reviewed!==null&&percent!==null?'已核验的'+edition.keyword+'指令：'+reviewed+' / '+s.messages+' 条，约占 '+percent+'%。':'',
  ...dailySummary,
  partialCalendar?'日历选展了其中三个活跃月份。':'',
- !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。占比按整个分析期的用户消息数计算，缺记录的日期不计作停用。':'',
+ !profile&&rhythm?.criteria?'按 '+a.timezone+' 去重。首个密集月须有至少 '+rhythm.criteria.min_active_days+' 个活跃日，跨 '+rhythm.criteria.min_active_weeks+' 个自然周。'+(unclassified?'':'占比按整个分析期的用户消息数计算，')+'缺记录的日期不计作停用。':'',
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
  ...sceneSummary,...(quotes.length?[isSpecimen?'选句示意 · 非原话':'金句']:[]),
+ quotes.length&&story?.quote_setup?'前情：'+story.quote_setup:'',
  ...quotes.map(q=>(q.date?q.date+' ':'')+(q.kind==='rewrite'?'（改写）':'')+q.text+(q.repeat_count?'（复读 '+q.repeat_count+' 次）':'')),
  ...tagSummary
 ].filter(Boolean).join(newline);

@@ -25,8 +25,8 @@ export function readFields(value) {
     fields = line.split(isFragment && /^v[12]%7c/i.test(line) ? /%7c/i : '|');
   }
   fields[0] = fields[0].toLowerCase();
-  const expected = fields[0] === 'v2' ? 16 : 8;
-  if (fields.length !== expected) throw new Error('这版报告码需要 ' + expected + ' 个位置，请复制完整一行，包含留空的分隔符。');
+  const lengths = fields[0] === 'v2' ? [16, 17] : [8];
+  if (!lengths.includes(fields.length)) throw new Error('这版报告码需要 ' + lengths.join(' 或 ') + ' 个位置，请复制完整一行，包含留空的分隔符。');
   if (!isFragment) return fields;
   return fields.map(field => field.replace(/(?:%[0-9a-f]{2})+/gi, bytes => {
     try { return decodeURIComponent(bytes); }
@@ -99,7 +99,11 @@ function richActivity(fields, theme) {
   const undated = fields[5].trim() ? readCounts(fields[5].trim()) : null;
   const habits = fields.slice(7, 10).map(habit => checkText(habit.trim(), '日常习惯', 24, true)).filter(Boolean);
   const peak = days.reduce((best, day) => !best || day.count > best.count ? day : best, null);
-  const totals = summarizeRows(undated ? [...days, undated] : days);
+  const countedRows = undated ? [...days, undated] : days;
+  if (theme === null && countedRows.some(row => row.hits !== null)) {
+    throw new Error('未归类的报告请把每组主题命中数填为 ?。');
+  }
+  const totals = summarizeRows(countedRows);
   const activity = {
     coverage: 'partial',
     daily_profile: {
@@ -134,7 +138,7 @@ function richActivity(fields, theme) {
     if (isRoast) activity.summary.roast_messages = totals.hits;
     else themeStats.messages = totals.hits;
   }
-  if (!isRoast) activity.theme_stats = themeStats;
+  if (theme !== null && !isRoast) activity.theme_stats = themeStats;
   if (!days.length) return activity;
   if (days.every(day => day.hits !== null)) {
     activity.daily_profile.theme_days = days.filter(day => day.hits > 0).length;
@@ -173,24 +177,30 @@ function richActivity(fields, theme) {
 
 export function parseReport(fields) {
   const [version, rawTheme, rawName, persona] = fields;
-  const theme = rawTheme.trim().toLowerCase();
-  if (!themes.has(theme)) throw new Error('报告码的主题 ID 无法识别，请使用 PUAI 的九种主题之一。');
-  const name = checkText(rawName.trim(), '署名', 16, true) || '我';
   const isRich = version === 'v2';
-  const keywords = fields.slice(isRich ? 13 : 6).map((tag, index) =>
+  const theme = rawTheme.trim().toLowerCase() || null;
+  if (!(isRich && theme === null) && !themes.has(theme)) throw new Error('报告码的主题 ID 无法识别，请使用九种主题之一，未归类的 v2 可留空。');
+  const name = checkText(rawName.trim(), '署名', 16, true) || '我';
+  const keywords = fields.slice(isRich ? 13 : 6, isRich ? 16 : 8).map((tag, index) =>
     checkText(tag.trim(), '标签', 6, isRich || index > 0)
   ).filter(Boolean);
   if (!keywords.length) throw new Error('报告码中至少需要一个标签。');
   const activity = isRich ? richActivity(fields, theme) : {
     share_quotes: fields.slice(4, 6).filter(value => value.trim()).map(value => readQuote(value))
   };
+  const story = { persona: checkText(persona.trim(), '人格短评', 60), scenes: [] };
+  if (isRich && fields[16]) {
+    const setup = checkText(fields[16], '前情', 24);
+    if (!activity.share_quotes.length) throw new Error('前情须配有至少一条入选原话。');
+    story.quote_setup = setup.trim();
+  }
   return {
     // Both URL formats belong to this edition, including when reopened later.
     year: 2026,
     mode: 'excerpt',
     theme,
     person: { name },
-    story: { persona: checkText(persona.trim(), '人格短评', 60), scenes: [] },
+    story,
     keywords,
     activity
   };

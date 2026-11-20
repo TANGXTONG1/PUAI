@@ -73,3 +73,44 @@ test('数字和日期相互校验，已分享的 v1 照常打开', () => {
   assert.equal(legacy.activity.share_quotes[0].text, '好一个 50%。');
   assert.deepEqual(legacy.keywords, ['仅退款']);
 });
+
+test('前情随金句出图，链接和备用码保留相同的原话与标签', () => {
+  const setup = 'AI 又给出了 50% 的把握。';
+  const plain = report(fields.join('｜'));
+  const withSetup = [...fields, setup];
+  const expected = { ...plain, story: { ...plain.story, quote_setup: setup } };
+  assert.deepEqual(report(withSetup.join('｜')), expected);
+  assert.deepEqual(report('#' + withSetup.map(encodeURIComponent).join('|')), expected);
+  assert.deepEqual(report([...fields, ''].join('｜')), plain);
+});
+
+test('前情只为已入选的原话提供背景，不能独立刊出或超过24字', () => {
+  const noQuotes = [...fields];
+  noQuotes.fill('', 10, 13);
+  assert.throws(() => report([...noQuotes, 'AI 给了两个答案。'].join('｜')), /前情.*原话/);
+  assert.throws(() => report([...fields, '长'.repeat(25)].join('｜')), /前情.*24/);
+  assert.throws(() => report([...fields, '一句', '又一句'].join('｜')));
+  assert.throws(() => report('v1｜puai｜我｜先夸后骂｜原话｜｜标签｜｜前情'));
+});
+
+test('v2 可不归类，保留日历和习惯，未分类的发言不能带主题计数', () => {
+  const draft = [...fields];
+  draft[1] = '';
+  draft[4] = '01-02:3:?,04-18:2:?';
+  draft[5] = '2:?';
+  const neutral = report(draft.join('｜'));
+  assert.equal(neutral.theme, null);
+  assert.deepEqual(neutral.activity.summary, { messages: 7, active_days: 2 });
+  assert.equal(neutral.activity.theme_stats, undefined);
+  assert.equal(neutral.activity.daily_profile.theme_days, undefined);
+  assert.equal(neutral.activity.months.length, 2);
+  assert.equal(neutral.activity.daily_profile.habits.length, 2);
+  for (const [slot, numeric] of [[4, '01-02:3:0,04-18:2:?'], [5, '2:1']]) {
+    const invalid = [...draft];
+    invalid[slot] = numeric;
+    assert.throws(() => report(invalid.join('｜')), /未归类.*\?/);
+  }
+  assert.throws(() => report('v1｜｜我｜逐条查资料｜原话｜｜查资料｜'));
+  draft[1] = 'unknown';
+  assert.throws(() => report(draft.join('｜')));
+});

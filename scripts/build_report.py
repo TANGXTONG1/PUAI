@@ -148,6 +148,7 @@ def reviewed_message_ids(activity, field, messages_by_id):
 
 
 def validate_activity(activity, start, end, mode, evidence, refs, now, theme=None, has_story=False):
+    """Validate the private activity and report whether its lead quote is in the analysis period."""
     obj(activity, ["timezone", "coverage", "messages", "highlights"], "activity",
         optional=["roast_message_ids", "theme_message_ids", "share_quotes", "token_usage"])
     zone = string(activity["timezone"], 100, "activity.timezone")
@@ -196,6 +197,7 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
             for mid in theme_ids:
                 if not any(evidence[eid]["type"] == "provided" for eid in messages_by_id[mid]["evidence_ids"]):
                     raise ReportError("activity.theme_message_ids: counted messages need provided records")
+    lead_quote_in_period = False
     if "share_quotes" in activity:
         analysis_months = set(derive_rhythm(active_dates)["analysis_months"])
         seen_quotes = set()
@@ -222,6 +224,8 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
                         raise ReportError(f"{rewrite_path}.emphasis: must be a contiguous substring of text")
             if mid not in messages_by_id:
                 raise ReportError(f"{path}.message_id: unknown message ID {mid!r}")
+            if index == 0:
+                lead_quote_in_period = message_months[mid] in analysis_months
             if mid in seen_quotes:
                 raise ReportError(f"{path}.message_id: duplicate shared quote message ID")
             seen_quotes.add(mid)
@@ -261,6 +265,7 @@ def validate_activity(activity, start, end, mode, evidence, refs, now, theme=Non
         string(highlight["title"], 18, f"{path}.title")
         string(highlight["text"], 90, f"{path}.text")
         refs(highlight["evidence_ids"], f"{path}.evidence_ids", required=True)
+    return lead_quote_in_period
 
 
 def summarize_activity(activity):
@@ -321,7 +326,12 @@ def validate_report(report, today=None, now=None):
     obj(report, ["schema_version", "year", "mode", "period", "person", "identity",
                  "phrase", "keywords", "metrics", "moments", "closing", "evidence"], "report",
         optional=["activity", "theme", "share_story"])
-    if "theme" in report and report["theme"] not in THEMES:
+    # An absent key retains the original PUAI edition. Explicit null is a
+    # neutral A-layout report for records without a characteristic theme.
+    unclassified = "theme" in report and report["theme"] is None
+    if unclassified and "share_story" not in report:
+        raise ReportError("report.theme: null requires share_story for the neutral A layout")
+    if "theme" in report and not unclassified and report["theme"] not in THEMES:
         raise ReportError(f"report.theme: expected one of {', '.join(THEMES)}")
     if type(report["schema_version"]) is not int or report["schema_version"] != 1:
         raise ReportError("schema_version: expected integer 1")
@@ -405,8 +415,15 @@ def validate_report(report, today=None, now=None):
         refs(moment["evidence_ids"], f"{path}.evidence_ids", required=True)
     if "share_story" in report:
         story = obj(report["share_story"], ["persona_evidence_ids", "moment_indices"], "share_story",
-                    optional=["habits"])
+                    optional=["habits", "quote_setup"])
         refs(story["persona_evidence_ids"], "share_story.persona_evidence_ids", required=True)
+        if "quote_setup" in story:
+            path = "share_story.quote_setup"
+            setup = obj(story["quote_setup"], ["text", "evidence_ids"], path)
+            string(setup["text"], 24, f"{path}.text")
+            setup_ids = refs(setup["evidence_ids"], f"{path}.evidence_ids", required=True)
+            if not setup_ids or (mode != "demo" and not any(evidence[eid]["type"] == "provided" for eid in setup_ids)):
+                raise ReportError(f"{path}.evidence_ids: reference the conversation that establishes this context")
         habit_texts = set()
         for index, habit in enumerate(array(story.get("habits", []), 0, 3, "share_story.habits")):
             path = f"share_story.habits[{index}]"
@@ -425,10 +442,15 @@ def validate_report(report, today=None, now=None):
     closing = obj(report["closing"], ["text", "evidence_ids"], "closing")
     string(closing["text"], 80, "closing.text")
     refs(closing["evidence_ids"], "closing.evidence_ids")
+    lead_quote_in_period = False
     if "activity" in report:
-        validate_activity(report["activity"], start, end, mode, evidence, refs,
-                          now or datetime.now(timezone.utc), theme=report.get("theme"),
-                          has_story="share_story" in report)
+        lead_quote_in_period = validate_activity(
+            report["activity"], start, end, mode, evidence, refs, now or datetime.now(timezone.utc),
+            theme=report.get("theme"), has_story=has_share_story)
+        if unclassified and "roast_message_ids" in report["activity"]:
+            raise ReportError("activity.roast_message_ids: omit reviewed theme counts when report.theme is null")
+    if "quote_setup" in report.get("share_story", {}) and not lead_quote_in_period:
+        raise ReportError("share_story.quote_setup: select a lead quote within the analysis period")
     return report
 
 
@@ -527,6 +549,8 @@ def public_report(report, compact=False, include_story=True):
             }
             if report["share_story"].get("habits"):
                 public["story"]["habits"] = [item["text"].strip() for item in report["share_story"]["habits"]]
+            if "quote_setup" in report["share_story"]:
+                public["story"]["quote_setup"] = report["share_story"]["quote_setup"]["text"].strip()
         if "activity" in report:
             public["activity"] = compact_activity(report["activity"])
         return public
