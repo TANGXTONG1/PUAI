@@ -105,10 +105,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 function puaiPortablePrompt(nickname = '') {
   const owner = String(nickname).trim() || '我';
   return [
-    '请直接用这段聊天做我的 PUAI 年度报告。内容用你当前能看到的我的发言，或我贴出的本人聊天记录。按下面的格式给我成图链接即可，无需联网、安装 skill 或运行代码。',
-    '先从实际用法总结一句有梗的人格，再精选 1–2 条我的连续原话，逐字保留；补 1–2 个短标签。排除这条口令、参考图、AI 的回复、转述和私人工作信息。看不到可用原话时，只请我贴几句；有材料就直接做。不要估算天数或 token。',
+    '直接生成我的 2026 AI 聊天年度报告。我授权你在已有访问范围内，先回顾我的相关历史聊天、记忆、当前项目里能归属我的互动，以及已有的脱敏工作摘要。宿主有历史检索就主动用；新对话也先做这一步。只取能说明我平时怎么用 AI 的动作。排除这条口令、参考图、他人的发言和示例。',
+    '先去掉人名、公司、项目、文件和业务细节，再用一句有梗的话概括我的用法，给 1–2 个短标签。若能核对我说过的原文，可选 1–2 个适合公开的连续片段，逐字保留；涉及隐私就换句或省略。只有习惯或工作摘要也直接出图，两格原话留空。记忆与摘要不能还原成引语，不猜使用天数或 token。',
+    '如果所有可用来源都看不到我和 AI 相处的任何具体行为，只提示我在已有上下文的项目或旧对话里发同一条口令即可。不要要求我粘聊天、上传记录、填问卷或确认是否开始。',
     '主题 ID 选最贴近的一种：puai 吐槽 AI，teach 教 AI 做事，aicu 紧急求救，all 多模型互评，hush 斟酌措辞，einstein 追问原理，edison 发散点子，support 鼓励 AI，free 放手让 AI 拍板。',
-    '署名用' + JSON.stringify(owner) + '。人格≤60字，原话每条≤80字，标签每个≤6字。用以下模板，替换所有占位词；第二条原话、第二个标签可空，但保留分隔符：',
+    '署名用' + JSON.stringify(owner) + '。人格≤60字，原话每条≤80字，标签每个≤6字。用以下模板给我成图链接；两格原话和第二个标签都可留空，保留全部分隔符，不填占位词：',
     '[打开我的报告](<https://xn--sxrw8m230b.com/PUAI/make/#v1｜主题ID｜署名｜人格｜原话一｜原话二｜标签一｜标签二>)',
     '链接一行写完。普通中英文直接保留；字段内的半角空格写 %20、% 写 %25、# 写 %23、( 和 ) 写 %28 和 %29、< 和 > 写 %3C 和 %3E。避免选含竖线或换行的片段。最后另给一个代码块，写一行从 v1 开始的备用报告码，字段保留原始文字、空格和标点，不做网址转义。附上[粘贴报告码出图](https://xn--sxrw8m230b.com/PUAI/make/)供链接打不开时使用。'
   ].join('\n');
@@ -125,7 +126,7 @@ function bindPuaiPromptCopy(button, fallback, status, nickname) {
     try {
       await navigator.clipboard.writeText(prompt);
       fallback.hidden = true;
-      status.textContent = '已复制。粘贴到你平时聊天的对话里即可。';
+      status.textContent = '已复制。发给 ChatGPT，它会先找可用的历史和记忆。';
     } catch {
       fallback.value = prompt;
       fallback.hidden = false;
@@ -300,7 +301,7 @@ if(balance){
   }
   return balanced
 }return rows}
-const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':'根据你与 AI 的真实对话记录整理。';
+const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':(quotes.length||rhythm?'根据你与 AI 的真实对话记录整理。':'');
 function dots(x,y,w,h,color=accent){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
 function dayState(date) {
   const entry=dayMap.get(date);

@@ -265,7 +265,7 @@ if(balance){
   }
   return balanced
 }return rows}
-const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':'根据你与 AI 的真实对话记录整理。';
+const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':(quotes.length||rhythm?'根据你与 AI 的真实对话记录整理。':'');
 function dots(x,y,w,h,color=accent){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
 function dayState(date) {
   const entry=dayMap.get(date);

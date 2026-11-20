@@ -33,7 +33,7 @@
           <button class="copy" id="copy" type="button"><i aria-hidden="true" class="copy-icon"></i>复制给 ChatGPT</button>
           <a class="secondary" href="make/">粘贴报告码</a>
         </div>
-        <p class="instruction">把口令粘到常用的对话里，点回复中的链接保存长图。</p>
+        <p class="instruction">发到新对话也行。它会先用可用的历史和记忆，点回复里的链接就能保存长图。</p>
         <p class="status" id="status" role="status" aria-live="polite"></p>
         <textarea id="prompt" aria-label="完整生成口令" rows="5" readonly hidden></textarea>
         <details class="signature"><summary>自定义署名</summary><label for="nickname">报告上叫我</label><input id="nickname" maxlength="16" placeholder="我" autocomplete="off"></details>
@@ -69,9 +69,9 @@
   </main>
   <footer class="foot wrap">
     <div><strong>完整版 skill</strong><p>有聊天记录和用量日志时，还能生成发言日历和用量统计。</p></div>
-    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=87f27a577d" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
+    <nav aria-label="更多资源"><a href="PUAI-skill.zip?v=ca468f9bf1" download>下载 skill</a><a href="go.txt">文字口令</a><a href="palettes/atlas/">配色样刊</a></nav>
   </footer>
-  <script src="portable-prompt.js?v=1"></script>
+  <script src="portable-prompt.js?v=90c5a2e941"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>
 </body>
 </html>

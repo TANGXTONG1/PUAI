@@ -1,4 +1,4 @@
 interface:
   display_name: "PUAI"
-  short_description: "从真实聊天里挑出金句和人格标签，做成一张能转发的 AI 年度报告"
-  default_prompt: "用 $puai，把我和 AI 的聊天也整成一张年度报告。"
+  short_description: "用可用的聊天历史和脱敏互动线索生成人格长图，有原文再放金句"
+  default_prompt: "用 $puai，根据你能读取的历史和脱敏互动线索，做我的 AI 年度报告。"

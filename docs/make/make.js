@@ -58,7 +58,7 @@ function parseReport(value) {
   const theme = rawTheme.trim().toLowerCase();
   if (!themes.has(theme)) throw new Error('报告码的主题 ID 无法识别，请使用 PUAI 的九种主题之一。');
   const name = checkText(rawName.trim(), '署名', 16, true) || '我';
-  const quotes = [checkText(firstQuote, '第一条原话', 80), checkText(secondQuote, '第二条原话', 80, true)];
+  const quotes = [checkText(firstQuote, '第一条原话', 80, true), checkText(secondQuote, '第二条原话', 80, true)];
   const keywords = [checkText(firstTag.trim(), '第一个标签', 6), checkText(secondTag.trim(), '第二个标签', 6, true)];
   return {
     // v1 links belong to the 2026 edition, including when reopened later.
@@ -74,7 +74,7 @@ function parseReport(value) {
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=2882592a1a', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -150,7 +150,7 @@ async function generate(value, fromAddress = false) {
     if (!fromAddress) {
       const [first, second] = report.activity.share_quotes;
       const fields = ['v1', report.theme, report.person.name, report.story.persona,
-        first.text, second?.text || '', report.keywords[0], report.keywords[1] || ''];
+        first?.text || '', second?.text || '', report.keywords[0], report.keywords[1] || ''];
       history.replaceState(null, '', '#' + fields.map(encodeURIComponent).join('|'));
     }
     save.download = report.person.name + '-2026-PUAI.png';
