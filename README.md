@@ -6,7 +6,7 @@
   <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
-把口令发给 ChatGPT。它会翻自己能读到的历史，数数你发了多少条、哪天聊得最猛、多少条命中你的主题，再把你的日常用法和原话排成一张长图。点回复里的链接就能保存。只有脱敏摘要时，也可以看看自己平时怎么使唤 AI。[粘贴备用报告码](https://xn--sxrw8m230b.com/PUAI/make/) · [查看文字口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
+把口令发给 ChatGPT。它先翻聊天，认出你平时怎么跟 AI 打交道，再挑出朋友看了会说「这话一听就是你」的原句。有日期的发言会画进日历。点回复里的链接就能保存长图。[粘贴备用报告码](https://xn--sxrw8m230b.com/PUAI/make/) · [查看文字口令](https://xn--sxrw8m230b.com/PUAI/go.txt)
 
 ## 翻三张场景样刊
 
@@ -35,7 +35,7 @@
 npx skills add TANGXTONG1/PUAI
 ```
 
-装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=71ab3b9eeb) · [阅读 SKILL.md](SKILL.md)
+装好后说「用 PUAI 生成我的年度报告」。Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=35eb8b4527) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>
