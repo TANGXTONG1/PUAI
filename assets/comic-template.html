@@ -100,7 +100,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 #copy-prompt{background:transparent;color:#231e1a;border:1px solid currentColor}
 #manual-copy{width:100%;padding:8px;font:inherit}
 </style></head>
-<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制给 ChatGPT</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
+<body><main><canvas id="poster" width="900" height="2700" hidden></canvas><img id="preview" alt="PUAI 报告"><div class="actions"><button id="save" type="button">保存长图</button><button id="copy-prompt" type="button">复制生成口令</button></div><p id="status" role="status"></p><textarea id="manual-copy" aria-label="同款报告口令" rows="3" readonly hidden></textarea><details><summary>文字与统计口径</summary><div id="transcript"></div></details></main>
 <script>__PORTABLE_PROMPT_JS__</script>
 <script id="report-data" type="application/json">__REPORT_JSON__</script><script>
 'use strict';
@@ -121,40 +121,37 @@ const selectedKey=Object.hasOwn(editions,report.theme)?report.theme:'puai';
 const unclassified=report.theme===null;
 const edition=editions[selectedKey],isRoast=selectedKey==='puai'&&!unclassified;
 const story=report.story;
-const storyPalettes = {
-  cobalt: { // 白瓷钴蓝
-    base:'#F3F6F6', ink:'#142238', muted:'#475364', pale:'#B7BDC3', outline:'#78818E', edge:'#666E7A',
-    pull:'#16399A', onPull:'#F3F6F6', accent:'#E5EE79', onAccent:'#142238',
-    signal:'#C7E1F4', onSignal:'#142238', burstHighlight:'#16399A', onBurstHighlight:'#F3F6F6',
-    bubble:'#F7F9F8', tint:'#DFE6F2', onTint:'#142238', calendar:'#2552AC', onCalendar:'#FFFDFC',
-    markerForeground:{"#142238":"#F3F6F6","#F3F6F6":"#142238"},
-  },
-  orange: { // 铝板信号橙
-    base:'#FCFAF6', ink:'#26242A', muted:'#555356', pale:'#CFCDCB', outline:'#8F8D8D', edge:'#747274',
-    pull:'#CEDCE3', onPull:'#212C33', accent:'#FF9D53', onAccent:'#252126',
-    signal:'#FFE3BD', onSignal:'#30261F', burstHighlight:'#923B16', onBurstHighlight:'#FFFFFF',
-    bubble:'#FEFDFC', tint:'#FFE0C4', onTint:'#26242A', calendar:'#90390E', onCalendar:'#FFFFFF',
-    markerForeground:{"#26242A":"#FFFFFF","#212C33":"#FFFFFF","#30261F":"#FFFFFF"},
-  },
-  mint: { // 离子薄荷
-    base:'#F1FCF7', ink:'#142F2D', muted:'#445856', pale:'#C3D1CD', outline:'#82918E', edge:'#667573',
-    pull:'#91E3CD', onPull:'#102E2A', accent:'#FFB4D8', onAccent:'#292129',
-    signal:'#D3F7E0', onSignal:'#10372E', burstHighlight:'#12554B', onBurstHighlight:'#FFFFFF',
-    bubble:'#FAFEFC', tint:'#CFF5E8', onTint:'#142F2D', calendar:'#205955', onCalendar:'#FFFFFF',
-    markerForeground:{"#142F2D":"#FFFFFF","#102E2A":"#FFFFFF","#10372E":"#FFFFFF"},
-  },
-  magenta: { // 洋红校样
-    base:'#FFF5F9', ink:'#301E30', muted:'#5D4E5B', pale:'#D4C8CF', outline:'#968993', edge:'#7A6E77',
-    pull:'#F5B3D1', onPull:'#361829', accent:'#9A2358', onAccent:'#FFFFFF',
-    signal:'#CDDCFF', onSignal:'#1C2950', burstHighlight:'#2944A1', onBurstHighlight:'#FFFFFF',
-    bubble:'#FFFCFD', tint:'#FFE0EB', onTint:'#301E30', calendar:'#912755', onCalendar:'#FFFFFF',
-    markerForeground:{"#301E30":"#FFFFFF","#361829":"#FFFFFF","#1C2950":"#FFFFFF"},
-  },
+// The quote fill, signature and calendar each carry the selected edition.
+const editionColors = {
+  puai: {base:'#F3F6F6', ink:'#142238', accent:'#E5EE79', onAccent:'#142238',
+    pull:'#16399A', onPull:'#F3F6F6', signal:'#C7E1F4', tint:'#DFE6F2', calendar:'#2552AC'},
+  teach: {base:'#F5FBF4', ink:'#122C23', accent:'#B8F178', onAccent:'#173023',
+    pull:'#087A54', onPull:'#FFFFFF', signal:'#99E7B8', tint:'#D9F2DD', calendar:'#006247'},
+  aicu: {base:'#FFFAF4', ink:'#322016', accent:'#CEDCE3', onAccent:'#212C33',
+    pull:'#FF8643', onPull:'#301B12', signal:'#FFC79E', tint:'#FFE0C4', calendar:'#943C12'},
+  all: {base:'#F8F6FF', ink:'#271B39', accent:'#B7F4DC', onAccent:'#152D28',
+    pull:'#A180F5', onPull:'#211435', signal:'#D5C7FA', tint:'#E8E2F7', calendar:'#6641AA'},
+  hush: {base:'#FFF7F4', ink:'#342020', accent:'#D4C0EE', onAccent:'#302139',
+    pull:'#FFABA3', onPull:'#342020', signal:'#FFD2CC', tint:'#F4DFEB', calendar:'#964B54'},
+  einstein: {base:'#F2FBFC', ink:'#0C2C34', accent:'#C5D6FF', onAccent:'#142739',
+    pull:'#32CCDB', onPull:'#0C2C34', signal:'#A4EEF0', tint:'#D1EEF1', calendar:'#006A78'},
+  edison: {base:'#FFFBEE', ink:'#302615', accent:'#62379E', onAccent:'#FFFFFF',
+    pull:'#FFCA29', onPull:'#302615', signal:'#FFE395', tint:'#F7EAC7', calendar:'#7E5412'},
+  support: {base:'#FFF5F9', ink:'#301E30', accent:'#9A2358', onAccent:'#FFFFFF',
+    pull:'#F16DBD', onPull:'#33182C', signal:'#FEC9E3', tint:'#FFE0EB', calendar:'#912755'},
+  free: {base:'#FAFBEF', ink:'#262E14', accent:'#A0E3C7', onAccent:'#152C22',
+    pull:'#C8E73F', onPull:'#262E14', signal:'#E3F59E', tint:'#E6EED1', calendar:'#556A14'},
+  neutral: {base:'#F6F6F4', ink:'#232B30', accent:'#E6E8E1', onAccent:'#232B30',
+    pull:'#CDD4D6', onPull:'#232B30', signal:'#E0E5E4', tint:'#E6EAE8', calendar:'#52606A'},
 };
-const storyInks = {
-  puai:'cobalt', teach:'cobalt', einstein:'cobalt',
-  aicu:'orange', edison:'orange', hush:'mint', free:'mint', all:'magenta', support:'magenta'
-};
+function printPalette(inks) {
+  return {
+    ...inks, muted:'#475364', pale:'#B7BDC3', outline:'#78818E', edge:'#666E7A',
+    bubble:'#FCFDFB', onSignal:inks.ink, onTint:inks.ink, onCalendar:'#FFFFFF',
+    burstHighlight:inks.calendar, onBurstHighlight:'#FFFFFF',
+    markerForeground:{[inks.onPull]:inks.pull, [inks.ink]:inks.base},
+  };
+}
 function classicPalette() {
   const ink='#231e1a', base='#fff7ed', signalText=edition.lightOnSignal?base:ink;
   return {
@@ -165,9 +162,12 @@ function classicPalette() {
     markerForeground:{[base]:ink}
   };
 }
-const colors=story?storyPalettes[storyInks[selectedKey]]:classicPalette();
+// Explicit editions include gallery specimens without a story. Unversioned
+// inputs without an edition or a story retain the original comic palette.
+const legacyPalette=!story && report.theme===undefined;
+const colors=legacyPalette?classicPalette():printPalette(editionColors[unclassified?'neutral':selectedKey]);
 const {ink,muted,accent,pale,base:paper}=colors;
-const footerInk=!story&&isRoast?paper:colors.onSignal;
+const footerInk=legacyPalette&&isRoast?paper:colors.onSignal;
 const fontFamily='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Smiley Sans",sans-serif';
 const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
@@ -180,41 +180,47 @@ const reportTitle=report.year+' '+(scopeTitle||(unclassified?'AI 相处报告':e
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':scopeTitle?'片段标签':story?'人格标签':'用户人格';
 const extraBottomMargin=24;
-const shareFooterHeight=216;
-const shareInstruction='按图底网址，用我的聊天生成';
-const sharePage='唐苑容.com/PUAI/go.txt';
-// Static QR for https://xn--sxrw8m230b.com/PUAI/ (version 3, correction level Q).
-// Keep it local so exporting a private report never contacts a QR service.
+const shareFooterHeight=228;
+const shareGuide='做同款？扫图底二维码获取口令 ↓';
+const shareTitle='扫码获取口令';
+const shareQuestion='我也想做一张，图里说怎么做？';
+const shareNext='复制口令，发到你常聊的 AI。';
+const sharePage='唐苑容.com/PUAI/#go';
+// Static QR for https://xn--sxrw8m230b.com/PUAI/#go with a four-module quiet zone at draw time.
 const shareQr=[
- '11111110001000101001001111111',
- '10000010100101110001001000001',
- '10111010010110100000101011101',
- '10111010110001101111101011101',
- '10111010110100101111101011101',
- '10000010000110011110001000001',
- '11111110101010101010101111111',
- '00000000111100001010000000000',
- '01011110110110111000011011010',
- '01111101011110101101100011010',
- '00101110000001110100011101100',
- '10111101001101101100100110001',
- '11000010001010101000111000010',
- '11011000010101010000001010101',
- '01110011010101011001000101001',
- '00010001100101011000100011101',
- '01101010011010100101100101011',
- '11001101000011101111100010000',
- '11110110010101010011000111001',
- '11010101100110011000011011100',
- '11110011101010100100111110111',
- '00000000101111010001100011110',
- '11111110000111110111101010110',
- '10000010101001011101100011010',
- '10111010101010111101111110001',
- '10111010110100010110000101101',
- '10111010000000010010110110111',
- '10000010110111001010001010101',
- '11111110010111001001101111000'
+ '111111100000010001100100001111111',
+ '100000101101101110111000001000001',
+ '101110100101010110010101101011101',
+ '101110101111000110101010101011101',
+ '101110101111000111000011001011101',
+ '100000100011110010110010101000001',
+ '111111101010101010101010101111111',
+ '000000001001010000100001000000000',
+ '010111101100000011101001011011010',
+ '001111000010100011111101000011100',
+ '010111101011000010000011000011111',
+ '100101011011010010110111010100111',
+ '111100110111111011010100111110000',
+ '000010000111000011111000110101000',
+ '011101111010110111111010001011100',
+ '110100000000100100101011010010101',
+ '110111111111011010000010111111000',
+ '000101011011011100110000111010101',
+ '111010100000001001111111000101101',
+ '011000001000000101101010000011100',
+ '010101101000100111010111110111010',
+ '111010011010010111100001000111000',
+ '101000111101001010011011000000011',
+ '100101000011100011011000000110111',
+ '111100111000110001100011111110111',
+ '000000001100110010001110100010110',
+ '111111100010100111011001101010100',
+ '100000101011111101100110100011100',
+ '101110101011110001010111111110010',
+ '101110101100101101000111010101101',
+ '101110100010000001110110010111111',
+ '100000101111010000111000011111111',
+ '111111100110001111110001101111100'
 ];
 const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
@@ -492,10 +498,11 @@ function comicDateSection(y,draw){
 function bubblePath(w,h,tailRight=false){
 const r=30,t=tailRight?w-135:100;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);ctx.lineTo(t+50,h);ctx.lineTo(t+(tailRight?73:-18),h+22);ctx.lineTo(t,h);ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath()
 }
-function burstPath(w,h){const edge=22;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
+function burstPath(w,h){ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(138,17);ctx.lineTo(165,0);ctx.lineTo(206,17);ctx.lineTo(w-180,17);ctx.lineTo(w-152,0);ctx.lineTo(w-124,17);ctx.lineTo(w-20,8);ctx.lineTo(w-30,h/2);ctx.lineTo(w,h-15);ctx.lineTo(w-151,h-25);ctx.lineTo(w-177,h);ctx.lineTo(w-211,h-22);ctx.lineTo(203,h-22);ctx.lineTo(161,h);ctx.lineTo(138,h-22);ctx.lineTo(0,h-12);ctx.lineTo(27,h/2);ctx.closePath()}
 function comicQuote(q,index,y,draw=true){
 const i = quotes.length === 1 ? 1 : index % 3;
-const burst = i === 2;
+// Short editions put the closing line in a solid burst. Longer ones keep the A trio.
+const burst = i === 2 || (quotes.length <= 2 && i === 1);
 const pad = burst ? 53 : 34;
 const size = index === 0 ? 50 : type.quote;
 const leading = Math.round(size * 1.35);
@@ -601,9 +608,10 @@ function comicHabits(y,draw){
 function drawShareFooter(y){
  const shareInk='#182437';
  box(0,y,900,shareFooterHeight,0,'#FBFBF8');
- text('扫码复制 → 发到你常聊的 GPT',48,y+31,40,shareInk,750);
- text('发图说「'+shareInstruction+'」',48,y+94,32,shareInk,550);
- text(sharePage,48,y+149,34,shareInk,600,'Menlo,"DejaVu Sans Mono","Courier New","PingFang SC","Microsoft YaHei",monospace');
+ text(shareTitle,48,y+17,46,shareInk,750);
+ text(shareNext,48,y+79,34,shareInk,600);
+ text('随图问「'+shareQuestion+'」',48,y+129,29,shareInk,550);
+ text('也可打开 '+sharePage,48,y+175,30,shareInk,550);
 
  const cell=5,quiet=4,qrSize=(shareQr.length+quiet*2)*cell;
  const x=852-qrSize,top=y+Math.floor((shareFooterHeight-qrSize)/2);
@@ -617,15 +625,16 @@ function drawShareFooter(y){
 }
 function drawPoster(draw=true){
 if(draw){
- stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,isRoast?'#eeb9ac':edition.tint);if(!typeName)smallMark();headerBadges();
+ stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,legacyPalette?'#eeb9ac':colors.tint);if(!typeName)smallMark();headerBadges();
  font(type.title,800);const titleWidth=ctx.measureText(reportTitle).width;
  text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
+ right(shareGuide,852,202,28,ink,600);
  if(sourceLabel){
-   if(typeName)text(sourceLabel,48,199,type.meta,story?muted:accent,700);
-   else right(sourceLabel,852,44,type.meta,story?ink:accent,700);
+   if(typeName)text(sourceLabel,48,199,type.meta,legacyPalette?accent:muted,700);
+   else right(sourceLabel,852,44,type.meta,legacyPalette?accent:ink,700);
  }
 }
-let y=sourceLabel&&typeName?274:230;
+let y=260;
 if(lead&&!quotesFirst)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
 else if(!lead&&hasPersona)y+=comicPersona(y-8,draw);
@@ -676,7 +685,7 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',sourceLabel,quotesFirst?'':lead,
+ owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',sourceLabel,shareGuide,quotesFirst?'':lead,
  ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),quotesFirst?lead:'',
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
@@ -691,7 +700,7 @@ const readableSummary=[
  ...months.map(m=>m.month+'：'+m.messages+' 条指令'+(monthHits(m)!==null?'，其中 '+monthHits(m)+' 条与'+edition.keyword+'相关':'')),
  ...sceneSummary,...tagSummary
 ].filter(Boolean).join(newline);
-const accessibleSummary=readableSummary+newline+'扫码复制口令，发到你常聊的 GPT。发图说「'+shareInstruction+'」。指令网址 '+sharePage;
+const accessibleSummary=readableSummary+newline+shareTitle+'。'+shareNext+'随图问「'+shareQuestion+'」。也可打开 https://'+sharePage;
 const extraNotes=quotes.length||lead?[...personaSummary,...distinctHabits.filter(habit=>!posterHabits.includes(habit)),...scenes.slice(posterScenes.length).map(s=>s.text)]:[];
 document.getElementById('transcript').textContent=[accessibleSummary,...extraNotes].join(newline);
 document.getElementById('preview').alt=accessibleSummary;

@@ -9,6 +9,9 @@ const result = document.getElementById('result');
 const heading = document.getElementById('title');
 const image = document.getElementById('preview');
 const save = document.getElementById('save');
+const shareButton = document.getElementById('share');
+const shareText = document.getElementById('share-text');
+const shareInvite = '想做同款？把图发给 AI 时问「我也想做一张，图里说怎么做？」。也可以扫图底二维码获取口令，或点下面的链接。复制口令，发到你常聊的 AI。\nhttps://xn--sxrw8m230b.com/PUAI/#go';
 const datesCopy = document.getElementById('dates-copy');
 const datesText = document.getElementById('dates-text');
 const recovery = document.getElementById('recovery');
@@ -25,10 +28,11 @@ let clipboardAttempt = 0;
 let templateRequest;
 let pending;
 let retryRequest;
+let sharePayload;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=4b7caf4414', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=8a47a11fcb', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();
@@ -81,8 +85,30 @@ async function renderPoster(report, signal) {
   }
 }
 
+// Prepare before the tap: mobile browsers require user activation at navigator.share().
+function prepareShare(png, filename) {
+  if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return;
+  try {
+    const base64 = png.slice('data:image/png;base64,'.length);
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const file = new File([bytes], filename, { type: 'image/png' });
+    const payload = { files: [file], text: shareInvite };
+    if (navigator.canShare(payload)) {
+      sharePayload = payload;
+      shareButton.textContent = '转发长图';
+    }
+  } catch { /* The copy button stays available when file sharing is restricted. */ }
+}
+
 function clearResult() {
   result.hidden = true;
+  sharePayload = undefined;
+  shareButton.disabled = false;
+  shareButton.textContent = '复制转发语';
+  shareText.value = '';
+  shareText.hidden = true;
   datesCopy.hidden = true;
   datesText.hidden = true;
   datesText.value = '';
@@ -184,6 +210,7 @@ async function generate(value, fromAddress = false, restored = null) {
       }
     }
     save.download = report.person.name + '-2026-PUAI.png';
+    prepareShare(png, save.download);
     save.href = png;
     save.hidden = false;
     if (!report.activity.days?.length) {
@@ -274,20 +301,43 @@ input.addEventListener('input', event => {
 document.getElementById('use-partial').addEventListener('click', () => {
   if (partialText.textContent) generate('PUAI 2026\n用法：' + partialText.textContent);
 });
-async function copyFollowup(field, text, success) {
+async function copyFollowup(field, text, success, manual = '长按复制这段指令，发回刚才的聊天。') {
+  const attempt = pending;
   try {
     await navigator.clipboard.writeText(text);
+    if (attempt !== pending || attempt?.signal.aborted) return;
     field.hidden = true;
     status.className = '';
     status.textContent = success;
   } catch {
+    if (attempt !== pending || attempt?.signal.aborted) return;
     field.value = text;
     field.hidden = false;
     field.focus();
     field.select();
-    status.textContent = '长按复制这段指令，发回刚才的聊天。';
+    status.textContent = manual;
   }
 }
+shareButton.addEventListener('click', async () => {
+  if (result.hidden || shareButton.disabled) return;
+  const attempt = pending;
+  shareButton.disabled = true;
+  try {
+    if (sharePayload) {
+      try {
+        await navigator.share(sharePayload);
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError' || attempt !== pending || result.hidden) return;
+        sharePayload = undefined;
+        shareButton.textContent = '复制转发语';
+      }
+    }
+    await copyFollowup(shareText, shareInvite, '已复制转发语，和长图一起发给朋友。', '长按复制这段转发语，和长图一起发给朋友。');
+  } finally {
+    if (attempt === pending) shareButton.disabled = false;
+  }
+});
 document.getElementById('repair-copy').addEventListener('click', () =>
   copyFollowup(repairText, repairPrompt, '已复制。发到刚才生成报告的对话，再把回复粘贴回来。'));
 datesCopy.addEventListener('click', () =>

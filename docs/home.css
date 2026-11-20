@@ -22,6 +22,7 @@ h1,h2,.press strong,.press .bubble span,.entry strong{font-family:var(--display)
 h1{font-size:clamp(56px,5.9vw,84px);letter-spacing:-.04em;line-height:1.12;margin:23px 0 20px}
 h1 span{display:block;white-space:nowrap}
 .lead{font-size:clamp(16px,1.4vw,19px);line-height:1.75;max-width:29em;margin:0 0 24px}
+.claim{scroll-margin-top:24px}
 .action-row{display:flex;align-items:center;gap:23px}
 .copy{background:var(--blue);color:#fff;border:2px solid var(--blue);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 20px;min-height:54px;font:700 16px/1.25 "PingFang SC","Microsoft YaHei",system-ui,sans-serif;cursor:pointer}
 .copy:hover{background:var(--navy);border-color:var(--navy)}
@@ -62,8 +63,7 @@ h2{font-size:clamp(29px,3.1vw,44px);line-height:1.25;letter-spacing:-.035em;marg
 .entry:hover strong{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:var(--blue);text-underline-offset:.2em}
 .entry strong{display:block;line-height:1.15;font-size:27px;letter-spacing:-.025em}
 .entry small{display:block;font-size:13px;color:var(--muted);line-height:1.5;margin-top:4px}
-.glyph{width:40px;aspect-ratio:1;flex:none;display:grid;place-content:center;color:#23305a;background:var(--lemon);font:bold 27px/1 Arial,sans-serif;border-radius:50%}
-.glyph.orange{background:var(--orange)}.glyph.blue{background:#c4d9fb}.glyph.mint{background:var(--mint)}.glyph.pink{background:var(--pink)}
+.glyph{width:40px;aspect-ratio:1;flex:none;display:grid;place-content:center;color:var(--edition-text);background:var(--edition-ink);font:bold 27px/1 Arial,sans-serif;border-radius:50%}
 .glyph.plus{border-radius:4px;transform:rotate(-5deg)}.glyph.plus::after{content:"+";font-size:34px}
 .glyph.dots,.glyph.star{clip-path:polygon(50% 0,62% 14%,79% 7%,82% 25%,99% 30%,91% 47%,100% 62%,82% 70%,80% 90%,61% 85%,49% 100%,38% 85%,19% 92%,17% 73%,0 65%,8% 48%,1% 31%,18% 25%,21% 7%,39% 14%);border-radius:0}
 .glyph.check,.glyph.stack,.glyph.exclamation{border-radius:3px}.glyph.check{transform:rotate(4deg)}.glyph.stack{transform:rotate(-6deg)}.glyph.exclamation{font-style:italic}

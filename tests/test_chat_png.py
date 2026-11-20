@@ -189,7 +189,7 @@ AI：四行。
         self.assertNotIn("本人原话", lead_only)
 
     def test_comic_layout_centers_the_signature_and_alternates_quotes(self):
-        source = "PUAI 2026\n署名：不愿透露姓名的唐某\n原话：你再数数。\n原话：四行半。\n原话：退款！"
+        source = "PUAI 2026\n署名：不愿透露姓名的唐某\n主题：puai\n原话：你再数数。\n原话：四行半。\n原话：退款！"
         font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
         positions = {}
         draw_text = ImageDraw.ImageDraw.text
@@ -212,6 +212,24 @@ AI：四行。
         self.assertLess(third[0],second[0])
         for (x,y),color in zip([first,second,third],["#FCFDFB","#16399A","#C7E1F4"]):
             self.assertEqual(img.getpixel((x-6,y+5)),tuple(bytes.fromhex(color[1:])))
+
+    def test_sticker_outlines_include_the_burst_in_short_and_archived_editions(self):
+        face = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        polygon = ImageDraw.ImageDraw.polygon
+        quotes = ["你再数数。", "难道果核也按果肉算钱？", "退款！", "再来。", "还有？", "收卷。"]
+        for count in range(1, 7):
+            source = "PUAI 2026\n主题：puai\n" + "\n".join("原话："+q for q in quotes[:count])
+            outlines = []
+
+            def observe(draw, vertices, *args, **kwargs):
+                # A dialogue sticker contributes one triangular tail; the burst is a closed polygon.
+                outlines.append(len(vertices) > 3)
+                return polygon(draw, vertices, *args, **kwargs)
+
+            with self.subTest(count=count), patch.object(ImageDraw.ImageDraw, "polygon", observe):
+                renderer.draw_report(renderer.parse_receipt(source), face)
+                expected = [i == count-1 if count <= 2 else i % 3 == 2 for i in range(count)]
+                self.assertEqual(outlines, expected)
 
     def test_standalone_png_without_node_browser_templates_or_network(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -244,7 +262,7 @@ runpy.run_path(sys.argv[0],run_name='__main__')
                     import zxingcpp
                 except ImportError:
                     return
-                self.assertEqual(zxingcpp.read_barcode(img).text, "https://xn--sxrw8m230b.com/PUAI/")
+                self.assertEqual(zxingcpp.read_barcode(img).text, "https://xn--sxrw8m230b.com/PUAI/#go")
 
 
 if __name__ == "__main__":

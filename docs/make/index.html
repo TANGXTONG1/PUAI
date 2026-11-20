@@ -37,16 +37,20 @@
     #status{color:var(--muted);margin:10px 0}
     #status:empty{display:none}
     #status.error{color:#9b241a}
+    .poster-sheet{position:relative}
+    .claim-footer{position:absolute;inset:auto 1px 1px;aspect-ratio:900/228}
+    .claim-footer:focus-visible{outline-offset:-3px}
     #preview{display:block;width:100%;height:auto;border:1px solid #e6dbd0}
     #preview-actions{display:flex;gap:8px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 16px}
     #fallback-copy{color:var(--muted);font-size:14px;margin:0}
-    #dates-text{margin:0 0 16px}
+    #dates-text,#share-text{margin:0 0 16px}
+    #share{color:var(--ink);background:transparent;padding:7px 12px}
     [hidden]{display:none!important}
   </style>
 </head>
 <body>
 <main>
-  <nav aria-label="PUAI"><a class="brand" href="../">PUAI</a><a class="home" href="../#nickname">署名并复制口令</a></nav>
+  <nav aria-label="PUAI"><a class="brand" href="../">PUAI</a><a class="home" href="../#go">领取生成口令</a></nav>
   <div class="heading"><h1 id="title">我的年度报告</h1><a class="action" id="save" hidden>保存长图</a></div>
   <p id="status" role="status" aria-live="polite"></p>
   <div id="recovery" hidden>
@@ -73,14 +77,19 @@
   </div>
   <section id="result" hidden>
     <div id="preview-actions">
+      <button class="action" id="share" type="button">复制转发语</button>
       <p id="fallback-copy">也可以长按图片保存。</p>
-      <button type="button" class="link-button" id="dates-copy" data-skill="https://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=8" hidden>复制补日期口令</button>
+      <button type="button" class="link-button" id="dates-copy" data-skill="https://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=9" hidden>复制补日期口令</button>
     </div>
+    <textarea id="share-text" aria-label="同款报告转发语" rows="3" readonly hidden></textarea>
     <textarea id="dates-text" aria-label="回原对话补查日期的口令" rows="3" readonly hidden></textarea>
-    <img id="preview" alt="">
+    <div class="poster-sheet">
+      <img id="preview" alt="">
+      <a class="claim-footer" href="../#go" aria-label="领取同款生成口令"></a>
+    </div>
   </section>
   <noscript>请用启用了 JavaScript 的浏览器打开页面生成长图。</noscript>
 </main>
-<script type="module" src="./make.js?v=fabb00e33e"></script>
+<script type="module" src="./make.js?v=22f2dc36e3"></script>
 </body>
 </html>

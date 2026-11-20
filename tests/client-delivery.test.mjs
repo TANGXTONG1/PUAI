@@ -24,7 +24,7 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '8');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '9');
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {
@@ -45,11 +45,16 @@ test('mobile visitors can sign before copying on the home page and sample', {
       permissions: ['clipboard-read', 'clipboard-write'] });
     const page = await context.newPage();
     for (const file of ['index.html', 'sample.html']) {
-      await page.goto(new URL('../docs/' + file, import.meta.url).href);
+      const url = new URL('../docs/' + file, import.meta.url);
+      if (file === 'index.html') url.hash = 'go';
+      await page.goto(url.href);
+      const copy = page.getByRole('button', { name: '复制生成口令' });
+      const bounds = await copy.boundingBox();
+      assert.ok(bounds && bounds.y >= 0 && bounds.y + bounds.height <= 844);
       const nickname = page.getByLabel(/署名/);
       assert.ok(await nickname.isVisible());
       await nickname.fill('山楂');
-      await page.getByRole('button', { name: '复制给 ChatGPT' }).click();
+      await copy.click();
       await page.waitForFunction(() => document.querySelector('#status').textContent.includes('已复制'));
       assert.match(await page.evaluate(() => navigator.clipboard.readText()), /署名「山楂」/);
     }
@@ -136,6 +141,13 @@ test('report links open the PNG; manual recovery requires a tap', {
     assert.ok(followup.includes('$puai') && followup.includes('保留原话'));
     const shared = (await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim();
     assert.equal(followup.split('\n').at(-1), shared.split('\n').at(-1));
+    const claim = page.getByRole('link', { name: '领取同款生成口令' });
+    assert.equal(await claim.getAttribute('href'), '../#go');
+    const footer = await claim.boundingBox();
+    const imageBounds = await preview.boundingBox();
+    assert.ok(footer.width > 0 && footer.height >= 44);
+    assert.ok(Math.abs(footer.y + footer.height - imageBounds.y - imageBounds.height) < 3);
+    assert.match(await preview.getAttribute('alt'), /扫码获取口令.*复制口令.*我也想做一张，图里说怎么做？.*#go/u);
     const turns = await preview.getAttribute('alt');
     const positions = ['是盖子高了？','是杯子矮了。','这两件事在茶几上有区别吗？'].map(q => turns.indexOf(q));
     assert.ok(positions.every((position, i) => position >= 0 && (!i || position > positions[i - 1])));

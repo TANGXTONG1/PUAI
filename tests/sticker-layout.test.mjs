@@ -24,22 +24,35 @@ test('A 版把原话放在短评前，短贴左右对齐，旧链接仍可完整
   try {
     await page.addInitScript(() => {
       window.paintedText = [];
+      window.stickerPaths = [];
+      const stroke = CanvasRenderingContext2D.prototype.stroke;
+      CanvasRenderingContext2D.prototype.stroke = function(...args) {
+        const {e:x, f:y} = this.getTransform();
+        if (x >= 48 && y > 0 && this.isPointInPath(x + 64, y + 33)) {
+          window.stickerPaths.push({x, y, burst: !this.isPointInPath(x + 64, y + 2), fill:this.fillStyle});
+        }
+        return stroke.apply(this, args);
+      };
       const paint = CanvasRenderingContext2D.prototype.fillText;
       CanvasRenderingContext2D.prototype.fillText = function(label, ...args) {
         window.paintedText.push(String(label));
         return paint.call(this, label, ...args);
       };
     });
-    for (const count of [1, 2, 3, 6]) {
+    for (const count of [1, 2, 3, 4, 5, 6]) {
       const selected = lines.slice(0, count);
       const fields = new URLSearchParams([['theme', 'teach'], ['lead', lead], ...selected.map(q => ['q', q])]);
       const report = parseReport(readDirectFields('#p?' + fields), {allowExcerptsWithoutLedger: true});
       await page.goto('about:blank');
       await page.setContent(frame.replace('__REPORT_JSON__', () => JSON.stringify(report)));
       await page.waitForFunction(() => document.querySelector('#preview')?.naturalWidth === 900);
-      const {stickers, transcript, painted} = await page.evaluate(() => ({
-        stickers: stickerLayouts, transcript: document.getElementById('preview').alt, painted: window.paintedText,
+      const {stickers, transcript, painted, frames, pull} = await page.evaluate(() => ({
+        stickers: stickerLayouts, transcript: document.getElementById('preview').alt, painted: window.paintedText, frames:window.stickerPaths, pull:colors.pull.toLowerCase(),
       }));
+      const outlines = stickers.map(s => frames.find(f => f.x === s.x && f.y === s.y));
+      assert.deepEqual(outlines.map(frame => frame.burst),
+        selected.map((_, i) => count <= 2 ? i === count - 1 : i % 3 === 2));
+      if (count <= 2) assert.equal(outlines.at(-1).fill.toLowerCase(), pull);
       assert.deepEqual(stickers.map(row => row.text), selected);
       assert.ok(painted.indexOf(selected.at(-1)) >= 0);
       assert.ok(painted.indexOf(selected.at(-1)) < painted.indexOf(lead));

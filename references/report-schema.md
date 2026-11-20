@@ -210,6 +210,6 @@ python3 scripts/build_report.py --input /absolute/path/report.json --style comic
 node scripts/export_png.mjs --input /absolute/path/share.html --output /absolute/path/share.png
 ```
 
-导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；含 `theme` 或 `share_story` 的输入不写 `--style` 时自动使用 `comic`。九型共用原 A 版的字号、数据块、圆环、日历、对白气泡与爆炸框。新版按主题取白瓷钴蓝、铝板信号橙、离子薄荷或洋红校样配色，页眉用无纹路的纯色底。同时省略 `theme`、`share_story` 且未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
+导出依赖与浏览器定位见 [PNG 导出说明](png-export.md)。只有用户明确要旧视觉时才用 `--compact`；含 `theme` 或 `share_story` 的输入不写 `--style` 时自动使用 `comic`。九型共用原 A 版的字号、数据块、圆环、日历、对白气泡与爆炸框。九型各有自己的配色。单句或双句的落点用主色爆炸贴，三句依次用对白、主色气泡与爆炸贴。图尾二维码和印刷网址都直达领取口令的位置。同时省略 `theme`、`share_story` 且未指定 `--compact` 或 `--style` 的旧输入仍生成多页版。`--demo` 使用自带的虚构测试数据，不作为本人记录缺失时的替代品。
 
 生成器不修改输入文件。验证失败时返回非零状态，不写入输出；错误消息指出字段。输出使用字段白名单，去掉证据并将 `<`、`>`、`&`、Unicode 行分隔符安全转义，避免用户文字逃逸嵌入数据块。

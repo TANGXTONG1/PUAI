@@ -21,26 +21,39 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 EDITIONS = {
-    "puai": ("PUAI", "开喷", "cobalt"), "teach": ("AI的教育", "教学", "cobalt"),
-    "einstein": ("AI因斯坦", "追问", "cobalt"), "aicu": ("AICU", "急救", "orange"),
-    "edison": ("AI迪生", "新点子", "orange"), "hush": ("AI在心口难开", "代写", "mint"),
-    "free": ("AI咋咋地", "放权", "mint"), "all": ("AI特全体", "跨模型", "magenta"),
-    "support": ("AI的供养", "应援", "magenta"), "": ("AI 相处", "", "cobalt"),
+    "puai": ("PUAI", "开喷"),
+    "teach": ("AI的教育", "教学"),
+    "aicu": ("AICU", "急救"),
+    "all": ("AI特全体", "跨模型"),
+    "hush": ("AI在心口难开", "代写"),
+    "einstein": ("AI因斯坦", "追问"),
+    "edison": ("AI迪生", "新点子"),
+    "support": ("AI的供养", "应援"),
+    "free": ("AI咋咋地", "放权"),
+    "": ("AI 相处", ""),
 }
-# Paper, ink, marker, marker text, second bubble, second bubble text, tint, calendar.
+# Paper, text, signature, on-signature, main sticker, on-sticker,
+# light sticker, type badge, calendar. Keep in sync with the Canvas editions.
 PALETTES = {
-    "cobalt": ("#F3F6F6", "#142238", "#E5EE79", "#142238", "#16399A", "#F3F6F6", "#C7E1F4", "#2552AC"),
-    "orange": ("#FCFAF6", "#26242A", "#FF9D53", "#252126", "#CEDCE3", "#212C33", "#FFE3BD", "#90390E"),
-    "mint": ("#F1FCF7", "#142F2D", "#FFB4D8", "#292129", "#91E3CD", "#102E2A", "#D3F7E0", "#205955"),
-    "magenta": ("#FFF5F9", "#301E30", "#9A2358", "#FFFFFF", "#F5B3D1", "#361829", "#CDDCFF", "#912755"),
+    "puai": ("#F3F6F6", "#142238", "#E5EE79", "#142238", "#16399A", "#F3F6F6", "#C7E1F4", "#DFE6F2", "#2552AC"),
+    "teach": ("#F5FBF4", "#122C23", "#B8F178", "#173023", "#087A54", "#FFFFFF", "#99E7B8", "#D9F2DD", "#006247"),
+    "aicu": ("#FFFAF4", "#322016", "#CEDCE3", "#212C33", "#FF8643", "#301B12", "#FFC79E", "#FFE0C4", "#943C12"),
+    "all": ("#F8F6FF", "#271B39", "#B7F4DC", "#152D28", "#A180F5", "#211435", "#D5C7FA", "#E8E2F7", "#6641AA"),
+    "hush": ("#FFF7F4", "#342020", "#D4C0EE", "#302139", "#FFABA3", "#342020", "#FFD2CC", "#F4DFEB", "#964B54"),
+    "einstein": ("#F2FBFC", "#0C2C34", "#C5D6FF", "#142739", "#32CCDB", "#0C2C34", "#A4EEF0", "#D1EEF1", "#006A78"),
+    "edison": ("#FFFBEE", "#302615", "#62379E", "#FFFFFF", "#FFCA29", "#302615", "#FFE395", "#F7EAC7", "#7E5412"),
+    "support": ("#FFF5F9", "#301E30", "#9A2358", "#FFFFFF", "#F16DBD", "#33182C", "#FEC9E3", "#FFE0EB", "#912755"),
+    "free": ("#FAFBEF", "#262E14", "#A0E3C7", "#152C22", "#C8E73F", "#262E14", "#E3F59E", "#E6EED1", "#556A14"),
+    "": ("#F6F6F4", "#232B30", "#E6E8E1", "#232B30", "#CDD4D6", "#232B30", "#E0E5E4", "#E6EAE8", "#52606A"),
 }
-# Same fixed homepage QR as the browser poster, rows encoded from left to right.
+# Same offline QR as the web poster, for https://xn--sxrw8m230b.com/PUAI/#go
 QR_ROWS = (
-    0x1fc4527f, 0x1052e241, 0x174b415d, 0x1758df5d, 0x175a5f5d, 0x10433c41,
-    0x1fd5557f, 0x1e1400, 0xbdb70da, 0xfaf5b1a, 0x5c0e8ec, 0x17a6d931,
-    0x184551c2, 0x1b0aa055, 0xe6ab229, 0x232b11d, 0xd4d4b2b, 0x19a1df10,
-    0x1ecaa639, 0x1ab330dc, 0x1e7549f7, 0x17a31e, 0x1fc3ef56, 0x1054bb1a,
-    0x17557bf1, 0x175a2c2d, 0x174025b7, 0x105b9455, 0x1fcb9378,
+    0x1fc08c87f, 0x105b77041, 0x174ab2b5d, 0x175e3555d, 0x175e3865d, 0x104796541,
+    0x1fd55557f, 0x1284200, 0xbd81d2da, 0x7851fa1c, 0xbd61061f, 0x12b696ea7,
+    0x1e6fda9f0, 0x10e1f1a8, 0xef5bf45c, 0x1a0125695, 0x1bfed05f8, 0x2b6e61d5,
+    0x1d404fe2d, 0xc102d41c, 0xad13afba, 0x1d34bc238, 0x147a53603, 0x12871b037,
+    0x1e718c7f7, 0x1991d16, 0x1fc53b354, 0x1057ecd1c, 0x17578aff2, 0x175968ead,
+    0x17440ecbf, 0x105e870ff, 0x1fcc7e37c,
 )
 FIELDS = "署名 主题 范围 主场景 短评 前情 原话 ai ai收尾 用法 标签 日期账 发言日期 无日期账 token".split()
 UNKNOWN = {"", "?", "无", "未知", "留空", "未提供", "未核准", "未核实", "无法逐条核准", "—", "n/a"}
@@ -196,8 +209,8 @@ def load_font(path=None):
 
 def draw_report(r, font):
     year, theme = r["year"], r["theme"]
-    name, theme_label, palette = EDITIONS[theme]
-    paper, ink, accent, on_accent, pull, on_pull, tint, calendar_ink = PALETTES[palette]
+    name, theme_label = EDITIONS[theme]
+    paper, ink, accent, on_accent, pull, on_pull, signal, tint, calendar_ink = PALETTES[theme]
     commands = []
 
     def cmd(method, *args, **kwargs):
@@ -283,7 +296,8 @@ def draw_report(r, font):
     title = scope_title or (f"{name} 报告" if theme else f"{name}报告")
     title = f"{year} {title}"
     text(48, 115, title, fitted(title, 804, 68), bold=True)
-    y = 218
+    text(852, 202, "做同款？扫图底二维码获取口令 ↓", 28, align="rt")
+    y = 260
 
     quotes = r["quotes"]
     quote_first = theme == "puai" and bool(quotes)
@@ -295,10 +309,9 @@ def draw_report(r, font):
         text(x+39, y, dt.strftime("%m.%d"), 28, color, True)
 
     def quote_sticker(i, dt, quote, top):
-        # All stickers share the poster margins. Short ones can end at an inner grid
-        # line; the reply-facing tail and the third cut-paper silhouette keep the beat.
+        # Short editions put the closing line in a solid burst. Longer ones keep the A trio.
         style = 1 if len(quotes) == 1 else i % 3
-        burst = style == 2
+        burst = style == 2 or (len(quotes) <= 2 and style == 1)
         inset = 52 if burst else 32
         size = 50 if i == 0 and len(quote) <= 22 else 46
         width = min(804, max(506, round(font(size).getlength(quote)) + 2*inset + 12))
@@ -308,7 +321,7 @@ def draw_report(r, font):
         body_top = (64 if header else 28) + (13 if burst else 0)
         leading = round(size*1.34)
         height = body_top+(len(rows)-1)*leading+size+(42 if burst else 27)
-        fill, fg = [("#FCFDFB", ink), (pull, on_pull), (tint, ink)][style]
+        fill, fg = [("#FCFDFB", ink), (pull, on_pull), (signal, ink)][style]
         if burst:
             # Short sloped sides, two folded corners, plus room around the entire line.
             w, h = width, height
@@ -522,7 +535,7 @@ def draw_report(r, font):
         y += 12
     if r["tags"]:
         zone = y
-        rect(0,zone,900,165,tint)
+        rect(0,zone,900,165,signal)
         text(48,zone+18,"片段标签" if scope_title else "人格标签",34,bold=True)
         tags = r["tags"]
         max_width = (804 - 16*(len(tags)-1))//len(tags)
@@ -536,18 +549,22 @@ def draw_report(r, font):
             centered(x+width/2,zone+103,tag,size,bold=True)
             x += width+16
         y += 170
-    rect(0,y,900,198,"#FBFBF8")
-    text(48,y+35,"扫码复制 → 发到你常聊的 GPT",37,bold=True)
-    text(48,y+105,"唐苑容.com/PUAI/go.txt",31)
+    footer_height = 228
+    rect(0,y,900,footer_height,"#FBFBF8")
+    text(48,y+17,"扫码获取口令",46,bold=True)
+    text(48,y+79,"复制口令，发到你常聊的 AI。",34)
+    text(48,y+129,"随图问「我也想做一张，图里说怎么做？」",29)
+    text(48,y+175,"也可打开 唐苑容.com/PUAI/#go",30)
     cell = 5
-    qr_size = (len(QR_ROWS)+8)*cell
-    qr_x, qr_y = 852-qr_size, y+(198-qr_size)//2
+    modules = len(QR_ROWS)
+    qr_size = (modules+8)*cell
+    qr_x, qr_y = 852-qr_size, y+(footer_height-qr_size)//2
     rect(qr_x,qr_y,qr_size,qr_size,"#FFFFFF")
     for row,bits in enumerate(QR_ROWS):
-        for col in range(29):
-            if bits & (1 << (28-col)):
+        for col in range(modules):
+            if bits & (1 << (modules-1-col)):
                 rect(qr_x+(col+4)*cell,qr_y+(row+4)*cell,cell-1,cell-1,"#101824")
-    img = Image.new("RGB",(900,y+198),paper)
+    img = Image.new("RGB",(900,y+footer_height),paper)
     draw = ImageDraw.Draw(img)
     for method,args,kwargs in commands:
         getattr(draw,method)(*args,**kwargs)
