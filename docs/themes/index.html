@@ -18,12 +18,9 @@ h1 time{display:block;font:500 clamp(18px,1.75vw,24px)/1.4 "Helvetica Neue",Aria
 header p{font-size:15px;line-height:1.52;color:#484946;margin:0 0 3px;text-align:right}
 main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(16px,2.1vw,32px);row-gap:clamp(28px,3.2vw,52px)}
 .edition{min-width:0;margin:0;scroll-margin-top:18px}
-.sheet{display:block;position:relative;overflow:hidden;background:var(--paper);outline:1px solid #0002;outline-offset:-1px;cursor:zoom-in}
-.mast,.excerpt,.shelf{display:block;overflow:hidden;position:relative}
-.mast{aspect-ratio:900 / var(--head)}.shelf{aspect-ratio:900 / var(--shelf)}.excerpt{aspect-ratio:900 / var(--band)}
-.sheet img{display:block;position:absolute;top:0;left:0;width:100%;height:auto}.excerpt img{top:var(--offset)}
-.seam{display:flex;align-items:center;gap:9px;padding:3px 5.33% 4px;font-size:clamp(12px,1.05vw,15px);font-weight:560;line-height:1.4;color:#4a4643}
-.seam:after{content:"";flex:1;border-top:1px dashed #aaa7a2}
+.sheet{display:block;aspect-ratio:900 / var(--crop);position:relative;overflow:hidden;background:var(--paper);outline:1px solid #0002;outline-offset:-1px;cursor:zoom-in}
+
+.sheet img{display:block;width:100%;height:auto}
 figcaption{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0 0}
 figcaption h2{font-weight:650;font-size:clamp(20px,1.85vw,27px);letter-spacing:-.04em;line-height:1.25;margin:0}
 figcaption p{margin:4px 0 0;color:#4c4d48;font-size:15px;line-height:1.5}
@@ -32,7 +29,7 @@ figcaption p{margin:4px 0 0;color:#4c4d48;font-size:15px;line-height:1.5}
 #puai figcaption{display:block;padding:22px 24px 22px 0}
 #puai .source{margin:0 0 9px;color:#443d38}
 #puai figcaption h2{font-size:clamp(31px,4.05vw,63px);font-weight:600;line-height:1.2;max-width:6.5em}
-.personal-actions{display:flex;align-items:baseline;gap:20px;margin:18px 0 0;font-size:15px}.personal-actions .save{font-size:inherit}
+.personal-actions{display:flex;align-items:baseline;gap:4px 20px;flex-wrap:wrap;margin:18px 0 0;font-size:15px}.personal-actions .save{font-size:inherit}
 dialog{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;padding:0;border:0;background:#e9e9e6;color:inherit}
 dialog::backdrop{background:#e9e9e6}dialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
 html.browsing{overflow:hidden}
@@ -61,117 +58,100 @@ html.browsing{overflow:hidden}
   .full-figure{margin:0 auto 22px}
 }
 </style><link rel="stylesheet" href="../metrics-consent.css"></head><body data-puai-surface="gallery"><div class="shell">
-<nav aria-label="项目导航"><a class="brand" href="../">PUAI</a><a href="overview.png?v=116bfc4e0a">九型配色总览</a><a href="../">生成我的报告</a></nav>
+<nav aria-label="项目导航"><a class="brand" href="../">PUAI</a><a href="overview.png?v=4cf56151f0">九型配色总览</a><a href="../#go">生成我的报告</a></nav>
 <header><h1><time datetime="2026">2026</time>人机关系图册</h1>
-<p>唐某的本人报告，另附<a href="#hush">八款试样</a>。<br>试样使用演示数据和原创场景短句。</p></header>
+<p>唐某的真实原话，另附八份虚构对话样刊。<br><a href="PUAI-samples.zip?v=3a1d014b82" download>下载九份样刊</a></p></header>
 <main><figure id="puai" class="edition" data-title="PUAI">
-  <a class="sheet" href="../persona-report.png?v=d8f4da2f2b" aria-label="打开PUAI完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#f3f6f6">
-    <span class="mast"><img src="../persona-report.png?v=d8f4da2f2b" width="900" height="2446" alt="" loading="eager"></span>
-    <span class="seam">本人原话</span>
-    <span class="shelf"><span class="excerpt"><img src="../persona-report.png?v=d8f4da2f2b" width="900" height="2446" alt="" loading="eager"></span></span>
+  <a class="sheet" href="../persona-report.png?v=69b56decd8" aria-label="打开唐某的 PUAI 鲜红发布版"
+     style="--crop:995;--paper:#fff8ef">
+    <img src="../persona-report.png?v=69b56decd8" width="900" height="2576" alt="不愿透露姓名的唐某的 PUAI 年度报告。原话「我缺你这点 token 吗？」" loading="eager">
   </a>
   <figcaption>
     <div><p class="source">本人报告</p><h2>不愿透露姓名的唐某</h2></div>
     <div class="personal-actions">
-      <a class="save" data-puai-action="save_report" href="../persona-report.png?v=d8f4da2f2b" download="PUAI-唐某.png" aria-label="保存唐某的 PUAI 长图">保存长图</a>
+      <a class="variant" href="puai.png?v=f444992f61" data-height="2576" data-variant="puai-cobalt">看钴蓝配色</a>
+      <a class="save" data-puai-action="save_report" href="../persona-report.png?v=69b56decd8" download="PUAI-唐某.png" aria-label="保存唐某的 PUAI 长图">保存长图</a>
     </div>
   </figcaption>
 </figure>
 <figure id="hush" class="edition" data-title="AI在心口难开">
-  <a class="sheet" href="hush.png?v=328fce886e" aria-label="打开AI在心口难开完整长图"
-     style="--head:188;--band:455;--shelf:517;--offset:-132.96703297%;--paper:#fff7f4">
-    <span class="mast"><img src="hush.png?v=328fce886e" width="900" height="2650" alt="" loading="eager"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="hush.png?v=328fce886e" width="900" height="2650" alt="" loading="eager"></span></span>
+  <a class="sheet" href="hush.png?v=40b3974f46" aria-label="打开AI在心口难开完整长图"
+     style="--crop:993;--paper:#fff7f4">
+    <img src="hush.png?v=40b3974f46" width="900" height="2234" alt="阿梨的 AI在心口难开 虚构对话样刊。原话「就说我还差一刻钟。」" loading="eager">
   </a>
   <figcaption>
-    <div><h2>AI在心口难开</h2><p>心里的长篇大论，交给 AI 改成一句能发的。</p></div>
-    <a class="save" data-puai-action="save_report" href="hush.png?v=328fce886e" download="PUAI-AI在心口难开.png" aria-label="保存AI在心口难开长图">保存</a>
+    <div><h2>AI在心口难开</h2><p>阿梨 · 迟到一刻钟，明早还伞</p></div>
+    <a class="save" data-puai-action="save_report" href="hush.png?v=40b3974f46" download="PUAI-AI在心口难开.png" aria-label="保存AI在心口难开长图">保存</a>
   </figcaption>
 </figure>
 <figure id="aicu" class="edition" data-title="AICU">
-  <a class="sheet" href="aicu.png?v=053082737c" aria-label="打开AICU完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#fffaf4">
-    <span class="mast"><img src="aicu.png?v=053082737c" width="900" height="2712" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="aicu.png?v=053082737c" width="900" height="2712" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="aicu.png?v=decfc7f8a2" aria-label="打开AICU完整长图"
+     style="--crop:797;--paper:#fffaf4">
+    <img src="aicu.png?v=decfc7f8a2" width="900" height="2378" alt="阿满的 AICU 虚构对话样刊。原话「行，酸辣面片汤。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AICU</h2><p>留给 AI 的时间，通常以分钟计。</p></div>
-    <a class="save" data-puai-action="save_report" href="aicu.png?v=053082737c" download="PUAI-AICU.png" aria-label="保存AICU长图">保存</a>
+    <div><h2>AICU</h2><p>阿满 · 临上桌的馄饨</p></div>
+    <a class="save" data-puai-action="save_report" href="aicu.png?v=decfc7f8a2" download="PUAI-AICU.png" aria-label="保存AICU长图">保存</a>
   </figcaption>
 </figure>
 <figure id="teach" class="edition" data-title="AI的教育">
-  <a class="sheet" href="teach.png?v=11dfcdf1af" aria-label="打开AI的教育完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#f5fbf4">
-    <span class="mast"><img src="teach.png?v=11dfcdf1af" width="900" height="2650" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="teach.png?v=11dfcdf1af" width="900" height="2650" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="teach.png?v=1142c441f4" aria-label="打开AI的教育完整长图"
+     style="--crop:865;--paper:#f5fbf4">
+    <img src="teach.png?v=1142c441f4" width="900" height="2446" alt="小柚的 AI的教育 虚构对话样刊。原话「你指一下谁没喝到。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI的教育</h2><p>AI 答错一道题，用户补写一页教案。</p></div>
-    <a class="save" data-puai-action="save_report" href="teach.png?v=11dfcdf1af" download="PUAI-AI的教育.png" aria-label="保存AI的教育长图">保存</a>
+    <div><h2>AI的教育</h2><p>小柚 · 三个人，两杯奶茶</p></div>
+    <a class="save" data-puai-action="save_report" href="teach.png?v=1142c441f4" download="PUAI-AI的教育.png" aria-label="保存AI的教育长图">保存</a>
   </figcaption>
 </figure>
 <figure id="all" class="edition" data-title="AI特全体">
-  <a class="sheet" href="all.png?v=4f28377e18" aria-label="打开AI特全体完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#f8f6ff">
-    <span class="mast"><img src="all.png?v=4f28377e18" width="900" height="2712" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="all.png?v=4f28377e18" width="900" height="2712" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="all.png?v=cec9182f3d" aria-label="打开AI特全体完整长图"
+     style="--crop:803;--paper:#f8f6ff">
+    <img src="all.png?v=cec9182f3d" width="900" height="2322" alt="麻薯的 AI特全体 虚构对话样刊。原话「两位评委请把自己的参赛证摘一下。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI特全体</h2><p>同一道题，几个模型轮流上台。</p></div>
-    <a class="save" data-puai-action="save_report" href="all.png?v=4f28377e18" download="PUAI-AI特全体.png" aria-label="保存AI特全体长图">保存</a>
+    <div><h2>AI特全体</h2><p>麻薯 · 两位评委也报了名</p></div>
+    <a class="save" data-puai-action="save_report" href="all.png?v=cec9182f3d" download="PUAI-AI特全体.png" aria-label="保存AI特全体长图">保存</a>
   </figcaption>
 </figure>
 <figure id="einstein" class="edition" data-title="AI因斯坦">
-  <a class="sheet" href="einstein.png?v=95cec682da" aria-label="打开AI因斯坦完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#f2fbfc">
-    <span class="mast"><img src="einstein.png?v=95cec682da" width="900" height="2650" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="einstein.png?v=95cec682da" width="900" height="2650" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="einstein.png?v=2534400188" aria-label="打开AI因斯坦完整长图"
+     style="--crop:797;--paper:#f2fbfc">
+    <img src="einstein.png?v=2534400188" width="900" height="2378" alt="泡泡的 AI因斯坦 虚构对话样刊。原话「它停着等人的时候也在减肥吗？」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI因斯坦</h2><p>上一个答案，只够再生出一个为什么。</p></div>
-    <a class="save" data-puai-action="save_report" href="einstein.png?v=95cec682da" download="PUAI-AI因斯坦.png" aria-label="保存AI因斯坦长图">保存</a>
+    <div><h2>AI因斯坦</h2><p>泡泡 · 一勺水要用多大的碗</p></div>
+    <a class="save" data-puai-action="save_report" href="einstein.png?v=2534400188" download="PUAI-AI因斯坦.png" aria-label="保存AI因斯坦长图">保存</a>
   </figcaption>
 </figure>
 <figure id="edison" class="edition" data-title="AI迪生">
-  <a class="sheet" href="edison.png?v=ce535819ee" aria-label="打开AI迪生完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#fffbee">
-    <span class="mast"><img src="edison.png?v=ce535819ee" width="900" height="2650" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="edison.png?v=ce535819ee" width="900" height="2650" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="edison.png?v=3f79e58da3" aria-label="打开AI迪生完整长图"
+     style="--crop:995;--paper:#fffbee">
+    <img src="edison.png?v=3f79e58da3" width="900" height="2576" alt="阿葵的 AI迪生 虚构对话样刊。原话「表就留七点，太阳那边我自己解释。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI迪生</h2><p>一个点子没落地，下一个已经通电。</p></div>
-    <a class="save" data-puai-action="save_report" href="edison.png?v=ce535819ee" download="PUAI-AI迪生.png" aria-label="保存AI迪生长图">保存</a>
+    <div><h2>AI迪生</h2><p>阿葵 · 把坏闹钟粘在七点</p></div>
+    <a class="save" data-puai-action="save_report" href="edison.png?v=3f79e58da3" download="PUAI-AI迪生.png" aria-label="保存AI迪生长图">保存</a>
   </figcaption>
 </figure>
 <figure id="support" class="edition" data-title="AI的供养">
-  <a class="sheet" href="support.png?v=714efb826f" aria-label="打开AI的供养完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#fff5f9">
-    <span class="mast"><img src="support.png?v=714efb826f" width="900" height="2712" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="support.png?v=714efb826f" width="900" height="2712" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="support.png?v=d65a78f776" aria-label="打开AI的供养完整长图"
+     style="--crop:933;--paper:#fff5f9">
+    <img src="support.png?v=d65a78f776" width="900" height="2576" alt="阿桃的 AI的供养 虚构对话样刊。原话「别道歉，像屁股很正常，桃子本来就长那样。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI的供养</h2><p>花自己的钱，给 AI 提供情绪价值。</p></div>
-    <a class="save" data-puai-action="save_report" href="support.png?v=714efb826f" download="PUAI-AI的供养.png" aria-label="保存AI的供养长图">保存</a>
+    <div><h2>AI的供养</h2><p>阿桃 · 替画得像屁股的桃子说句话</p></div>
+    <a class="save" data-puai-action="save_report" href="support.png?v=d65a78f776" download="PUAI-AI的供养.png" aria-label="保存AI的供养长图">保存</a>
   </figcaption>
 </figure>
 <figure id="free" class="edition" data-title="AI咋咋地">
-  <a class="sheet" href="free.png?v=2452e9dc23" aria-label="打开AI咋咋地完整长图"
-     style="--head:188;--band:517;--shelf:517;--offset:-117.02127660%;--paper:#fafbef">
-    <span class="mast"><img src="free.png?v=2452e9dc23" width="900" height="2712" alt="" loading="lazy"></span>
-    <span class="seam">主题试样 · 演示数据</span>
-    <span class="shelf"><span class="excerpt"><img src="free.png?v=2452e9dc23" width="900" height="2712" alt="" loading="lazy"></span></span>
+  <a class="sheet" href="free.png?v=4a411fc639" aria-label="打开AI咋咋地完整长图"
+     style="--crop:735;--paper:#fafbef">
+    <img src="free.png?v=4a411fc639" width="900" height="2254" alt="汤圆的 AI咋咋地 虚构对话样刊。原话「馄饨归你决定，香菜归我否决。」" loading="lazy">
   </a>
   <figcaption>
-    <div><h2>AI咋咋地</h2><p>连决定要不要请示，也想外包。</p></div>
-    <a class="save" data-puai-action="save_report" href="free.png?v=2452e9dc23" download="PUAI-AI咋咋地.png" aria-label="保存AI咋咋地长图">保存</a>
+    <div><h2>AI咋咋地</h2><p>汤圆 · 馄饨归你，香菜归我</p></div>
+    <a class="save" data-puai-action="save_report" href="free.png?v=4a411fc639" download="PUAI-AI咋咋地.png" aria-label="保存AI咋咋地长图">保存</a>
   </figcaption>
 </figure></main><footer class="puai-privacy-foot"><button type="button" data-puai-privacy>统计设置</button></footer></div>
 <dialog id="viewer" aria-labelledby="viewTitle">
@@ -187,30 +167,75 @@ const viewer=document.getElementById('viewer'),full=document.getElementById('ful
 const links=[...document.querySelectorAll('.sheet')],pane=viewer.querySelector('.viewport');
 const prev=document.getElementById('prev'),next=document.getElementById('next'),save=document.getElementById('download');
 let active=0,opener;
-function show(index) {
-  if(index<0||index>=links.length)return;
-  active=index;
-  const link=links[index],label=link.closest('figure').dataset.title;
+const alternate=document.querySelector('.variant');
+function select(link) {
+  const figure=link.closest('figure'),main=figure.querySelector('.sheet');
+  const label=figure.dataset.title+(link===alternate?'（钴蓝）':'');
+  active=links.indexOf(main);
   document.getElementById('viewTitle').textContent=label;
-  full.width=900;full.height=Number(link.querySelector('img').getAttribute('height'));
-  full.src=link.href;full.alt=label+'年度报告完整长图';save.href=link.href;save.download='PUAI-'+label+'.png';
-  prev.disabled=index===0;next.disabled=index===links.length-1;pane.scrollTop=0;
+  full.width=900;
+  full.height=Number(link.dataset.height || main.querySelector('img').getAttribute('height'));
+  full.src=link.href;full.alt=main.querySelector('img').alt;
+  save.href=link.href;
+  save.download=link===alternate?'PUAI-唐某-钴蓝.png':figure.querySelector('.save').download;
+  prev.disabled=active===0;next.disabled=active===links.length-1;
+  pane.scrollTop=0;
+}
+function openLink(link) {
+  select(link);
+  if(viewer.open)return;
+  opener=link;
+  viewer.showModal();
+  document.documentElement.classList.add('browsing');
+  document.getElementById('close').focus({preventScroll:true});
+}
+function linkedSheet() {
+  if(location.hash==='#puai-cobalt')return alternate;
+  return links.find(link=>'#'+link.closest('figure').id===location.hash);
+}
+function targetHash(link) {
+  return '#'+(link.dataset.variant || link.closest('figure').id);
+}
+function syncLocation() {
+  const link=linkedSheet();
+  if(link)openLink(link);
+  else if(viewer.open)viewer.close();
+}
+function closeFromViewer() {
+  if(history.state?.puaiViewer && linkedSheet()) {
+    history.back();
+    return;
+  }
+  if(linkedSheet())history.replaceState(history.state,'',location.pathname+location.search);
+  viewer.close();
+}
+function flip(step) {
+  const link=links[active+step];
+  if(!link)return;
+  history.replaceState(history.state,'',targetHash(link));
+  select(link);
 }
 if(typeof viewer.showModal==='function') {
-  links.forEach((link,i)=>link.addEventListener('click',event=>{
+  [...links,alternate].forEach(link=>link.addEventListener('click',event=>{
     if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.button!==0)return;
-    event.preventDefault();opener=link;show(i);viewer.showModal();document.documentElement.classList.add('browsing');
-    document.getElementById('close').focus({preventScroll:true});
+    event.preventDefault();
+    history.pushState({puaiViewer:true},'',targetHash(link));
+    openLink(link);
   }));
-  prev.addEventListener('click',()=>show(active-1));next.addEventListener('click',()=>show(active+1));
-  document.getElementById('close').addEventListener('click',()=>viewer.close());
+  prev.addEventListener('click',()=>flip(-1));next.addEventListener('click',()=>flip(1));
+  document.getElementById('close').addEventListener('click',closeFromViewer);
+  viewer.addEventListener('cancel',event=>{event.preventDefault();closeFromViewer()});
   viewer.addEventListener('keydown',event=>{
-    if(event.key==='ArrowLeft'){event.preventDefault();show(active-1)}
-    if(event.key==='ArrowRight'){event.preventDefault();show(active+1)}
+    if(event.key==='ArrowLeft'){event.preventDefault();flip(-1)}
+    if(event.key==='ArrowRight'){event.preventDefault();flip(1)}
   });
   viewer.addEventListener('close',()=>{
-    document.documentElement.classList.remove('browsing');opener?.focus({preventScroll:true});
+    if(viewer.open)return;
+    document.documentElement.classList.remove('browsing');
+    opener?.focus({preventScroll:true});
   });
+  window.addEventListener('hashchange',syncLocation);
+  syncLocation();
 }
 </script><script src="../metrics-consent.js"></script>
 <script src="../metrics.js"></script></body></html>

@@ -10,12 +10,12 @@
   <meta property="og:title" content="你和 AI 的年度相处报告 · 2026">
   <meta property="og:description" content="2026 AI 聊天年度特征报告。看看你和 AI 处成了哪种关系，用你的原话做成一张长图。">
   <meta property="og:url" content="https://xn--sxrw8m230b.com/PUAI/">
-  <meta property="og:image" content="https://xn--sxrw8m230b.com/PUAI/annual-cover-2026.png">
+  <meta property="og:image" content="https://xn--sxrw8m230b.com/PUAI/annual-cover-2026.png?v=d077844b3f">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="2026 你和 AI 的年度相处报告">
+  <meta property="og:image:alt" content="2026 AI 年度相处报告，含唐某鲜红 PUAI、AICU 与 AI 的供养样刊节选。">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="home.css?v=b4e279fee4">
+  <link rel="stylesheet" href="home.css?v=50e12f8b97">
   <link rel="preload" href="home-display.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./metrics-consent.css">
 </head>
@@ -43,14 +43,11 @@
           <textarea id="prompt" aria-label="完整生成口令" rows="3" readonly hidden></textarea>
         </div>
       </div>
-      <aside class="press" aria-label="三种主题样刊，点击查看">
-        <div class="print-field">
-          <a class="ticket" style="--orange:#FF8643" href="themes/#aicu" aria-label="看 AICU 主题示例">
-            <span class="ticket-text"><strong>AICU</strong><small>临期急救</small></span><span class="cross" aria-hidden="true"></span>
-          </a>
-          <a class="burst" style="--lemon:#32CCDB" href="themes/#einstein" aria-label="看 AI因斯坦主题示例"><strong>AI因斯坦</strong><span class="therefore" aria-hidden="true">∴</span></a>
-          <a class="bubble" style="--mint:#FFABA3" href="themes/#hush" aria-label="看 AI在心口难开主题示例"><span>AI在心口难开</span></a>
-        </div>
+      <aside class="press" aria-label="唐某的鲜红发布样刊">
+        <a class="sample-preview" href="sample.html?v=69b56decd8">
+          <span class="sample-crop"><img src="persona-report.png?v=69b56decd8" width="900" height="2576" alt="唐某先问「我缺你这点 token 吗？」，三天后说「赔钱！」。" decoding="async"></span>
+          <span class="sample-caption"><strong>唐某的 PUAI 报告</strong><span>看完整长图 <span aria-hidden="true">↗</span></span></span>
+        </a>
       </aside>
     </section>
     <section class="catalog" id="themes" aria-labelledby="catalog-title">
@@ -68,13 +65,13 @@
       </div>
     </section>
     <section class="feature" aria-labelledby="sample-title">
-      <div class="feature-meta"><p>本人报告节选</p><h2 id="sample-title">不愿透露姓名的唐某</h2><a href="sample.html">读完整报告 <span aria-hidden="true">↗</span></a></div>
-      <blockquote><p>“不要再拿这么丑的东西来污染我的眼睛了，求你了哥哥”</p></blockquote>
+      <div class="feature-meta"><p>本人报告节选</p><h2 id="sample-title">不愿透露姓名的唐某</h2><a href="sample.html?v=69b56decd8">读完整报告 <span aria-hidden="true">↗</span></a></div>
+      <blockquote><p>“你不是GPT Astra吗？你写这个比Claude差多了，你不反思一下自己吗”</p></blockquote>
     </section>
   </main>
   <footer class="foot wrap">
     <div><strong>在自己的 Agent 里用</strong><p>在本地读取聊天和用量日志，直接导出年度长图。</p></div>
-    <nav aria-label="更多资源"><a data-puai-action="download_skill" href="PUAI-skill.zip?v=f9e7310979" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="palettes/atlas/">配色样刊</a><button type="button" data-puai-privacy>统计设置</button></nav>
+    <nav aria-label="更多资源"><a data-puai-action="download_skill" href="PUAI-skill.zip?v=f9e7310979" download>下载 skill</a><a href="go.txt">一句话口令</a><a href="skill.txt" download="PUAI-SKILL.txt">离线对话用的技能说明</a><a href="themes/">九型报告样刊</a><button type="button" data-puai-privacy>统计设置</button></nav>
   </footer>
   <script src="portable-prompt.js?v=990db9c16f"></script>
   <script>bindPuaiPromptCopy(document.querySelector('#copy'), document.querySelector('#prompt'), document.querySelector('#status'), document.querySelector('#nickname'));</script>

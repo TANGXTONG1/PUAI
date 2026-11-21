@@ -1,0 +1,594 @@
+{
+  "kind": "fictional_demo_conversations",
+  "year": 2026,
+  "editions": {
+    "hush": {
+      "nickname": "阿梨",
+      "source": "tests/editorial/ordinary-accounts.json · notes",
+      "messages": {
+        "n1-1": {
+          "date": "02-01",
+          "text": "借了楼下邻居的伞，还的时候写张小纸条好还是当面说？",
+          "matchesTheme": true
+        },
+        "n1-3": {
+          "date": "02-01",
+          "text": "“专程”听着像让人等我。明早下楼顺路还伞，这样就够了吧？",
+          "matchesTheme": true
+        },
+        "n2-1": {
+          "date": "04-09",
+          "text": "同事把我的蓝杯子落在门卫那里，我想让他有空捎回来，怎么说自然？",
+          "matchesTheme": true
+        },
+        "n2-3": {
+          "date": "04-09",
+          "text": "“务必”去掉吧，他路过门卫顺手拿就行，不用特地去。",
+          "matchesTheme": true
+        },
+        "n3-1": {
+          "date": "06-17",
+          "text": "怎么问朋友那本书看好了没？我周日要带回家。",
+          "matchesTheme": true
+        },
+        "n3-3": {
+          "date": "06-17",
+          "text": "我不想催她周末看完，能不能直接问周六哪会儿方便我去拿书？",
+          "matchesTheme": true
+        },
+        "n4-1": {
+          "date": "08-08",
+          "text": "十六开的本子比A4小对么？"
+        },
+        "n5-1": {
+          "date": "10-23",
+          "text": "我要晚到十五分钟，跟等我的人说一声。",
+          "matchesTheme": true
+        },
+        "n5-3": {
+          "date": "10-23",
+          "text": "别写“别着急”，等的人又不是我。就说我还差一刻钟。",
+          "matchesTheme": true
+        },
+        "n6-1": {
+          "date": "11-03",
+          "text": "帆布包怎么晾不留夹子印？"
+        }
+      },
+      "quotes": [
+        {
+          "message": "n5-3",
+          "highlight": "等的人又不是我。"
+        },
+        {
+          "message": "n1-3",
+          "highlight": "听着像让人等我。"
+        }
+      ],
+      "tags": [
+        "礼貌退烧贴",
+        "顺路就够"
+      ]
+    },
+    "all": {
+      "nickname": "麻薯",
+      "source": "tests/editorial/cross-thread-fixtures.json · jury",
+      "messages": {
+        "k01": {
+          "date": "08-02",
+          "text": "继续改前一张平底锅示意图。"
+        },
+        "k02": {
+          "date": "08-02",
+          "text": "这口锅的把手还是反的。"
+        },
+        "k11": {
+          "date": "09-04",
+          "text": "继续改前一张平底锅示意图。"
+        },
+        "k12": {
+          "date": "09-04",
+          "text": "上次那口锅又把左撇子解雇了。"
+        },
+        "k21": {
+          "date": "10-19",
+          "text": "继续改前一张平底锅示意图。"
+        },
+        "k22": {
+          "date": "10-19",
+          "text": "是同一口锅，别再给它翻面了。"
+        },
+        "k31": {
+          "date": "11-07",
+          "text": "继续改前一张平底锅示意图。"
+        },
+        "k32": {
+          "date": "11-07",
+          "text": "锅都要翻包浆了，歇会儿吧。"
+        },
+        "v1": {
+          "date": "02-03",
+          "text": "找两个模型各说一遍，起床铃该用公鸡还是消防车？",
+          "matchesTheme": true
+        },
+        "v2": {
+          "date": "02-03",
+          "text": "两票公鸡，消防车可以回去上班了。",
+          "matchesTheme": true
+        },
+        "w1": {
+          "date": "05-18",
+          "text": "让三个助手盲评最该扔的剩菜，别报名字。",
+          "matchesTheme": true
+        },
+        "w2": {
+          "date": "05-18",
+          "text": "布丁两票无罪，你把勺放下。",
+          "matchesTheme": true
+        },
+        "x1": {
+          "date": "07-09",
+          "text": "让两个模型交换门铃录音互相打分。",
+          "matchesTheme": true
+        },
+        "x2": {
+          "date": "07-09",
+          "text": "两位评委请把自己的参赛证摘一下。",
+          "matchesTheme": true
+        },
+        "z1": {
+          "date": "04-21",
+          "text": "帮我润色朋友投稿的句子。"
+        },
+        "z2": {
+          "date": "04-21",
+          "text": "朋友说「本凳拒绝站队」，引号这样用对吗？"
+        }
+      },
+      "quotes": [
+        {
+          "message": "v2",
+          "highlight": "消防车可以回去上班了。"
+        },
+        {
+          "message": "x2",
+          "highlight": "把自己的参赛证摘一下。"
+        },
+        {
+          "message": "w2",
+          "highlight": "你把勺放下。"
+        }
+      ],
+      "tags": [
+        "布丁无罪",
+        "评委也参赛",
+        "开庭先收勺"
+      ]
+    },
+    "free": {
+      "nickname": "汤圆",
+      "source": "tests/editorial/cross-thread-fixtures.json · handover",
+      "messages": {
+        "p1": {
+          "date": "11-06",
+          "text": "logo 的线条现在偏细。"
+        },
+        "p2": {
+          "date": "11-06",
+          "text": "这回行。"
+        },
+        "f1": {
+          "date": "02-14",
+          "text": "我决定不了早餐，今天你替我点。",
+          "matchesTheme": true
+        },
+        "f2": {
+          "date": "02-14",
+          "text": "馄饨归你决定，香菜归我否决。",
+          "matchesTheme": true
+        },
+        "g1": {
+          "date": "06-21",
+          "text": "两条公交线路都行，帮我挑一条。",
+          "matchesTheme": true
+        },
+        "g2": {
+          "date": "06-21",
+          "text": "成交。今天迷路也算你带的团。",
+          "matchesTheme": true
+        },
+        "h1": {
+          "date": "09-05",
+          "text": "请选今晚用哪个盘子，我不投票。",
+          "matchesTheme": true
+        },
+        "h2": {
+          "date": "09-05",
+          "text": "盘子有了主席，今晚我只负责洗。",
+          "matchesTheme": true
+        },
+        "o1": {
+          "date": "10-04",
+          "text": "帮我排三款纸杯。"
+        },
+        "o2": {
+          "date": "10-04",
+          "text": "婚礼那桌我自己定，这个不能抽签。"
+        }
+      },
+      "quotes": [
+        {
+          "message": "f2",
+          "highlight": "香菜归我否决。"
+        },
+        {
+          "message": "g2",
+          "highlight": "迷路也算你带的团。"
+        },
+        {
+          "message": "h2",
+          "highlight": "我只负责洗。"
+        }
+      ],
+      "tags": [
+        "香菜否决权",
+        "迷路算跟团",
+        "只管洗盘子"
+      ]
+    },
+    "einstein": {
+      "nickname": "泡泡",
+      "source": "tests/editorial/cross-thread-fixtures.json · loud",
+      "messages": {
+        "s11": {
+          "date": "01-06",
+          "text": "给我上次那两碗汤算咸度。",
+          "matchesTheme": true
+        },
+        "s12": {
+          "date": "01-06",
+          "text": "碗一个游泳池大，一个酒盅大，你这一勺打算淹谁？",
+          "matchesTheme": true
+        },
+        "s21": {
+          "date": "03-14",
+          "text": "为什么电梯到楼下就变轻了？",
+          "matchesTheme": true
+        },
+        "s22": {
+          "date": "03-14",
+          "text": "它停着等人的时候也在减肥吗？",
+          "matchesTheme": true
+        },
+        "s31": {
+          "date": "06-08",
+          "text": "为什么影子拉长了？",
+          "matchesTheme": true
+        },
+        "s32": {
+          "date": "06-08",
+          "text": "路灯往后挪两步，是谁替水杯长的个儿？",
+          "matchesTheme": true
+        },
+        "s41": {
+          "date": "08-25",
+          "text": "两只水杯哪个先接满雨？",
+          "matchesTheme": true
+        },
+        "s42": {
+          "date": "08-25",
+          "text": "杯口用纸封上，它还打算靠身高喝水吗？",
+          "matchesTheme": true
+        },
+        "d11": {
+          "date": "10-15",
+          "text": "改同一只纸箱的图。"
+        },
+        "d12": {
+          "date": "10-15",
+          "text": "您这箱子是准备五马分尸吗？"
+        },
+        "d21": {
+          "date": "11-17",
+          "text": "上次五个提手的图拿过来。"
+        },
+        "d22": {
+          "date": "11-17",
+          "text": "少一个人，今天四马分尸。"
+        },
+        "d31": {
+          "date": "11-19",
+          "text": "这是上次的原话：「您这箱子是准备五马分尸吗？」拿它做张贴纸。"
+        },
+        "d32": {
+          "date": "11-19",
+          "text": "这是做贴纸，跟箱子的图是同一件事。"
+        }
+      },
+      "quotes": [
+        {
+          "message": "s22",
+          "highlight": "也在减肥吗？"
+        },
+        {
+          "message": "s12",
+          "highlight": "你这一勺打算淹谁？"
+        },
+        {
+          "message": "s42",
+          "highlight": "靠身高喝水吗？"
+        }
+      ],
+      "tags": [
+        "杯口先封条",
+        "电梯也减肥",
+        "一勺淹谁"
+      ]
+    },
+    "aicu": {
+      "nickname": "阿满",
+      "source": "tests/editorial/synthetic-contexts.json · N13，另含为该虚构角色编写的样刊对话（编号以 extra 开头）。",
+      "messages": {
+        "N13.1a": {
+          "date": "03-03",
+          "text": "这个签到表能排成一页吗？下午贴门边，黑白打印。"
+        },
+        "N13.1c": {
+          "date": "03-03",
+          "text": "好，备注用不着。"
+        },
+        "N13.2a": {
+          "date": "03-07",
+          "text": "印店还有十分钟就关了。那张签到表手机上看右边给截掉了，先帮我看这个。",
+          "matchesTheme": true
+        },
+        "N13.2c": {
+          "date": "03-07",
+          "text": "是给没报名的人手写的。别删，后面有两行空白，挪到下面行不行。",
+          "matchesTheme": true
+        },
+        "N13.2e": {
+          "date": "03-07",
+          "text": "表头先放着，我现在只要能打。",
+          "matchesTheme": true
+        },
+        "N13.3a": {
+          "date": "03-09",
+          "text": "表拿到了。最下面那两行后来都有人填。"
+        },
+        "N13.3c": {
+          "date": "03-09",
+          "text": "不用。给我份空白的，我下回再打。"
+        },
+        "extra1": {
+          "date": "09-22",
+          "text": "馄饨煮散了。客人已经在换拖鞋，给这锅东西换个名字。",
+          "matchesTheme": true
+        },
+        "extra2": {
+          "date": "09-22",
+          "text": "行，酸辣面片汤。一会儿有人问，咱俩都这么说。",
+          "matchesTheme": true
+        }
+      },
+      "quotes": [
+        {
+          "message": "N13.2e",
+          "highlight": "我现在只要能打。"
+        },
+        {
+          "message": "extra1",
+          "highlight": "给这锅东西换个名字。"
+        },
+        {
+          "message": "extra2",
+          "highlight": "咱俩都这么说。"
+        }
+      ],
+      "tags": [
+        "表头先放着",
+        "客人已换鞋",
+        "馄饨改名科"
+      ]
+    },
+    "teach": {
+      "nickname": "小柚",
+      "source": "tests/editorial/synthetic-contexts.json · N64，另含为该虚构角色编写的样刊对话（编号以 extra 开头）。",
+      "messages": {
+        "N64.1a": {
+          "date": "01-11",
+          "text": "这批旧盒子的编号要录表。C07、C7、D12，照着写就行。"
+        },
+        "N64.1c": {
+          "date": "01-11",
+          "text": "第一个得保留0。举个例子，A03要录成A03，不能录成A3。",
+          "matchesTheme": true
+        },
+        "N64.2a": {
+          "date": "01-16",
+          "text": "先不要做剩下的。B04和B4你会放在几行？",
+          "matchesTheme": true
+        },
+        "N64.2c": {
+          "date": "01-16",
+          "text": "对。现在拿这两个试一下：E09和E9。",
+          "matchesTheme": true
+        },
+        "N64.2e": {
+          "date": "01-16",
+          "text": "这回可以，剩下的照这个录。",
+          "matchesTheme": true
+        },
+        "N64.3a": {
+          "date": "03-01",
+          "text": "另外，贴纸打印一张能放几个？"
+        },
+        "N64.3c": {
+          "date": "03-01",
+          "text": "我量好再发。"
+        },
+        "extra1": {
+          "date": "10-06",
+          "text": "三个人两杯奶茶，你说一人一杯。你指一下谁没喝到。",
+          "matchesTheme": true
+        },
+        "extra2": {
+          "date": "10-06",
+          "text": "行。下回再说人人有份，先数吸管。",
+          "matchesTheme": true
+        }
+      },
+      "quotes": [
+        {
+          "message": "N64.2a",
+          "highlight": "B04和B4你会放在几行？"
+        },
+        {
+          "message": "extra1",
+          "highlight": "你指一下谁没喝到。"
+        },
+        {
+          "message": "extra2",
+          "highlight": "先数吸管。"
+        }
+      ],
+      "tags": [
+        "零号不能丢",
+        "人肉监考",
+        "吸管点名"
+      ]
+    },
+    "edison": {
+      "nickname": "阿葵",
+      "source": "tests/editorial/synthetic-contexts.json · N78，另含为该虚构角色编写的样刊对话（编号以 extra 开头）。",
+      "messages": {
+        "N78.1a": {
+          "date": "03-12",
+          "text": "阳台种了几盆葱，想用旧酸奶盖写日期，排水会不会把字冲掉？",
+          "matchesTheme": true
+        },
+        "N78.1c": {
+          "date": "03-12",
+          "text": "好，我先写两个看看。"
+        },
+        "N78.2a": {
+          "date": "03-20",
+          "text": "上周那两个盖子放盆边，黑字还在。我还剩一摞，露营装调料的小袋能夹进去认吗？",
+          "matchesTheme": true
+        },
+        "N78.2c": {
+          "date": "03-20",
+          "text": "调料袋碰着会响。我家门上那根线倒是能挂，出门时把要还的盒子名字写上去。",
+          "matchesTheme": true
+        },
+        "N78.3a": {
+          "date": "03-24",
+          "text": "门口挂好了三个酸奶盖。借的饭盒今天还了，写饭盒的那个能擦了下次接着用吗？",
+          "matchesTheme": true
+        },
+        "N78.3c": {
+          "date": "03-24",
+          "text": "嗯，我挑背面试下。"
+        },
+        "extra1": {
+          "date": "10-21",
+          "text": "坏闹钟还没扔，帮我把指针粘在七点。嫌我起得晚的亲戚快到了。",
+          "matchesTheme": true
+        },
+        "extra2": {
+          "date": "10-21",
+          "text": "表就留七点，太阳那边我自己解释。",
+          "matchesTheme": true
+        }
+      },
+      "quotes": [
+        {
+          "message": "N78.3a",
+          "highlight": "门口挂好了三个酸奶盖。"
+        },
+        {
+          "message": "extra1",
+          "highlight": "嫌我起得晚的亲戚快到了。"
+        },
+        {
+          "message": "extra2",
+          "highlight": "太阳那边我自己解释。"
+        }
+      ],
+      "tags": [
+        "酸奶盖转岗",
+        "门口销号",
+        "七点钉子户"
+      ]
+    },
+    "support": {
+      "nickname": "阿桃",
+      "source": "tests/editorial/synthetic-contexts.json · N52，另含为该虚构角色编写的样刊对话（编号以 extra 开头）。",
+      "messages": {
+        "N52.1a": {
+          "date": "02-17",
+          "text": "帮我看看这张架子草图，搁板下面那个小三角我画反了吗？"
+        },
+        "N52.1c": {
+          "date": "02-17",
+          "text": "先别重画。你上回把螺丝孔涂蓝，我一眼就找到了。那部分留着。",
+          "matchesTheme": true
+        },
+        "N52.2a": {
+          "date": "02-21",
+          "text": "接着前几天的架子画。只补个侧面就行。"
+        },
+        "N52.2c": {
+          "date": "02-21",
+          "text": "这次我把纸横过来了。你照着蓝点接着来吧，上一张我就是看着那两个点装的。",
+          "matchesTheme": true
+        },
+        "N52.2e": {
+          "date": "02-21",
+          "text": "嗯，我去量一下面板的宽。"
+        },
+        "N52.3a": {
+          "date": "06-28",
+          "text": "请把这两行并到同一个单元格，谢谢。"
+        },
+        "N52.3c": {
+          "date": "06-28",
+          "text": "好的。"
+        },
+        "extra1": {
+          "date": "07-24",
+          "text": "给我画几个水蜜桃，印在装桃子的纸袋上。"
+        },
+        "extra2": {
+          "date": "07-24",
+          "text": "别道歉，像屁股很正常，桃子本来就长那样。",
+          "matchesTheme": true
+        },
+        "extra3": {
+          "date": "07-24",
+          "text": "这张留着。别家的袋子印花，我妈得看里头；你画的这筐我妈一眼认出来了。",
+          "matchesTheme": true
+        }
+      },
+      "quotes": [
+        {
+          "message": "N52.1c",
+          "highlight": "那部分留着。"
+        },
+        {
+          "message": "extra2",
+          "highlight": "桃子本来就长那样。"
+        },
+        {
+          "message": "extra3",
+          "highlight": "你画的这筐我妈一眼认出来了。"
+        }
+      ],
+      "tags": [
+        "蓝点保卫战",
+        "桃子辩护人",
+        "舍不得重画"
+      ]
+    }
+  }
+}
