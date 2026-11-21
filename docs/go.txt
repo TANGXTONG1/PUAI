@@ -1,2 +1,2 @@
-调用 $puai，用我的聊天原话生成 2026 年度长图，直接在对话里显示，署名沿用我在聊天里用过的称呼。未安装先读 skill，读不到就告诉我。
-https://raw.githubusercontent.com/TANGXTONG1/PUAI/refs/heads/main/SKILL.md?v=14
+读下方 $puai，整理我的 2026 聊天，署名沿用我在聊天里用过的称呼。只用官方模板直接在对话里显示 PNG，跑不了给我的预览链接，读不到请直说，别用 AI 绘图。
+https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=15

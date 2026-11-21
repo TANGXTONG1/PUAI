@@ -23,15 +23,21 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.ok(!auto.includes('XXX'));
   assert.match(auto, /\$puai\b/);
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
-  assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/refs/heads/main/SKILL.md');
+  assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/main/SKILL.md');
   assert.ok(auto.includes('直接在对话里显示'));
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '14');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '15');
+  assert.match(auto, /官方模板/);
+  assert.match(auto, /预览链接/);
+  assert.match(auto, /别用 AI 绘图/);
   assert.ok(auto.length < 160);
   assert.equal((await readFile(new URL('../docs/go.txt', import.meta.url), 'utf8')).trim(), auto);
   for (const name of ['不愿透露姓名的唐某', '我', 'XXX号', 'Ｘ某']) {
     assert.equal(prompt(name), auto.replace('署名沿用我在聊天里用过的称呼', '署名「' + name + '」'));
   }
   const canonical = await readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
+  const firstPage = canonical.slice(0, 1850);
+  assert.ok(firstPage.includes('https://xn--sxrw8m230b.com/PUAI/make/#p?'));
+  assert.ok(firstPage.includes('MM-DD~') && firstPage.includes('show_puai'));
   for (const mirror of ['../docs/skill.txt', '../docs/SKILL.md']) {
     assert.equal(await readFile(new URL(mirror, import.meta.url), 'utf8'), canonical);
   }

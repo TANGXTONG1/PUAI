@@ -26,9 +26,9 @@ node scripts/export_png.mjs --input /path/report.html --output /path/report.png 
 
 ## 在对话里显示图片
 
-用网页工具读取远程 skill 的 ChatGPT 也可能有可执行 Python 的数据分析工具。先实际调用它。若内核没有随包文件，将 SKILL.md 末尾的「离线对话画布」各段顺序写入同一个 Python 文件，导入 `show_puai`，把中文报告单传给它。与命令行共用同一个 A 版绘图函数。消息、日期和图片留在内核内，Python 无需联网。程序使用本机可读中文字体，也支持从已装 PyMuPDF 读取内置 CJK 字体。输出为 MIME 类型 `image/png` 的像素。ChatGPT 有 /mnt/data 时同时传 `output="/mnt/data/PUAI-2026.png"`（同名文件已存在时换新文件名），令回复正文也能内嵌同一张图。安装版的入口在 `scripts/notebook_card.py`；在线另有[完整可执行单文件](https://xn--sxrw8m230b.com/PUAI/notebook_card.py)。
+用网页工具读取远程 skill 的 ChatGPT 也可能有可执行 Python 的数据分析工具。使用本地官方程序；空白内核能联网时，可用 SKILL.md「联网加载官方模板」的代码获取校验通过的单文件。内核不能联网时，将 SKILL.md 末尾的「离线对话画布」各段顺序写入同一个 Python 文件，导入 `show_puai`，把中文报告单传给它。与命令行共用同一个 A 版绘图函数。消息、日期和图片留在内核内，Python 无需联网。程序使用本机可读中文字体，也支持从已装 PyMuPDF 读取内置 CJK 字体。输出为 MIME 类型 `image/png` 的像素。ChatGPT 有 /mnt/data 时同时传 `output="/mnt/data/PUAI-2026.png"`（同名文件已存在时换新文件名），令回复正文也能内嵌同一张图。安装版的入口在 `scripts/notebook_card.py`；在线另有[完整可执行单文件](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py)。
 
-有原生图片输出工具时，直接发送成品 PNG 的图像数据。交互式 Python 宿主可在生成报告的同一个 notebook 单元或后续单元运行以下代码。将脚本所在目录加入导入路径，文件名使用实际成品。
+能发送现有图片时，原样发送程序输出的 PNG。交互式 Python 宿主可在生成报告的同一个 notebook 单元或后续单元运行以下代码。将脚本所在目录加入导入路径，文件名使用实际成品。
 
 ```python
 from render_chat_png import display_chat_png
@@ -38,4 +38,4 @@ display_chat_png("/mnt/data/PUAI-2026.png")
 
 这是 notebook 的图片输出步骤，在独立 shell 子进程里运行不会生成对话预览。脚本不可导入时，用 IPython 的 `display(Image(filename=path))` 显示相同的 PNG。宿主需要在回复正文引用文件时，把真实成品写成 `![我的年度报告](sandbox:/mnt/data/PUAI-2026.png)`。已展示的图片无需再配一个文件下载链接。
 
-只有文件下载或文字能力时，用含本人数据的网页直达链接「打开图片预览」。网页载入即显示整张图，读者可以选择保存。
+只有 AI 绘图、文件下载或文字能力时，直接给出含本人数据的网页链接「打开图片预览」。网页载入即显示整张图，读者可以选择保存。

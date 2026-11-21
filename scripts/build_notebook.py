@@ -1,7 +1,9 @@
 """Publish the same readable A-edition Pillow source inside the remote skill."""
 import argparse
 import ast
+from hashlib import sha256
 from pathlib import Path
+import re
 
 
 def build_notebook(root, docs=None):
@@ -40,7 +42,7 @@ def build_notebook(root, docs=None):
                 old_part.unlink()
     for number, part in enumerate(parts, start=1):
         filename = f"{number:02}.txt"
-        url = "https://xn--sxrw8m230b.com/PUAI/notebook/" + filename
+        url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/" + filename
         generated.append(f"### A 版源码 {number}/{len(parts)} · [本段原文]({url})\n\n```python\n{part}```\n")
         if docs:
             (docs / "notebook" / filename).write_text(part, encoding="utf-8")
@@ -49,6 +51,11 @@ def build_notebook(root, docs=None):
     instructions, boundary, _ = path.read_text(encoding="utf-8").partition(marker)
     if not boundary:
         raise ValueError("Missing notebook source marker in SKILL.md")
+    digest = sha256(source.encode("utf-8")).hexdigest()
+    instructions, count = re.subn(r'^expected_sha256 = "[0-9a-f]{64}"$',
+                                  f'expected_sha256 = "{digest}"', instructions, flags=re.MULTILINE)
+    if count != 1:
+        raise ValueError("Expected a single digest for the downloadable official notebook")
     path.write_text(instructions + marker + "\n\n" + "\n".join(generated), encoding="utf-8")
 
 

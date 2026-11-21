@@ -1,24 +1,44 @@
 """Exercise display of a rendered report in an actual notebook output cell."""
 import base64
 import importlib.util
+from io import BytesIO
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/render_chat_png.py"
 
 
 def notebook_parts():
-    import re
     skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
     appendix = skill.split("<!-- generated notebook source -->", 1)[1]
     return re.findall(r"```python\n(.*?)^```$", appendix, re.S | re.M)
 
 
 class InlinePreviewTests(unittest.TestCase):
+    def test_public_notebook_loader_checks_exact_source_before_execution(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        section = skill.split("## 联网加载官方模板\n", 1)[1].split("## 离线对话画布", 1)[0]
+        cell = re.search(r"```python\n(.*?)^```$", section, re.S | re.M)[1]
+        load, call = cell.split('renderer["show_puai"]', 1)
+        self.assertEqual(call.strip(), "(receipt, output=output)")
+        url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py"
+        source = (ROOT / "docs/notebook_card.py").read_bytes()
+        with patch("urllib.request.urlopen", return_value=BytesIO(b"raise RuntimeError()")) as get:
+            with self.assertRaisesRegex(ValueError, "模板版本"):
+                exec(load, {})
+            get.assert_called_once_with(url, timeout=8)
+        loaded = {}
+        with patch("urllib.request.urlopen", return_value=BytesIO(source)) as get:
+            exec(load, loaded)
+            self.assertTrue(callable(loaded["renderer"]["show_puai"]))
+            get.assert_called_once_with(url, timeout=8)
+
     def test_remote_skill_carries_the_complete_print_renderer(self):
         parts = notebook_parts()
         self.assertTrue(parts)

@@ -5,7 +5,12 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
 
 # PUAI 年度报告
 
-交付一张能在手机里读的官方漫画 A 版。调用者只需提供署名（可选）。本地从本 skill 目录取程序和模板，在线读到本文的助手按下文的云端方式使用同一项目。参考图上的人、统计和台词属于原作者。
+先从本人已授权的不同对话里取材，选两句值得转发的逐字原话，核对发送日，再用 **PUAI 官方漫画 A 版** 排版。署名可选。参考图上的人、统计和台词属于原作者。
+
+**先看这个对话能用什么工具。** 即使用户说「直接显示图片」，也只走以下两条出图路径。跳过按描述作画的工具（含 ImageGen），包括把官方样图交给它模仿。
+
+- **能运行官方模板。** 用本地随包程序，或在 Python 中用官方单文件的 `show_puai` 生成并展示 PNG。能执行页面并回传图片的浏览器也可从官方预览页取 PNG。只有实际返回了该程序的 PNG 像素或真实文件，才在消息中展示图片。
+- **只有网页阅读、文字、AI 绘图，或模板执行失败。** 仍按下面的取材步骤读本人历史，回复一个可点击的「打开我的报告」链接。地址从 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 开始，在 # 后填好实际的 `name`、`scope`、已判的 `theme`（如 PUAI 填 puai，AI因斯坦填 einstein，类型待定可省略），每句原话各用一个 `q=MM-DD~原话`，标签各用一个 `tag`。有已核日期就保留，没日期的 q 直接写原文。只能核到摘要时，用 `lead` 写一个具体动作。没有可核材料，就提示在常用旧对话发送同一口令。只有片段用 `scope=fragments`，同一场用 `thread`；跨多件独立事情的已读历史用 `history`。其他已见发言日可用 `dates=MM-DD,MM-DD`，完整线程的逐日账可用 `days=MM-DD:N:H`（N 是指令数，未审主题时 H 用 ?）。对每个值分别做 URL 编码，作为普通链接直接交给用户。用户点一次即由官方页面显示长图。不要发空白主页、照着规则另画一张、也不要把网页当成 Markdown 图片。只有整份 skill 都读不到且本地没安装时才告知无法读取。
 
 图尾只放二维码，旁边写「扫码获取口令，发给自己的 Agent 总结出图。」收到用户的生成口令，或用户明确要用自己的聊天生成时，直接按下面步骤出图。
 
@@ -13,7 +18,7 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
 
 每张成图都在署名旁标人物类型，页尾另放个性标签；「AI因斯坦」是类型，「车厘子精算师」是个性标签。每张图都留日历。**先取日期，再选原话**：打开原线程时一并读取本人消息的发送时间，按用户时区记到私有账。收到「补日期」时，沿用上一张图的署名和逐字原话，以原句去已授权的本人聊天里回查发送时间，并盘点同一范围可计数的其他发言，再出图。
 
-在 ChatGPT 里收到口令，先取材，再实际调用当前对话的数据分析 / Python 工具显示成图。若只读到了本页，直接在工具内执行[本页离线对话画布](#离线对话画布)；也可让当前网页阅读工具读取[完整 A 版单文件](https://xn--sxrw8m230b.com/PUAI/notebook_card.py)。代码和数据在当前对话结合。
+在 ChatGPT 的数据分析工具中，已装 skill 就直接调用随包程序。空白内核可以运行下方的[联网加载示例](#联网加载官方模板)，离线时可用[本页内嵌的完整源码](#离线对话画布)。只有阅读工具时按上面的预览路径交付。
 
 ## 从聊天里找当事人的话
 
@@ -63,23 +68,46 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
 三种输入都带上刚核对的取材范围：私有 JSON 根字段 `scope`，中文清单 `范围：history/thread/fragments`（三选一），网页同名参数 `scope`。把同一个类型 ID 写入 JSON 的根字段 `theme`、中文报告单的「主题」、预览链接的 `theme=`。确无依据时 JSON 用 null，报告单与链接省略主题，模板显示「待定」。按宿主能力选择以下路径。用 PUAI 随包模板、官方单文件程序、本页内置的离线对话画布或官方网页预览生成报告。不要自写海报、叫图片模型重新画、用参考样张顶替，或把程序输出的路径当成已经显示的图片。
 
 - **已装 skill，有浏览器。** 在私有工作目录准备 `report.json`，运行 skill 中的 `python3 scripts/build_report.py --input REPORT_JSON --style comic --output REPORT_HTML`，再用 `node scripts/export_png.mjs --input REPORT_HTML --output REPORT_PNG`。PNG 原宽 900 像素。私有证据不进图。按[报告格式](references/report-schema.md)填写 `activity.share_quotes` 等字段，`share_story.moment_indices` 可以为空，编辑短句只在有额外内容时入选。
-- **Python 能读取随包文件。** 浏览器不可用或只有零散材料时，直接用随包的 `scripts/render_chat_png.py`。联网的 Agent 也可从[公开脚本](https://xn--sxrw8m230b.com/PUAI/render_chat_png.py)获取同一文件。将私下整理的 UTF-8 报告单作为输入，运行 `python render_chat_png.py report.txt PUAI-2026.png`。首行单独写 `PUAI 2026`，以下每行“字段：内容”。最简为署名和一条原话；按需重复原话、标签，另可填主题、前情、AI、AI收尾、主场景、用法、日期账、发言日期、无日期账、Token。程序依赖 Pillow 和中文字体，[技能包](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip)含字体，可用 `--font` 指定。不同宿主的展示方法见[图片输出](references/png-export.md)。
+- **Python 能读取随包文件。** 浏览器不可用或只有零散材料时，直接用随包的 `scripts/render_chat_png.py`。联网的 Agent 也可从[公开脚本](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/render_chat_png.py)获取同一文件。将私下整理的 UTF-8 报告单作为输入，运行 `python render_chat_png.py report.txt PUAI-2026.png`。首行单独写 `PUAI 2026`，以下每行“字段：内容”。最简为署名和一条原话；按需重复原话、标签，另可填主题、前情、AI、AI收尾、主场景、用法、日期账、发言日期、无日期账、Token。程序依赖 Pillow 和中文字体，[技能包](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip)含字体，可用 `--font` 指定。不同宿主的展示方法见[图片输出](references/png-export.md)。
 - **ChatGPT 仅用网页工具读到了本页，Python 是空目录或不能联网。** 直接取[本页离线对话画布](#离线对话画布)代码，在已有 Python / 数据分析工具的同一个 notebook 中加载完整 A 版程序、调用 `show_puai`，将本次核准的原话、所有日期和账传入。无需安装 skill、到 Python 中下载脚本或让用户上传聊天。仅网页阅读器看到代码时，把可读程序写入单元执行。若宿主提供 /mnt/data，调用时传入该目录下的实际 PNG 输出路径，同时得到图片消息和同一张可内嵌的文件。
-- **有交互式浏览器和图片附件能力。** 即使没有 Python，也可在 Agent 的新浏览器标签中打开空白[出图页](https://xn--sxrw8m230b.com/PUAI/make/)，把中文报告单填进页面并点「生成长图」。等 `img#preview` 的 `naturalWidth` 为 900，取它的 PNG 图像数据，通过当前对话的图片工具送出。只把空白网址交给导航工具。普通网页搜索器无法执行这一步。
-- **在对话里展示。** 输出真实 PNG 后，优先用宿主原生图片消息发出像素。在交互式 Python 单元中可运行 `from render_chat_png import display_chat_png` 后调用 `display_chat_png(path)`。支持 Markdown 图片的本地对话，用图片语法引用真实绝对路径（例如 `![我的年度报告](/实际路径/报告.png)`）。若 ChatGPT 只把工具输出折叠在分析过程里，确认 PNG 已写入，最终回复用图片语法内嵌实际文件，例如 `![我的年度报告](sandbox:/mnt/data/PUAI-2026.png)`。已经显示成图就结束，无需再给下载链接。
+- **有交互式浏览器和图片附件能力。** 即使没有 Python，也可在 Agent 的新浏览器标签中打开空白[出图页](https://xn--sxrw8m230b.com/PUAI/make/)，把中文报告单填进页面并点「生成长图」。等 `img#preview` 的 `naturalWidth` 为 900，取它的 PNG 图像数据，通过当前对话能原样发送文件或图片数据的工具送出。只把空白网址交给导航工具。普通网页搜索器无法执行这一步，直接给带本人数据的官方预览链接。
+- **在对话里展示。** 输出真实 PNG 后，优先用宿主支持的图片附件或富输出直接发送这份文件已有的像素。在交互式 Python 单元中可运行 `from render_chat_png import display_chat_png` 后调用 `display_chat_png(path)`。支持 Markdown 图片的本地对话，用图片语法引用真实绝对路径（例如 `![我的年度报告](/实际路径/报告.png)`）。若 ChatGPT 只把工具输出折叠在分析过程里，确认 PNG 已写入，最终回复用图片语法内嵌实际文件，例如 `![我的年度报告](sandbox:/mnt/data/PUAI-2026.png)`。已经显示成图就结束，无需再给下载链接。
 - **对话不能展示像素。** 已有成品时先尝试该客户端实际支持的图片附件或富输出。仅当宿主没有可用的图片执行或展示工具，或上面的本地渲染确实失败，才进入网页路径。给一个「打开图片预览」链接，使用官方 A 版网页，由浏览器自动出图。地址从 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 开始。例如已判为 AI因斯坦的单场用 `name=确定的署名&scope=thread&theme=einstein&q=MM-DD~本人逐字原话&days=MM-DD:N:?` 表示可逐条计数的单场精选，替换示意字段为核实的值；只有摘要时用 `lead=具体事实` 替代 q。按需加 setup、tag 等字段，q、tag 可重复。引语可加真实日期前缀 `MM-DD~`，AI 原话用 ai 或 endai。日期账 days 为逐日的 `MM-DD:N:H`，多日用英文逗号分隔；无日期账 undated 为 `N:H`。N 是本人消息数，H 是该组核准命中数，未逐条审完或无主题时填问号。token 为日志整数。用有序键值对编码，所有分享数据仅在 # 后，手工拼接可直接写中文并转义值里的空格、&、#、+、% 和括号。链接直接回给当事人，由对方设备在本地生成 PNG。浏览器请求服务器时不会携带 # 后的数据。助手无需用网页工具打开含原话的链接，也无需把原话提交给任何服务。仅能发文字时，把可点击的本人预览作为这条回复的成品；不要停在报告单、文稿或一段字段。链接里只放已选好、适合本人分享的内容。
 
 交付前看实际成品，数一遍上图原话（新图一至三句，有摘要而无引语时为零），核对成品署名和读到的本人称呼，检查署名旁的类型章是否与所选九型一致，对照原文检查角色和引语，逐一对照私有日期账、每条有依据的引语日期和最终送入渲染器的字段。若日期全丢在中途，补字段后再交图。核对统计分母。转发入口留在图尾。示意与真实报告分清，只在用户要求时使用明确标注的演示资料。
+
+## 联网加载官方模板
+
+已有 `scripts/notebook_card.py` 就直接导入。空白 Python 内核可执行下面的单元。先把本人报告单存为字符串 `receipt`（格式见上文）；请求只读取公开程序，报告内容在内核里排版。调用产生的 `image/png` 可直接展示。需要在最终回复内嵌文件时，用 `output` 的实际路径。
+
+```python
+from hashlib import sha256
+from pathlib import Path
+from urllib.request import urlopen
+from uuid import uuid4
+
+renderer_url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py"
+expected_sha256 = "546c8d4c29abe27cff93823f8fd0bcf7e548475a59704ccd51dfc41f9e0b9dea"
+with urlopen(renderer_url, timeout=8) as response:
+    source = response.read()
+if sha256(source).hexdigest() != expected_sha256:
+    raise ValueError("读取的模板版本与本页不一致，请用下方内嵌源码。")
+renderer = {"__name__": "puai_notebook"}
+exec(compile(source, "puai_notebook.py", "exec"), renderer)
+folder = Path("/mnt/data")
+output = folder / f"PUAI-{uuid4().hex[:8]}.png" if folder.is_dir() else None
+renderer["show_puai"](receipt, output=output)
+```
 
 ## 离线对话画布
 
 这是安装版使用的完整 A 版 Pillow 绘图程序。主入口是 `show_puai(中文报告单, output=本次图片路径)`。使用「PUAI 2026」开头的多行报告单，原话与已核日期按上面的字段填写。若已整理成结构化参数，仍可调用 `puai_card(name=…, theme=…, scope=…, turns=…, days=…, dates=…, tags=…)`。两种入口共用字体、九型配色、贴纸、日历和图尾。
 
-若 Python 能访问[单文件](https://xn--sxrw8m230b.com/PUAI/notebook_card.py)或已挂载，直接加载该文件。若 Python 不能联网，使用**当前对话已经读到的以下源码**。先把各段按序原样写进可写目录的同一个 `puai_notebook.py`（Jupyter 首段用 `%%writefile puai_notebook.py`，后续各段用 `%%writefile -a puai_notebook.py`），再 `from puai_notebook import show_puai` 并调用。浏览工具截断某一段时，单独读取该段所附的「本段原文」。一个完整单元也可以顺序执行拼好的源码。调用后直接展示真实 PNG；有 /mnt/data 时同时传入该目录内的新文件名。
+若 Python 能访问[单文件](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py)或已挂载，直接加载该文件。若 Python 不能联网，使用**当前对话已经读到的以下源码**。先把各段按序原样写进可写目录的同一个 `puai_notebook.py`（Jupyter 首段用 `%%writefile puai_notebook.py`，后续各段用 `%%writefile -a puai_notebook.py`），再 `from puai_notebook import show_puai` 并调用。源码取不全或在内核中执行失败时，直接交付已填好内容的官方预览。浏览工具截断某一段时，单独读取该段所附的「本段原文」。一个完整单元也可以顺序执行拼好的源码。调用后直接展示真实 PNG；有 /mnt/data 时同时传入该目录内的新文件名。
 
 <!-- generated notebook source -->
 
-### A 版源码 1/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/01.txt)
+### A 版源码 1/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/01.txt)
 
 ```python
 """Official PUAI A poster. In this notebook import show_puai and pass a reviewed report.
@@ -207,7 +235,7 @@ def parse_receipt(text):
             lines.append((field, value))
 ```
 
-### A 版源码 2/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/02.txt)
+### A 版源码 2/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/02.txt)
 
 ```python
 
@@ -305,7 +333,7 @@ def parse_receipt(text):
                 days=days, observed_dates=observed_dates, total=total, hits=hits, tokens=int(tokens) if tokens else None)
 ```
 
-### A 版源码 3/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/03.txt)
+### A 版源码 3/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/03.txt)
 
 ```python
 
@@ -418,7 +446,7 @@ def draw_report(r, font):
         text(round(x-(left+right)/2), round(y-(top+bottom)/2), value, size, color, bold)
 ```
 
-### A 版源码 4/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/04.txt)
+### A 版源码 4/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/04.txt)
 
 ```python
 
@@ -524,7 +552,7 @@ def draw_report(r, font):
         return top+height+(0 if burst else 22)+(48 if closing else 24)
 ```
 
-### A 版源码 5/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/05.txt)
+### A 版源码 5/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/05.txt)
 
 ```python
 
@@ -624,7 +652,7 @@ def draw_report(r, font):
         legend.append(("缺记录", None))
 ```
 
-### A 版源码 6/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/06.txt)
+### A 版源码 6/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/06.txt)
 
 ```python
 
@@ -769,7 +797,7 @@ def draw_report(r, font):
     return img
 ```
 
-### A 版源码 7/7 · [本段原文](https://xn--sxrw8m230b.com/PUAI/notebook/07.txt)
+### A 版源码 7/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/07.txt)
 
 ```python
 
