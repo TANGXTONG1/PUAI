@@ -21,6 +21,7 @@
         y = paragraph(48,y,wrap(r["short"],800,41),41,bold=True)+28
     if r["total"] or r["tokens"] is not None:
         ratio = None if r["hits"] is None else r["hits"]/r["total"]
+        width = 514 if ratio is not None else 804
         if r["tokens"] is not None:
             tokens = r["tokens"]
             if tokens >= 100_000_000:
@@ -31,34 +32,32 @@
             caption = "和 AI 对话，烧了"
         else:
             value, caption = f'{r["total"]:,} 条指令', "记录里，你发出了"
+        height = 154 if ratio is not None else 104
+        rect(48,y,width,height,pull)
+        if ratio is not None:
+            text(74,y+18,caption,34,on_pull,True)
+            text(74,y+72,value,fitted(value,width-52,52),on_pull,True)
+            cx, cy, rad = 720, y+72, 65
+            bounds = (cx-rad,cy-rad,cx+rad,cy+rad)
+            cmd("ellipse",bounds,outline=tint,width=12)
+            if ratio:
+                cmd("arc",bounds,-90,-90+ratio*360,fill=calendar_ink,width=12)
+            percentage = f"{ratio*100:.1f}".removesuffix(".0")+"%"
+            centered(cx,cy-23,"约",24,bold=True)
+            centered(cx,cy+14,percentage,fitted(percentage,108,44),bold=True)
+            text(cx,y+156,"指令在骂 AI" if theme=="puai" else theme_label+"指令占比",30,align="mt")
+        else:
+            text(74,y+32,caption,34,on_pull,True)
+            centered(625,y+52,value,fitted(value,390,52),on_pull,True)
         extra = []
         if r["tokens"] is not None and r["total"]:
             extra.append(f'{r["total"]:,} 条指令')
         if ratio is not None:
             extra.append(f'{r["hits"]:,} 条{theme_label}')
-        height, split = (180 if extra else 148), 548
-        rect(48,y,804,height,tint if ratio is not None else pull,radius=10)
-        if ratio is not None:
-            rect(48,y,split-48,height,pull,radius=10)
-            rect(split-10,y,10,height,pull)
-            cx, cy, rad = split+58, y+height/2, 41
-            bounds = (cx-rad,cy-rad,cx+rad,cy+rad)
-            cmd("ellipse",bounds,outline=paper,width=12)
-            if ratio:
-                cmd("arc",bounds,-90,-90+ratio*360,fill=calendar_ink,width=12)
-            percentage = "约 "+f"{ratio*100:.1f}".removesuffix(".0")+"%"
-            text(split+114,cy-45,percentage,fitted(percentage,176,48),bold=True)
-            label = "指令在骂 AI" if theme=="puai" else theme_label+"指令占比"
-            text(split+114,cy+23,label,fitted(label,172,30),bold=True)
-            for yy in (y,y+height):
-                cmd("ellipse",(split-7,yy-7,split+7,yy+7),fill=paper)
-        width = 445 if ratio is not None else 750
-        text(76,y+21,caption,30,on_pull,True)
-        text(76,y+66,value,fitted(value,width,64),on_pull,True)
         if extra:
-            detail = " · ".join(extra)
-            text(76,y+141,detail,fitted(detail,width,30),on_pull)
-        y += height+39
+            value = " · ".join(extra)
+            text(48,y+(169 if ratio is not None else 117),value,fitted(value,width,31),bold=True)
+        y += 232 if ratio is not None else (178 if extra else 139)
 
     days = r["days"]
     quote_dates = [dt for dt, _ in quotes if dt]

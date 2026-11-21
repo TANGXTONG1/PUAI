@@ -1,12 +1,14 @@
 
-        def calendar_cell(px, py, size, fill):
-            rect(px+1, py+1, size-2, size-2, fill or paper, None if fill else "#87959D", radius=4)
+        def dot(px, py, diameter, fill):
+            cmd("ellipse",(px,py,px+diameter,py+diameter),fill=fill,outline=fill or "#87959D",width=1)
+            if not fill:
+                cmd("line",(px+4,py+diameter-4,px+diameter-4,py+4),fill="#87959D",width=1)
 
         def month_grid(month, x, top, width):
             cx = x+width/2
             centered(cx,top+17,f"{month:02} 月",34,bold=True)
             weeks = calendar.Calendar(0).monthdayscalendar(year,month)
-            step, diameter = 31, 26
+            step, diameter = 28, 23
             left = round(cx-((len(weeks)-1)*step+diameter)/2)
             for week, dates in enumerate(weeks):
                 for weekday, day in enumerate(dates):
@@ -16,10 +18,10 @@
                     record = days.get(dt)
                     fill = calendar_ink if record and record[1] else ink if dt in calendar_dates or dt in observed_dates else None
                     px, py = left+week*step,top+54+weekday*step
-                    calendar_cell(px,py,diameter,fill)
+                    dot(px,py,diameter,fill)
                     if dt in markers:
-                        cmd("rectangle",(px-1,py-1,px+diameter+1,py+diameter+1),outline=ink,width=2)
-                        centered(px+diameter/2,py+diameter/2,str(markers[dt]),21,"#FFFFFF" if fill else ink,True)
+                        cmd("rectangle",(px-2,py-2,px+diameter+2,py+diameter+2),outline=ink,width=2)
+                        centered(px+diameter/2,py+diameter/2,str(markers[dt]),18,"#FFFFFF" if fill else ink,True)
             monthly = [(n,h) for day,(n,h) in days.items() if day.month==month]
             if monthly:
                 n = month_messages[month]
@@ -27,22 +29,22 @@
                     hits = sum(h for _,h in monthly)
                     stat = f"{hits} {'喷 / ' if theme=='puai' else '/ '}{n} 条"
                     left, bar = x+18, width-36
-                    rect(left, top+317, bar, 8, tint)
+                    rect(left, top+296, bar, 8, tint)
                     if hits:
-                        rect(left,top+317,round(bar*hits/n),8,calendar_ink)
+                        rect(left,top+296,round(bar*hits/n),8,calendar_ink)
                 else:
                     stat = f"{n} 条发言"
             elif len(selected) > 1:
                 stat = f"核实 {month_counts[month]} 天"
             else:
                 return
-            centered(cx,top+290,stat,fitted(stat,width-8,30),bold=True)
+            centered(cx,top+265,stat,fitted(stat,width-8,30),bold=True)
 
         def date_legend(x, at, available):
             col = available/len(legend)
             for i,(label,fill) in enumerate(legend):
                 xx = round(x+i*col)
-                calendar_cell(xx,at+4,21,fill)
+                dot(xx,at+4,20,fill)
                 text(xx+28,at,label,26)
 
         def date_fact(x, at, width, label, value):
@@ -60,7 +62,7 @@
             if secondary and not days:
                 text(428,y+112,secondary,fitted(secondary,424,34),bold=True)
             date_legend(428,y+245,424)
-            y += 356
+            y += 334
         else:
             if days:
                 date_fact(48,y,325,"有发言的日子",primary)
@@ -74,11 +76,8 @@
             date_legend(48,y+65,804)
             width = (804-24*(len(selected)-1))//len(selected)
             for i,month in enumerate(selected):
-                left = 48+i*(width+24)
-                if i:
-                    cmd("line",(left-12,y+129,left-12,y+442),fill="#BAC6C8",width=2)
-                month_grid(month,left,y+125,width)
-            y += 483
+                month_grid(month,48+i*(width+24),y+125,width)
+            y += 462
         extra = sorted(observed_dates.difference(days)) if days else []
         if extra:
             listed = "、".join(day.strftime("%m.%d") for day in extra[:3])
@@ -109,40 +108,29 @@
     stickers = []
     if r["tags"]:
         zone = y
-        tags = [tag if len(tag) <= 10 else tag[:9]+"…" for tag in r["tags"]]
+        tags = r["tags"]
         compact = len(tags) <= 2
-        height = 144 if compact else 188
-        chip_y = zone + (41 if compact else 78)
+        height = 144 if compact else 212
+        chip_y = zone + (37 if compact else 94)
         rect(0,zone,900,height,signal)
-        text(48,zone+(52 if compact else 21),"片段标签" if scope_title else "人格标签",38,bold=True)
-        x = 264 if compact else 48
-        size = 40
-        while True:
-            widths = [round(font(size).getlength(tag)) + 38 for tag in tags]
-            if sum(widths) + 18*(len(tags)-1) <= 852-x or size <= 20:
-                break
-            size -= 1
-        for tag, width in zip(tags, widths):
-            edge = [(x,chip_y),(x+width-10,chip_y),(x+width,chip_y+10),
-                    (x+width,chip_y+63),(x,chip_y+63)]
-            cmd("polygon",edge,fill=paper)
-            cmd("line",edge+[edge[0]],fill=ink,width=3)
-            centered(x+width/2,chip_y+31.5,tag,size,bold=True)
-            stickers.append((x-5,chip_y-6,x+width+6,chip_y+70))
-            x += width+18
+        text(48,zone+(47 if compact else 24),"片段标签" if scope_title else "人格标签",38,bold=True)
+        width = (588-16)//2 if compact else (804-32)//3
+        for i,tag in enumerate(tags):
+            if len(tag) > 10:
+                tag = tag[:9]+"…"
+            x = (264 if compact else 48)+i*(width+16)
+            rect(x,chip_y,width,62,paper,ink)
+            centered(x+width/2,chip_y+31,tag,fitted(tag,width-20,40),bold=True)
+            stickers.append((x-5,chip_y-6,x+width+6,chip_y+68))
         y += height
     footer_height = 228
-    rect(0,y,900,footer_height,paper)
-    cmd("line",(48,y+2,852,y+2),fill=ink,width=2)
-    text(48,y+56,"扫码获取口令",48,bold=True)
-    text(48,y+126,"发给自己的 Agent 总结出图。",34)
+    rect(0,y,900,footer_height,"#FBFBF8")
+    text(48,y+49,"扫码获取口令",46,bold=True)
+    text(48,y+124,"发给自己的 Agent 总结出图。",34)
     cell = 5
     modules = len(QR_ROWS)
     qr_size = (modules+8)*cell
     qr_x, qr_y = 852-qr_size, y+(footer_height-qr_size)//2
-    tip, mid = qr_x-24, y+footer_height//2
-    cmd("line",(tip-43,mid,tip,mid),fill=ink,width=4)
-    cmd("line",[(tip-14,mid-13),(tip,mid),(tip-14,mid+13)],fill=ink,width=4)
     rect(qr_x,qr_y,qr_size,qr_size,"#FFFFFF")
     for row,bits in enumerate(QR_ROWS):
         for col in range(modules):

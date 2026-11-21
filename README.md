@@ -1,14 +1,14 @@
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/cover.png?v=efc7b07124" width="1080" height="534" alt="2026 你和 AI 的年度相处报告。AICU、AI的供养与唐某的 PUAI 三份报告样张。"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/cover.png?v=144a590449" width="1080" height="534" alt="2026 你和 AI 的年度相处报告。AICU、AI的供养与唐某的 PUAI 三份报告样张。"></a>
 </p>
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png" width="220" height="44" alt="做我的年度报告"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/"><img src="docs/readme/start.png?v=0b58134d4a" width="220" height="44" alt="做我的年度报告"></a>
 </p>
 
 扫码获取口令，发给自己的 Agent 总结出图。想换署名就在复制前填昵称，留空会沿用你在聊天里认可的称呼。[领取生成口令](https://xn--sxrw8m230b.com/PUAI/#go)
 
-九种人格各有一套固定配色。**PUAI** 用钴蓝和荧光黄，**AI因斯坦** 用青蓝和淡蓝紫。报告从类型标题和本人原话开场，接发言统计、日历和人格标签。右上角标出年份和范围，例如「2026｜本次对话精选」。[看九型对话出图色样](https://xn--sxrw8m230b.com/PUAI/themes/inline-editions.png?v=67353d3364)
+九种人格各有一套固定配色。**PUAI** 用钴蓝和荧光黄，**AI因斯坦** 用青蓝和淡蓝紫。报告从类型标题和本人原话开场，接发言统计、日历和人格标签。单场精选会在标题下注明范围。[看九型对话出图色样](https://xn--sxrw8m230b.com/PUAI/themes/inline-editions.png?v=d5ff6b4750)
 
 把口令发进常用对话。能运行官方模板、也支持图片展示时，可以在对话里直接看到 PNG。只有绘图或文字工具时，口令会要求返回专属预览链接，点开就能看到同一套版式。
 
@@ -21,9 +21,9 @@
 ## 翻三张场景样刊
 
 <p align="center">
-  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#aicu"><img src="docs/readme/aicu.png?v=1428dbdc76" width="248" height="119" alt="AICU 场景样刊，最后一分钟还要换字体。查看完整长图。"></a>
-  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#einstein"><img src="docs/readme/einstein.png?v=97c8207053" width="248" height="119" alt="AI因斯坦场景样刊，一个新名词引出一场追问。查看完整长图。"></a>
-  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#support"><img src="docs/readme/support.png?v=1eff1fa4bd" width="248" height="119" alt="AI的供养场景样刊，付了会员费还得安慰模型。查看完整长图。"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#aicu"><img src="docs/readme/aicu.png?v=82980bd527" width="248" height="119" alt="AICU 场景样刊，最后一分钟还要换字体。查看完整长图。"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#einstein"><img src="docs/readme/einstein.png?v=3d83fd7c3a" width="248" height="119" alt="AI因斯坦场景样刊，一个新名词引出一场追问。查看完整长图。"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/themes/#support"><img src="docs/readme/support.png?v=5ac79ba4e3" width="248" height="119" alt="AI的供养场景样刊，付了会员费还得安慰模型。查看完整长图。"></a>
 </p>
 
 还有六种相处方式可以翻。点主题看完整报告。
@@ -34,7 +34,7 @@
 ## 唐某的两笔 token 账
 
 <p>
-  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html"><img src="docs/readme/tang-excerpt.png?v=b249382705" width="540" height="310" alt="不愿透露姓名的唐某的两条本人原话。11 月 7 日：多调研点啊，我缺你这点 token 吗？做一小会就停下是几个意思？11 月 10 日：浪费我的 token， 赔钱！"></a>
+  <a href="https://xn--sxrw8m230b.com/PUAI/sample.html"><img src="docs/readme/tang-excerpt.png?v=1b136772f0" width="540" height="310" alt="不愿透露姓名的唐某的两条本人原话。11 月 7 日：多调研点啊，我缺你这点 token 吗？做一小会就停下是几个意思？11 月 10 日：浪费我的 token， 赔钱！"></a>
 </p>
 
 [看不愿透露姓名的唐某的完整报告 ↗](https://xn--sxrw8m230b.com/PUAI/sample.html)
@@ -49,7 +49,7 @@ npx skills add TANGXTONG1/PUAI
 
 > 用 $puai 整理我的 2026 聊天，署名「小栗」。运行官方模板在对话里显示 PNG，跑不了就给我的预览链接。
 
-Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=20c30adbad) · [阅读 SKILL.md](SKILL.md)
+Agent 可以在本地核对获准读取的记录并导出 PNG。有日期就能画发言日历，有用量日志还能查那段时间烧了多少 token。[下载 skill](https://xn--sxrw8m230b.com/PUAI/PUAI-skill.zip?v=f9e7310979) · [阅读 SKILL.md](SKILL.md)
 
 <details>
 <summary>生成命令与运行环境</summary>
@@ -66,7 +66,7 @@ node scripts/export_png.mjs --input /path/to/share.html --output /path/to/share.
 <details>
 <summary>样刊、配色与字体</summary>
 
-[九份完整报告](https://xn--sxrw8m230b.com/PUAI/themes/) · [九型配色总览](https://xn--sxrw8m230b.com/PUAI/themes/overview.png?v=f2066ba42c) · [历次试色](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/) · [亮底霓虹](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/) · [48 款配色](https://xn--sxrw8m230b.com/PUAI/palettes/atlas/)
+[九份完整报告](https://xn--sxrw8m230b.com/PUAI/themes/) · [九型配色总览](https://xn--sxrw8m230b.com/PUAI/themes/overview.png?v=116bfc4e0a) · [历次试色](https://xn--sxrw8m230b.com/PUAI/palettes/neon/nine/) · [亮底霓虹](https://xn--sxrw8m230b.com/PUAI/palettes/neon/) · [艺术印色](https://xn--sxrw8m230b.com/PUAI/palettes/art/) · [48 款配色](https://xn--sxrw8m230b.com/PUAI/palettes/atlas/)
 
 报告标题使用得意黑 Smiley Sans。[字体许可](assets/SmileySans-OFL.txt)
 

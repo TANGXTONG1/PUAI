@@ -32,7 +32,7 @@ let sharePayload;
 
 async function getTemplate() {
   if (!templateRequest) {
-    templateRequest = fetch('./poster-frame.txt?v=19f25fb812', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+    templateRequest = fetch('./poster-frame.txt?v=cc5750d907', { credentials: 'omit', referrerPolicy: 'no-referrer' })
       .then(response => {
         if (!response.ok) throw new Error('版式加载失败，请检查连接后重试。');
         return response.text();

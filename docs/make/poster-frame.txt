@@ -107,7 +107,7 @@ function puaiPortablePrompt(nickname = '') {
   const placeholder = /^[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?$/iu.test(name);
   const signature = name && !placeholder ? '署名「' + name + '」' : '署名沿用我在聊天里用过的称呼';
   return '读下方 $puai，整理我的 2026 聊天，' + signature +
-    '。只用官方模板直接在对话里显示 PNG，跑不了给我的预览链接，读不到请直说，别用 AI 绘图。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=17';
+    '。只用官方模板直接在对话里显示 PNG，跑不了给我的预览链接，读不到请直说，别用 AI 绘图。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=18';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {
@@ -209,12 +209,13 @@ const typeName=Object.hasOwn(editions,report.theme)?edition.name:unclassified?'�
 const sourceLabel=demoLabel||(report.mode==='self_report'?'自述':'');
 const classified=Object.hasOwn(editions,report.theme);
 const reportTitle=report.year+' '+(classified?edition.name+' 报告':scopeTitle||(unclassified?'AI 相处报告':edition.name+' 报告'));
-const coverLabel=scopeTitle||'年度报告';
-const coverTitle=unclassified?'类型待定':edition.name;
-const headerNote=[scopeTitle,sourceLabel].filter(Boolean).join(' · ');
+const scopeNote=scopeTitle&&classified?scopeTitle:'';
+const headerNote=[scopeNote,sourceLabel].filter(Boolean).join(' · ');
 const personaLabel=isSpecimen?'人格示意':'用户人格';
 const tagLabel=isSpecimen?'标签示意':scopeTitle?'片段标签':story?'人格标签':'用户人格';
+const extraBottomMargin=24;
 const shareFooterHeight=228;
+const shareGuide='扫图底二维码获取口令 ↓';
 const shareTitle='扫码获取口令';
 const shareNext='发给自己的 Agent 总结出图。';
 // Static QR for https://xn--sxrw8m230b.com/PUAI/#go with a four-module quiet zone at draw time.
@@ -253,7 +254,7 @@ const shareQr=[
  '100000101111010000111000011111111',
  '111111100110001111110001101111100'
 ];
-const type={title:98,stat:52,quote:46,section:38,label:40,meta:32};
+const type={title:68,stat:52,quote:46,section:38,label:40,meta:32};
 document.title=owner+'的'+reportTitle;
 const a=report.activity,months=a?.months||[],quotes=a?.share_quotes||[],rhythm=a?.rhythm;
 const s=a?.summary&&(a.summary.messages>0||a.coverage==='complete')?a.summary:null;
@@ -321,26 +322,29 @@ function right(str,x,y,size,color=ink,weight=400){font(size,weight);text(str,x-c
 function headerBadges(){
   ctx.save();
   const top=36, height=56;
-  const year=String(report.year);
-  font(32,800);const yearWidth=Math.ceil(ctx.measureText(year).width);
-  font(28,650);const captionWidth=Math.ceil(ctx.measureText(coverLabel).width);
-  const width=16+yearWidth+28+captionWidth+16, x=852-width;
-  box(x,top,width,height,0,colors.tint);
-  line(x+16+yearWidth+14,top+13,x+16+yearWidth+14,top+height-13,ink,2);
-  for(const [label,offset,size,weight] of [[year,16,32,800],[coverLabel,16+yearWidth+28,28,650]]){
-    font(size,weight);ctx.textBaseline='alphabetic';
-    const m=ctx.measureText(label);
-    ctx.fillStyle=ink;
-    ctx.fillText(label,x+offset,top+(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+  let nameRight=852;
+  if(typeName){
+    font(26,600);const captionWidth=Math.ceil(ctx.measureText(typeCaption).width);
+    font(34,750);const nameWidth=Math.ceil(ctx.measureText(typeName).width);
+    const width=16+captionWidth+12+nameWidth+16, x=852-width;
+    box(x,top,width,height,0,colors.tint);
+    ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(x+1,top+1,width-2,height-2);
+    for(const [label,offset,size,weight] of [[typeCaption,16,26,600],[typeName,16+captionWidth+12,34,750]]){
+      font(size,weight);ctx.textBaseline='alphabetic';
+      const m=ctx.measureText(label);
+      ctx.fillStyle=ink;
+      ctx.fillText(label,x+offset,top+(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+    }
+    nameRight=x-22;
   }
-  const nameRight=x-22,label=owner;
+  const label=isSpecimen?owner:owner+'的';
   font(34,600);ctx.textBaseline='alphabetic';
   let m=ctx.measureText(label);
   const size=Math.min(34,34*(nameRight-48-44)/Math.max(1,m.actualBoundingBoxLeft+m.actualBoundingBoxRight));
   font(size,600);ctx.textBaseline='alphabetic';m=ctx.measureText(label);
-  const badgeWidth=m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44;
-  box(48,top,badgeWidth,height,0,accent);ctx.fillStyle=colors.onAccent;
-  ctx.fillText(label,48+(badgeWidth+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,
+  const width=m.actualBoundingBoxLeft+m.actualBoundingBoxRight+44;
+  box(48,top,width,height,0,accent);ctx.fillStyle=colors.onAccent;
+  ctx.fillText(label,48+(width+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,
     top+(height+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
   ctx.restore();
 }
@@ -371,6 +375,7 @@ if(balance){
   return balanced
 }return rows}
 const introduction=report.mode==='demo'?'示例对话生成，数据与原话均为虚构。':report.mode==='self_report'?'根据你提供的使用回忆与对话材料整理。':(quotes.length||rhythm?'根据你与 AI 的真实对话记录整理。':'');
+function dots(x,y,w,h,color=accent){ctx.fillStyle=color;for(let yy=y;yy<y+h;yy+=13)for(let xx=x;xx<x+w;xx+=13){ctx.beginPath();ctx.arc(xx,yy,1.6,0,Math.PI*2);ctx.fill()}}
 function dayState(date) {
   const entry=dayMap.get(date);
   const spoken=Boolean(entry?.count || observedDaySet.has(date));
@@ -390,30 +395,34 @@ function fitLeft(label,x,y,width,size,color,weight) {
   font(size,weight);
   text(label,x,y,Math.min(size,size*width/Math.max(1,ctx.measureText(label).width)),color,weight);
 }
+function smallMark() {
+  if(isRoast) return;
+  const glyphs={tick:'✓',plus:'+',copies:'≡',ellipsis:'…',therefore:'∴',asterisk:'＊',heart:'♥',arrow:'↗'};
+  const mark=glyphs[edition.mark];
+  if(mark) right(mark,851,82,29,story?ink:accent,650);
+}
 function comicTitle(label,x,y){text(label,x,y,type.section,ink,800);font(type.section,800);line(x,y+48,x+ctx.measureText(label).width,y+48,accent,7)}
 function comicCell(x,y,size,state){
- const fill=state.roast?colors.calendar:state.spoken?ink:state.known?pale:null;
- ctx.beginPath();ctx.roundRect(x+1,y+1,size-2,size-2,4);
- if(fill){ctx.fillStyle=fill;ctx.fill()}
- else{ctx.fillStyle=paper;ctx.fill();ctx.strokeStyle=colors.outline;ctx.lineWidth=1.5;ctx.stroke()}
+ctx.fillStyle=state.roast?colors.calendar:state.spoken?ink:state.known?pale:paper;ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.fill();
+if(!state.known){ctx.strokeStyle=colors.outline;ctx.lineWidth=1.2;ctx.stroke();line(x+5,y+size-5,x+size-5,y+5,colors.outline,1)}
 }
 function comicCalendar(m,x,y,w,observedOnly=false){
 const month=Number(m.month.slice(5)),cx=x+w/2;centered(String(month).padStart(2,'0')+' 月',cx,y,36,ink,800);
 const first=new Date(Date.UTC(report.year,month-1,1)),last=new Date(Date.UTC(report.year,month,0)),monday=new Date(first);monday.setUTCDate(first.getUTCDate()-(first.getUTCDay()+6)%7);
-const weeks=Math.floor((last-monday)/86400000/7)+1,step=31,size=26,gx=cx-((weeks-1)*step+size)/2,gy=y+54;
+const weeks=Math.floor((last-monday)/86400000/7)+1,step=28,size=23,gx=cx-(weeks*step-5)/2,gy=y+58;
 for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){
  const date=d.toISOString().slice(0,10),col=Math.floor((d-monday)/86400000/7),row=(d.getUTCDay()+6)%7,px=gx+col*step,py=gy+row*step;const state=observedOnly?{known:observedDaySet.has(date),spoken:observedDaySet.has(date),roast:0}:dayState(date);
  comicCell(px,py,size,state);
- const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-1,py-1,size+2,size+2);centered(id,px+size/2,py+1,21,state.roast?colors.onCalendar:state.spoken?paper:ink,700)}
+ const id=markers.get(date);if(id){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(px-2,py-2,size+4,size+4);centered(id,px+size/2,py,20,state.roast?colors.onCalendar:state.spoken?paper:ink,700)}
 }
 if(observedOnly){
- if(observedMonths.length>1)fitCentered('核实 '+m.knownDays+' 天',cx,y+283,w-4,type.meta,ink,700);
+ if(observedMonths.length>1)fitCentered('核实 '+m.knownDays+' 天',cx,y+270,w-4,type.meta,ink,700);
  return;
 }
 const hits=monthHits(m);
 const stats=hits===null ? m.messages+' 条发言' : (isRoast?hits+' 喷 / ':hits+' / ')+m.messages+' 条';
-fitCentered(stats,cx,y+283,w-4,type.meta,ink,700);
-if(hits!==null){const bw=w-26;box(x+13,y+328,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+328,bw*hits/m.messages,10,0,colors.calendar)}
+fitCentered(stats,cx,y+270,w-4,type.meta,ink,700);
+if(hits!==null){const bw=w-26;box(x+13,y+319,bw,10,0,pale);if(hits&&m.messages)box(x+13,y+319,bw*hits/m.messages,10,0,colors.calendar)}
 }
 function comicUsage(y,draw){
  const hasRing=ratio!==null;
@@ -422,24 +431,25 @@ function comicUsage(y,draw){
  const extra=[];
  if(s&&tokenUsage)extra.push(s.messages.toLocaleString('zh-CN')+' 条指令');
  if(hasRing)extra.push((!profile&&reviewed>0?'至少 ':'')+reviewed.toLocaleString('zh-CN')+' 条'+edition.keyword);
- const h=extra.length?180:148,split=548;
  if(draw){
-   box(48,y,804,h,10,hasRing?colors.tint:colors.pull);
    if(hasRing){
-     box(48,y,split-48,h,[10,0,0,10],colors.pull);
-     const mid=y+h/2,cx=split+58,rad=35;
-     ctx.lineWidth=12;ctx.strokeStyle=paper;ctx.beginPath();ctx.arc(cx,mid,rad,0,2*Math.PI);ctx.stroke();
-     if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,mid,rad,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}
-     fitLeft('约 '+percent+'%',split+114,mid-51,176,48,ink,800);
-     fitLeft(isRoast?'指令在骂 AI':edition.keyword+'指令占比',split+114,mid+17,172,30,ink,650);
-     for(const yy of [y,y+h]){ctx.beginPath();ctx.arc(split,yy,7,0,2*Math.PI);ctx.fillStyle=paper;ctx.fill()}
+     box(48,y,514,154,0,colors.pull);
+     text(caption,74,y+17,34,colors.onPull,600);
+     fitLeft(total,74,y+72,462,type.stat,colors.onPull,700);
+     const cx=720,cy=y+72,r=65;
+     ctx.strokeStyle=pale;ctx.lineWidth=12;ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.stroke();
+     if(ratio>0){ctx.strokeStyle=colors.calendar;ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+2*Math.PI*ratio);ctx.stroke()}
+     centered('约',cx,cy-40,26,muted,650);
+     fitCentered(percent+'%',cx,cy-7,110,44,ink,800);
+     centered(isRoast?'指令在骂 AI':edition.keyword+'指令占比',cx,y+157,32,ink,650);
+   }else{
+     box(48,y,804,104,0,colors.pull);
+     text(caption,74,y+30,34,colors.onPull,600);
+     fitCentered(total,617,y+24,410,type.stat,colors.onPull,700);
    }
-   const width=hasRing?445:750;
-   text(caption,76,y+15,30,colors.onPull,600);
-   fitLeft(total,76,y+59,width,64,colors.onPull,750);
-   if(extra.length)fitLeft(extra.join(' · '),76,y+137,width,30,colors.onPull,550);
+   if(extra.length)fitLeft(extra.join(' · '),48,y+(hasRing?172:119),hasRing?512:804,type.meta,ink,600);
  }
- return y+h+39;
+ return y+(hasRing?232:extra.length?178:139);
 }
 function dailyFact(label,value,x,y,width){
  text(label,x,y,32,muted,600);
@@ -474,11 +484,7 @@ if(showFacts){
  }
 }
 const w=stackFacts?306:(804-24*(months.length-1))/months.length;
-months.forEach((m,i)=>{
- const left=48+i*(w+24);
- if(i)line(left-12,y+top+8,left-12,y+top+324,pale,1.5);
- comicCalendar(m,left,y+top,w);
-});
+months.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+top,w));
 return y+top+365;
 }
 function comicObservedDates(y,draw){
@@ -502,11 +508,7 @@ function comicObservedDates(y,draw){
      text('核实 '+observedDates.length+' 天',48,y+71,46,ink,750);
      if(quotes.length)right(observedQuoteLabel,852,y+82,type.meta,muted,600);
      const w=(804-24*(observedMonths.length-1))/observedMonths.length;
-     observedMonths.forEach((m,i)=>{
-       const left=48+i*(w+24);
-       if(i)line(left-12,y+207,left-12,y+507,pale,1.5);
-       comicCalendar(m,left,y+201,w,true);
-     });
+     observedMonths.forEach((m,i)=>comicCalendar(m,48+i*(w+24),y+201,w,true));
    }
    const x=single?446:48, legendY=y+(single?255:146);
    comicCell(x,legendY+6,21,{spoken:true,known:true});text('已核实',x+30,legendY,30,muted);
@@ -600,26 +602,18 @@ if (q.repeat_count) {
   const leftHeader = (hasAiReply ? 92 : 0) + (q.date ? 157 : 0) + (q.kind === 'rewrite' ? 80 : 0);
   contentWidth = Math.max(contentWidth, leftHeader + ctx.measureText('复读×' + q.repeat_count).width);
 }
+const w = Math.min(804, Math.max(540, contentWidth + 2 * pad));
 const alignRight = i === 1 && quotes.length > 1;
-const maxWidth = Math.min(alignRight?750:804, Math.max(416, contentWidth + 2 * pad));
-const rows = spokenLines(q,maxWidth-2*pad,size);
-// Keep the spoken line breaks, then trim the paper around the longest line.
-font(size,700);
-const widestRow = Math.ceil(Math.max(...rows.map(row=>ctx.measureText(row.map(t=>t.value).join('')).width)));
-const w = q.repeat_count ? maxWidth : Math.min(maxWidth,Math.max(416,maxWidth-148,widestRow+2*pad+8));
 const x = alignRight ? 852 - w : 48;
+const rows = spokenLines(q,w-2*pad,size);
 const hasHeader=Boolean(hasAiReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);
 const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
 const color=i===1?colors.onPull:burst?colors.onSignal:ink,fill=i===1?colors.pull:burst?colors.signal:colors.bubble;
-const lightPull=i===1 && colors.onPull!==paper && colors.onPull!=='#FFFFFF';
-const darkMark=burst && (i!==1 || lightPull);
-const highlight=darkMark?colors.burstHighlight:i===1?accent:legacyPalette?colors.tint:colors.signal;
-const highlightInk=darkMark?colors.onBurstHighlight:i===1?colors.onAccent:colors.onTint;
+const highlight=i===1?accent:burst?colors.burstHighlight:colors.tint;
+const highlightInk=i===1?colors.onAccent:burst?colors.onBurstHighlight:colors.onTint;
 if(!draw)return h+tail;
-ctx.save();ctx.translate(x,y);
-if(index===0&&!burst)box(5,7,w,h,28,ink);
-ctx.fillStyle=fill;ctx.strokeStyle=ink;ctx.lineWidth=3;if(burst)burstPath(w,h);else bubblePath(w,h,alignRight);ctx.fill();ctx.stroke();
+ctx.save();ctx.translate(x,y);ctx.fillStyle=fill;ctx.strokeStyle=colors.edge;ctx.lineWidth=3.2;if(burst)burstPath(w,h);else bubblePath(w,h,alignRight);ctx.fill();ctx.stroke();
 const metaY=burst?27:22;
 let metaX=pad;
 if(hasAiReply){text('本人',metaX,metaY,32,color,700);metaX+=92}
@@ -627,12 +621,7 @@ if(q.date){marker(q,metaX,metaY,color);metaX+=157}
 if(q.kind==='rewrite')text('改写',metaX,metaY,30,color,650);
 if(q.repeat_count)right('复读×'+q.repeat_count,w-pad,metaY,type.meta,color,700);
 rows.forEach((row,j)=>{let xx=pad;const yy=textTop+j*leading,runs=[];for(const t of row){if(runs.at(-1)?.strong===t.strong)runs.at(-1).value+=t.value;else runs.push({...t})}
-for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;
- if(run.strong){
-   if(i===0)box(xx-2,yy+size*.53,rw+4,size*.5,0,highlight);
-   else box(xx-2,yy+2,rw+4,size+7,0,highlight);
- }
- text(run.value,xx,yy,size,run.strong?highlightInk:color,run.strong?700:600);xx+=rw}
+for(const run of runs){font(size,run.strong?700:600);const rw=ctx.measureText(run.value).width;if(run.strong){const pad=i===1?2:3;box(xx-pad,yy+3,rw+2*pad,size+8,0,highlight)}text(run.value,xx,yy,size,run.strong?highlightInk:color,run.strong?700:600);xx+=rw}
 });ctx.restore();stickerLayouts.push({date:q.date,text:rows.flat().map(t=>t.value).join(''),x,y,width:w,height:h+tail,fontSize:size,rows:rows.map(row=>row.map(t=>t.value).join(''))});return h+tail
 }
 // Use the same word and grapheme wrapping as the quote stickers for short editorial copy.
@@ -704,16 +693,13 @@ function comicHabits(y,draw){
  return next+24;
 }
 function drawShareFooter(y){
+ const shareInk='#182437';
+ box(0,y,900,shareFooterHeight,0,'#FBFBF8');
+ text(shareTitle,48,y+49,46,shareInk,750);
+ text(shareNext,48,y+124,34,shareInk,600);
+
  const cell=5,quiet=4,qrSize=(shareQr.length+quiet*2)*cell;
  const x=852-qrSize,top=y+Math.floor((shareFooterHeight-qrSize)/2);
- box(0,y,900,shareFooterHeight,0,paper);
- line(48,y+2,852,y+2,ink,2);
- text(shareTitle,48,y+56,48,ink,800);
- text(shareNext,48,y+126,34,ink,600);
- const tip=x-24,mid=y+shareFooterHeight/2;
- line(tip-43,mid,tip,mid,ink,4);
- line(tip-14,mid-13,tip,mid,ink,4);
- line(tip-14,mid+13,tip,mid,ink,4);
  box(x,top,qrSize,qrSize,0,'#FFFFFF');
  ctx.fillStyle='#102030';
  shareQr.forEach((row,r)=>{
@@ -723,18 +709,17 @@ function drawShareFooter(y){
  });
 }
 function drawPoster(draw=true){
-const coverHeight=sourceLabel?274:237;
 if(draw){
- stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);
- box(0,0,900,coverHeight,0,colors.calendar);box(0,coverHeight-8,900,8,0,colors.signal);
- headerBadges();
- const displayFamily='"Smiley Sans",'+fontFamily;
- font(type.title,400,displayFamily);
- const displaySize=Math.min(type.title,type.title*804/Math.max(1,ctx.measureText(coverTitle).width));
- text(coverTitle,48,103,displaySize,colors.onCalendar,400,displayFamily);
- if(sourceLabel)fitLeft(sourceLabel,48,221,804,type.meta,colors.onCalendar,600);
+ stickerLayouts.length=0;ctx.fillStyle=paper;ctx.fillRect(0,0,900,canvas.height);if(!story)dots(650,34,208,126,legacyPalette?'#eeb9ac':colors.tint);if(!typeName)smallMark();headerBadges();
+ font(type.title,800);const titleWidth=ctx.measureText(reportTitle).width;
+ text(reportTitle,48,116,Math.min(type.title,type.title*804/Math.max(1,titleWidth)),ink,800);
+ right(shareGuide,852,202,28,ink,600);
+ if(headerNote){
+   if(typeName)fitLeft(headerNote,48,199,450,type.meta,legacyPalette?accent:muted,700);
+   else right(sourceLabel,852,44,type.meta,legacyPalette?accent:ink,700);
+ }
 }
-let y=coverHeight+32;
+let y=260;
 if(lead&&!quotesFirst)y=comicLead(y,draw);
 if(quotes.length)y=comicConversation(y,draw);
 else if(!lead&&hasPersona)y+=comicPersona(y-8,draw);
@@ -746,30 +731,20 @@ if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
 if(posterScenes.length)y=comicScenes(y,draw);
 const showTags=report.keywords.length>0;
 const compactTags=report.keywords.length>0&&report.keywords.length<=2;
-const tagHeight=compactTags?144:188;
+const tagHeight=compactTags?144:196+extraBottomMargin;
 if(draw&&showTags){
-  const top=y-8,tagY=top+(compactTags?41:78);
-  box(0,top,900,tagHeight,0,colors.signal);
-  text(tagLabel,48,top+(compactTags?52:21),38,footerInk,800);
-  const labels=report.keywords.slice(0,3);
-  let x=compactTags?264:48,size=40;
-  const widths=()=>{
-    font(size,800);
-    return labels.map(label=>Math.ceil(ctx.measureText(label).width)+38);
-  };
-  let chips=widths();
-  while(size>20&&chips.reduce((sum,w)=>sum+w,0)+18*(labels.length-1)>852-x){
-    size--;chips=widths();
-  }
-  labels.forEach((label,i)=>{
-    const w=chips[i],h=63,corner=10;
-    ctx.save();ctx.translate(x,tagY);ctx.rotate([-.014,.012,-.009][i]);
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(w-corner,0);ctx.lineTo(w,corner);
-    ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();
-    ctx.fillStyle=paper;ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.stroke();
-    font(size,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(label);
-    ctx.fillStyle=ink;ctx.fillText(label,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(h+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
-    ctx.restore();x+=w+18;
+  box(0,y-8,900,tagHeight,0,colors.signal);
+  text(tagLabel,48,y+(compactTags?41:16),38,footerInk,800);
+  const w=compactTags?(588-16)/2:(804-32)/3;
+  report.keywords.forEach((k,i)=>{
+    const x=(compactTags?264:48)+i*(w+16);
+    ctx.save();ctx.translate(x,y+(compactTags?30:88));ctx.rotate([-.016,.015,-.012][i]);
+    box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);
+    font(40,800);ctx.textBaseline='alphabetic';
+    const size=Math.min(40,40*(w-20)/Math.max(1,ctx.measureText(k).width));
+    font(size,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);
+    ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+    ctx.restore();
   });
 }
 const footerTop=Math.ceil(y+(showTags?tagHeight-8:16));
@@ -811,7 +786,7 @@ if(profile?.undated_messages>0)dailySummary.push('另有 '+profile.undated_messa
 const habitSummary=posterHabits.length?['日常用法',...posterHabits]:[];
 if(!leadWithHabits)dailySummary.push(...habitSummary);
 const readableSummary=[
- owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',headerNote,quotesFirst?'':lead,
+ owner+'的'+reportTitle,typeName?typeCaption+'：'+typeName:'',headerNote,shareGuide,quotesFirst?'':lead,
  ...(quotes.length?conversationSummary:leadWithHabits?habitSummary:lead?[]:personaSummary),
  isSpecimen?'版式试样。统计为演示数据，示意文字为原创场景。':introduction,
  rhythm?.analysis_start?'统计区间：'+rhythm.analysis_start+' 至 '+rhythm.analysis_end+'。':'',
