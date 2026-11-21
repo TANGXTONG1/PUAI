@@ -5,11 +5,11 @@ def load_font(path=None):
     here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
     candidates = [path] if path else [
         Path.home()/"Library/Fonts/PingFangSC-Regular.ttf", "/System/Library/Fonts/PingFang.ttc",
+        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
+        here/"SmileySans-Oblique.woff2",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
         "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
         "/System/Library/Fonts/STHeiti Medium.ttc", "C:/Windows/Fonts/msyh.ttc",
-        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
-        here/"SmileySans-Oblique.woff2",
     ]
     for filename in candidates:
         try:
@@ -49,7 +49,7 @@ def draw_report(r, font):
         cmd("text", (x, y), str(value), font=face, fill=color, anchor=align,
             stroke_width=stroke if bold else 0, stroke_fill=color)
 
-    def wrap(value, width, size, emphasis=""):
+    def wrap(value, width, size, emphasis="", spoken=False):
         face = font(size)
         units = []
         parts = [value]
@@ -61,14 +61,14 @@ def draw_report(r, font):
         for token in tokens:
             parts = [token] if face.getlength(token) <= width else list(token)
             for part in parts:
-                if units and re.fullmatch(r"[，。、！？；：…）】」》％,.!?;:%)]", part):
+                if units and re.fullmatch(r"[，。、！？；：…）】」』”’》％,.!?;:%)]", part):
                     units[-1] += part
                 else:
                     units.append(part)
 
-        def fit(line_width):
+        def fit(line_width, pieces=units):
             rows, current = [], ""
-            for unit in units:
+            for unit in pieces:
                 if current and face.getlength(current+unit) > line_width:
                     rows.append(current)
                     current = ""
@@ -76,6 +76,21 @@ def draw_report(r, font):
             return rows + ([current] if current else [])
 
         rows = fit(width)
+        if spoken and len(rows) > 1:
+            # Prefer whole spoken clauses when they fit, preserving marked runs and punctuation.
+            clauses, current = [], []
+            for unit in units:
+                current.append(unit)
+                if re.search(r"[，。！？；!?;][”’」』）】]*$", unit):
+                    clauses.append(current)
+                    current = []
+            if current:
+                clauses.append(current)
+            pieces = ["".join(clause) for clause in clauses]
+            if len(pieces) > 1 and all(face.getlength(piece) <= width for piece in pieces):
+                spoken_rows = fit(width, pieces)
+                if len(spoken_rows) <= len(rows) + 1:
+                    return spoken_rows
         # Rebalance a stranded final word when the number of lines stays the same.
         if len(rows) > 1 and face.getlength(rows[-1]) < width * .3:
             for smaller in range(width-size, int(width*.65), -size):
@@ -86,23 +101,3 @@ def draw_report(r, font):
                 if face.getlength(rows[-1]) >= width * .3:
                     break
         return rows
-
-    def paragraph(x, y, rows, size, color=ink, bold=False):
-        for row in rows:
-            text(x, y, row, size, color, bold)
-            y += round(size*1.38)
-        return y
-
-    def rect(x, y, w, h, color, outline=None, radius=0):
-        cmd("rounded_rectangle", (x, y, x+w, y+h), radius=radius, fill=color, outline=outline,
-            width=2 if outline else 1)
-
-    def heading(y, title):
-        text(48, y, title, 38, bold=True)
-        rect(48, y+42, round(font(38).getlength(title)), 6, accent)
-        return y+70
-
-    def centered(x, y, value, size, color=ink, bold=False):
-        # Centre the ink, including a mixed Latin/CJK signature, inside the sticker.
-        left, top, right, bottom = font(size).getbbox(value, anchor="lt")
-        text(round(x-(left+right)/2), round(y-(top+bottom)/2), value, size, color, bold)

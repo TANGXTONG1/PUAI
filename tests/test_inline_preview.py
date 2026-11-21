@@ -25,19 +25,28 @@ class InlinePreviewTests(unittest.TestCase):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         section = skill.split("## 联网加载官方模板\n", 1)[1].split("## 离线对话画布", 1)[0]
         cell = re.search(r"```python\n(.*?)^```$", section, re.S | re.M)[1]
-        load, call = cell.split('renderer["show_puai"]', 1)
-        self.assertEqual(call.strip(), "(receipt, output=output)")
         url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py"
+        font_url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/assets/SmileySans-Oblique.woff2"
         source = (ROOT / "docs/notebook_card.py").read_bytes()
+        font = (ROOT / "assets/SmileySans-Oblique.woff2").read_bytes()
         with patch("urllib.request.urlopen", return_value=BytesIO(b"raise RuntimeError()")) as get:
             with self.assertRaisesRegex(ValueError, "模板版本"):
-                exec(load, {})
+                exec(cell, {})
             get.assert_called_once_with(url, timeout=8)
-        loaded = {}
-        with patch("urllib.request.urlopen", return_value=BytesIO(source)) as get:
-            exec(load, loaded)
-            self.assertTrue(callable(loaded["renderer"]["show_puai"]))
-            get.assert_called_once_with(url, timeout=8)
+
+        # Observe the last display call while the font's temporary directory exists.
+        # The separate kernel test below exercises the real PNG display.
+        self.assertEqual(cell.count('renderer["show_puai"](receipt, output=output)'), 1)
+        inspect = cell.replace('renderer["show_puai"](receipt, output=output)',
+                               'observed = (callable(renderer["show_puai"]), (path / "SmileySans-Oblique.woff2").exists())')
+        for response, available in [(BytesIO(font), True), (BytesIO(b"wrong font"), False), (OSError("offline"), False)]:
+            with self.subTest(available=available):
+                with patch("urllib.request.urlopen", side_effect=[BytesIO(source), response]) as get:
+                    loaded = {}
+                    exec(inspect, loaded)
+                    self.assertEqual(loaded["observed"], (True, available))
+                    self.assertEqual(get.call_args_list[1].args, (font_url,))
+                    self.assertFalse(loaded["path"].exists())
 
     def test_remote_skill_carries_the_complete_print_renderer(self):
         parts = notebook_parts()

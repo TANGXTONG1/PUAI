@@ -107,9 +107,16 @@ def parse_receipt(text):
             continue
         field, value = match[1].lower(), match[2].strip()
         if field in {"划线", "复读"}:
-            if quote_number is not None:
+            if quote_number is not None and quote_number < 6:
                 if field == "划线":
-                    highlights[quote_number] = value
+                    # Some clients group all q fields, followed by all marks.
+                    originals = [re.sub(r"^\d\d-\d\d~", "", q) for q in values["原话"][:6]]
+                    matches = [i for i, q in enumerate(originals) if value in q]
+                    if len(value) <= 30:
+                        if quote_number in matches:
+                            highlights[quote_number] = value
+                        elif len(matches) == 1:
+                            highlights[matches[0]] = value
                 elif re.fullmatch(r"[0-9]{1,5}", value) and 2 <= int(value) <= 50000:
                     repeats[quote_number] = int(value)
             continue
@@ -221,11 +228,11 @@ def load_font(path=None):
     here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
     candidates = [path] if path else [
         Path.home()/"Library/Fonts/PingFangSC-Regular.ttf", "/System/Library/Fonts/PingFang.ttc",
+        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
+        here/"SmileySans-Oblique.woff2",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
         "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
         "/System/Library/Fonts/STHeiti Medium.ttc", "C:/Windows/Fonts/msyh.ttc",
-        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
-        here/"SmileySans-Oblique.woff2",
     ]
     for filename in candidates:
         try:
@@ -265,7 +272,7 @@ def draw_report(r, font):
         cmd("text", (x, y), str(value), font=face, fill=color, anchor=align,
             stroke_width=stroke if bold else 0, stroke_fill=color)
 
-    def wrap(value, width, size, emphasis=""):
+    def wrap(value, width, size, emphasis="", spoken=False):
         face = font(size)
         units = []
         parts = [value]
@@ -277,14 +284,14 @@ def draw_report(r, font):
         for token in tokens:
             parts = [token] if face.getlength(token) <= width else list(token)
             for part in parts:
-                if units and re.fullmatch(r"[，。、！？；：…）】」》％,.!?;:%)]", part):
+                if units and re.fullmatch(r"[，。、！？；：…）】」』”’》％,.!?;:%)]", part):
                     units[-1] += part
                 else:
                     units.append(part)
 
-        def fit(line_width):
+        def fit(line_width, pieces=units):
             rows, current = [], ""
-            for unit in units:
+            for unit in pieces:
                 if current and face.getlength(current+unit) > line_width:
                     rows.append(current)
                     current = ""
@@ -292,6 +299,21 @@ def draw_report(r, font):
             return rows + ([current] if current else [])
 
         rows = fit(width)
+        if spoken and len(rows) > 1:
+            # Prefer whole spoken clauses when they fit, preserving marked runs and punctuation.
+            clauses, current = [], []
+            for unit in units:
+                current.append(unit)
+                if re.search(r"[，。！？；!?;][”’」』）】]*$", unit):
+                    clauses.append(current)
+                    current = []
+            if current:
+                clauses.append(current)
+            pieces = ["".join(clause) for clause in clauses]
+            if len(pieces) > 1 and all(face.getlength(piece) <= width for piece in pieces):
+                spoken_rows = fit(width, pieces)
+                if len(spoken_rows) <= len(rows) + 1:
+                    return spoken_rows
         # Rebalance a stranded final word when the number of lines stays the same.
         if len(rows) > 1 and face.getlength(rows[-1]) < width * .3:
             for smaller in range(width-size, int(width*.65), -size):
@@ -371,7 +393,7 @@ def draw_report(r, font):
         width = min(804, max(540, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
         x = 852-width if style == 1 and len(quotes) > 1 else 48
         emphasis = r["emphases"][i]
-        rows = wrap(quote, width-2*inset, size, emphasis)
+        rows = wrap(quote, width-2*inset, size, emphasis, spoken=True)
         header = bool(dt or r["reply"] or repeats)
         body_top = (80 if burst else 78) - (0 if header else 49)
         leading = round(size*1.35)
@@ -618,25 +640,31 @@ def draw_report(r, font):
     if quote_first:
         habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
     if habits:
-        y = heading(y,"日常用法")
-        for habit in habits:
-            y = paragraph(48,y,wrap(habit,804,38),38)+17
-        y += 12
+        heading(y,"日常用法")
+        for index, habit in enumerate(habits):
+            if index:
+                cmd("line", (264,y,852,y), fill="#BAC6C8", width=2)
+                y += 14
+            y = paragraph(264,y,wrap(habit,588,37),37,bold=True)+15
+        y += 24
     stickers = []
     if r["tags"]:
         zone = y
-        rect(0,zone,900,212,signal)
-        text(48,zone+24,"片段标签" if scope_title else "人格标签",38,bold=True)
         tags = r["tags"]
-        width = (804-32)//3
+        compact = len(tags) <= 2
+        height = 144 if compact else 212
+        chip_y = zone + (37 if compact else 94)
+        rect(0,zone,900,height,signal)
+        text(48,zone+(47 if compact else 24),"片段标签" if scope_title else "人格标签",38,bold=True)
+        width = (588-16)//2 if compact else (804-32)//3
         for i,tag in enumerate(tags):
             if len(tag) > 10:
                 tag = tag[:9]+"…"
-            x = 48+i*(width+16)
-            rect(x,zone+94,width,62,paper,ink)
-            centered(x+width/2,zone+125,tag,fitted(tag,width-20,40),bold=True)
-            stickers.append((x-5,zone+88,x+width+6,zone+162))
-        y += 212
+            x = (264 if compact else 48)+i*(width+16)
+            rect(x,chip_y,width,62,paper,ink)
+            centered(x+width/2,chip_y+31,tag,fitted(tag,width-20,40),bold=True)
+            stickers.append((x-5,chip_y-6,x+width+6,chip_y+68))
+        y += height
     footer_height = 228
     rect(0,y,900,footer_height,"#FBFBF8")
     text(48,y+49,"扫码获取口令",46,bold=True)

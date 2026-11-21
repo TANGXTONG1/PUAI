@@ -42,6 +42,16 @@ test('原话划线、复读和接话在网页端保持对应', () => {
   assert.equal(card.activity.summary, undefined);
 });
 
+test('grouped highlights from a chat still land on the exact original phrases', () => {
+  const card = report('#p?' + new URLSearchParams([
+    ['q','02-04~买五单能靠花钱养活自己？'], ['q','07-16~塑料袋也能切盘端上桌。'],
+    ['mark','花钱养活自己'], ['mark','切盘端上桌'], ['mark','编出来的'],
+  ]));
+  assert.deepEqual(card.activity.share_quotes.map(q => q.emphasis), ['花钱养活自己','切盘端上桌']);
+  const unclear = report('#p?q=昨天买五单。&q=今天买五单。&q=那我走了。&mark=买五单');
+  assert.ok(unclear.activity.share_quotes.every(q => !q.emphasis));
+});
+
 test('named links carry a readable scene, preserve speaker turns, and retain the real daily ledger', () => {
   const source = new URLSearchParams([
     ['theme', 'teach'], ['name', '画圈人'], ['lead', '同一只杯子被要求画三次把手。'],

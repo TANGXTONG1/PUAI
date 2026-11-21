@@ -23,6 +23,19 @@ class PosterLayout(unittest.TestCase):
         self.assertEqual(parse("主题：待定\n标签：AI因斯坦")["theme"], "")
         self.assertEqual(parse("主题：AICU\n标签：AI因斯坦")["theme"], "aicu")
 
+    def test_quote_wrap_keeps_the_setup_and_its_turn_in_separate_lines(self):
+        line = "我是想省十分钟，结果你让我提前半小时出门。"
+        data = poster.parse_receipt("PUAI 2026\n原话："+line+"\n划线：提前半小时出门。")
+        font = poster.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
+        with patch.object(ImageDraw.ImageDraw, "text") as painted:
+            poster.draw_report(data, font)
+        quote_rows = {}
+        for call in painted.call_args_list:
+            (_, y), label = call.args
+            if label and label in line:
+                quote_rows[y] = quote_rows.get(y, "") + label
+        self.assertEqual(list(quote_rows.values()), ["我是想省十分钟，", "结果你让我提前半小时出门。"])
+
     def test_annotations_bind_to_their_quote_without_changing_turn_order_or_counts(self):
         raw = ("PUAI 2026\n主题：puai\n范围：thread\n"
                "原话：03-08~多调研点啊，我缺你这点 token 吗？\n复读：4\n划线：这点 token\n"

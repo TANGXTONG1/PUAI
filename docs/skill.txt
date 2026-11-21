@@ -5,20 +5,22 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
 
 # PUAI 年度报告
 
-先从本人已授权的不同对话里取材，选两句值得转发的逐字原话，核对发送日，再用 **PUAI 官方漫画 A 版** 排版。署名可选。参考图上的人、统计和台词属于原作者。
+用本人获准读取的 2026 聊天做一张 PUAI 官方漫画 A 版长图。先取材，再选以下一种出图方式；「在对话里显示」也只交付官方模板的成品。
 
-**先看这个对话能用什么工具。** 即使用户说「直接显示图片」，也只走以下两条出图路径。跳过按描述作画的工具（含 ImageGen），包括把官方样图交给它模仿。
+**读聊天时记两份账。** 翻目录的分页，打开不同时段、不同话题的原线程，包括标题很普通的。第一份记本人消息 ID 和当地发送日，含没有金句的日子。第二份记每件事里「AI 提的办法、本人的反应、后来实际怎样」，附原话位置。同一件事换窗口续聊只算一件。只有记忆摘要时，用里面的物件或说法回查原文，再换一条无关线索。署名优先用本次指定的昵称，否则找本人认可的称呼；空白和 XXX 都按未填处理。
 
-- **能运行官方模板。** 用本地随包程序，或在 Python 中用官方单文件的 `show_puai` 生成并展示 PNG。能执行页面并回传图片的浏览器也可从官方预览页取 PNG。只有实际返回了该程序的 PNG 像素或真实文件，才在消息中展示图片。
-- **只有网页阅读、文字、AI 绘图，或模板执行失败。** 仍按下面的取材步骤读本人历史，回复一个可点击的「打开我的报告」链接。地址从 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 开始，在 # 后填好实际的 `name`、`scope`、已判的 `theme`（如 PUAI 填 puai，AI因斯坦填 einstein，类型待定可省略），每句原话各用一个 `q=MM-DD~原话`，标签各用一个 `tag`。有已核日期就保留，没日期的 q 直接写原文。只能核到摘要时，用 `lead` 写一个具体动作。没有可核材料，就提示在常用旧对话发送同一口令。只有片段用 `scope=fragments`，同一场用 `thread`；跨多件独立事情的已读历史用 `history`。其他已见发言日可用 `dates=MM-DD,MM-DD`，完整线程的逐日账可用 `days=MM-DD:N:H`（N 是指令数，未审主题时 H 用 ?）。对每个值分别做 URL 编码，作为普通链接直接交给用户。用户点一次即由官方页面显示长图。不要发空白主页、照着规则另画一张、也不要把网页当成 Markdown 图片。只有整份 skill 都读不到且本地没安装时才告知无法读取。
+**取两句，排出一个人。** 从几件事里看用户对 AI 反复做的动作，选有证据的一型：puai 向 AI 讨账或揶揄，teach 教 AI 验收，aicu 限时求救，all 让几个模型互评，hush 斟酌一句话怎么说，einstein 追原理或举反例，edison 给旧物找新用，support 点名留下 AI 做对的一步，free 真把决定交给 AI。跨期定型要能分别指到两件独立事情，指出两次本人都做了什么。反复聊同一题材、照常使用工具、采纳 AI 的一般建议，都不足以定型。只有一条普通求助或各有各的问法，就留待定，照样选好原话和日历。证据相当时优先有具体调侃的 PUAI。
 
-图尾只放二维码，旁边写「扫码获取口令，发给自己的 Agent 总结出图。」收到用户的生成口令，或用户明确要用自己的聊天生成时，直接按下面步骤出图。
+**先排一张只看原话就想转发的图。** 私下试两组不同的两句，把标题拿掉，哪组读完朋友会拿原话学他说话？选那组。找用户听完建议后那半句：他坚持什么、嫌哪儿麻烦，为什么一件小事偏要这样办。听得见本人语气的温和话也能开场。第二句最好换一件事，仍听得出是同一个人；一个问答确实有来回时也可用同一场。最多三句，第三句须有新落点。判为 PUAI 时，再和落选的调侃比一次：哪句让不认识这人也听得出他把 AI 的建议推到了多荒唐的地步？优先把那句完整留下。引语保持连续逐字，划线放在讲出立场或让意思翻转的原文上。
 
-按已确认的漫画 A 版排版。标题先写年份和已判类型，例如「2026 AI因斯坦 报告」。单场或片段材料另在题下注明范围。标题后先放最有辨识度的本人原话贴纸，接发言用量、已核占比和日历，再收个性标签。必要的前情只占一行。能定位包袱时，在该句后加「划线：原句里的连续短语」（预览参数 mark），核到同话多次重复才加「复读：实际次数」（repeat）。
+**最后才配字。** 标签是朋友会喊的外号。可直接摘一句最像本人的口头禅，也可以用短动词写出他自己的规矩。有两件事能互证，把其中一个具体规矩写进一个六字以内的 tag，尽量同时留住他针对的东西和怎么处置它。一条也足够；只核到一次普通提问可以留空。引语之外若有值得记的现场，从另一件事里留一个已发生的选择、意外结果或回音，用「用法」写一行（最多 24 字）。只多一个同类例子、只重复人格结论，或写出来比删掉更无聊，就删。排除工作细节、他人台词和报告指令。
 
-每张成图都在署名旁标人物类型，页尾另放个性标签；「AI因斯坦」是类型，「车厘子精算师」是个性标签。每张图都留日历。**先取日期，再选原话**：打开原线程时一并读取本人消息的发送时间，按用户时区记到私有账。收到「补日期」时，沿用上一张图的署名和逐字原话，以原句去已授权的本人聊天里回查发送时间，并盘点同一范围可计数的其他发言，再出图。
+**把日期和原话一起交给模板。** 完整读到的线程按天数本人指令，去重；定型后先用一句话写清哪些指令算命中，再按同一口径逐条复核，包括最初的请求和后来的追问。连同没命中的天一起入账，便可画占比。主题依据不足、口径没厘清或没有审完标 ?，只有片段就点亮实际发送日；Token 只取同范围的真实日志。两句话的日期与整份日历分别取数。
 
-在 ChatGPT 的数据分析工具中，已装 skill 就直接调用随包程序。空白内核可以运行下方的[联网加载示例](#联网加载官方模板)，离线时可用[本页内嵌的完整源码](#离线对话画布)。只有阅读工具时按上面的预览路径交付。
+- **能运行模板。** 本地用随包程序；空白 Python / 数据分析内核用下方的[官方程序](#联网加载官方模板)，调用 `show_puai` 在对话里直接显示实际 PNG。能执行页面并回传图像的浏览器也可取官方预览页的 PNG。
+- **只有文字、网页阅读、AI 绘图或模板执行失败。** 给可点击的「打开我的报告」：`https://xn--sxrw8m230b.com/PUAI/make/#p?` 后填好本人的数据，各值 URL 编码。署名 `name`、已定的 `theme`、范围 `scope`（多件事 history、单场 thread、片段 fragments）。每句 `q=MM-DD~原话` 后紧跟它的 `mark=逐字短语`；无日期的 q 直接写原文。具体用法 `use`，标签 `tag`，每项各写一个。逐日账 `days=MM-DD:N:H`，多日用英文逗号隔开，N 为当天本人发言数、H 为核准命中数或 ?。另有已核发言日用 `dates=MM-DD,MM-DD`。只有摘要时 `lead=可核的动作`。点开直接出图。跳过 ImageGen、照样图重画、空白网页和下载占位。整份 skill 读不到且未安装就直说；缺乏互动素材时提示在常用旧对话发送同一句口令。
+
+出图顺序为署名和九型章、最有辨识度的原话贴纸、可核用量和日历、另一个具体动作（有才放）、个性标签。图尾二维码旁写「扫码获取口令，发给自己的 Agent 总结出图。」单场或片段在题下注明范围。收到「补日期」时沿用上一张的署名和逐字原话，回原线程补发送时间及同范围的逐日账。
 
 ## 从聊天里找当事人的话
 
@@ -30,10 +32,10 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
    - **先铺开，再精读。** 用 `python3 scripts/browse_history.py --index CODEX.jsonl --overview --output PAGE.json` 翻会话概览，跟随 `next_page` 到底。给每个有记录的月份和会话留位置；概览是挑候选的入口。再用同一程序去掉 `--overview` 翻本人发言，或加可重复的 `--term` 搜线索，跨不同事情找用户接着说的第二句。要求完整回顾、候选过于集中或换了说法就搜不到时，用 `--full-text --page-chars 6000` 把能读的本人发言分段翻完；可加 `--month YYYY-MM` 分批做。按字符偏移续读长消息的后半段，尤其留意用户在粘贴材料之后亲自补的要求。概览或搜索到末页不会自动读完全文。记录哪些原线程拿不到。云端有目录则同样列完分页，再按原线程精读；只有搜索或记忆时明确本次能核到哪里。
    - **把几个现场放在一起读。** 本地可用 `python3 scripts/compare_scenes.py --index CODEX.jsonl --ids ID1 ID2 ID3 --output CHECKED.json`，多来源可再加 `--index`。它按原消息回查本人原句、日期和前后回合，私下并排。读完候选自己的整条原话（user_text），以及助手回完之后本人怎样接；“做完了吗”可能只是询问进度，下一句才交代谁来测试。单条也可用 `read_context.py --index CODEX.jsonl --id ID --source SOURCE --output WINDOW.json`。云端工具按同样方式打开几段原线程。可在线取[盘点](https://xn--sxrw8m230b.com/PUAI/collect_history.py)、[翻阅](https://xn--sxrw8m230b.com/PUAI/browse_history.py)、[回查](https://xn--sxrw8m230b.com/PUAI/read_context.py)和[并排比对](https://xn--sxrw8m230b.com/PUAI/compare_scenes.py)脚本。索引和比对结果留在当前环境。
 3. **用独立的事情定类型。** 给每件事各留一行私有笔记：「AI 刚做了什么 → 本人怎样接招 → 本人下一步做了什么」，附原文位置。旧事续聊、分支回放和把上一句粘去做贴纸，合到同一行。先在不同事情中找反复出现的动作，选一个最可能的类型，再去一段尚未参与判断的对话，找可能推翻它的证据。比如一句「你自己来」可以是把选择权交给 AI，也可以是要求 AI 亲自验证；看前面交出的是决定还是测试，后面谁验收。支持和相反的例子都算，把结论限定到实际能重复的那部分。只有一种解释在独立的事情上反复成立，才定年度类型；同一件事跨了好几个窗口，标为本次精选。有多件事但看不出主型，保留真实覆盖、日历与原话，类型待定。已读多个原线程、覆盖多件独立事情的阶段回顾用 `scope=history`，在图外说明日期区间。读不全整年、没有 token 日志、只裁两句上图，都不单独构成 `fragments` 的理由。是否能逐日计数看消息账是否完整。若两三型都说得通，把各自有明确行为的独立事情并排计一遍，一件事在同一型最多算一次，普通改稿和催进度都不能自动算作吐槽。两个类型证据相当时，有本人具体调侃的 PUAI 优先；优先选它不等于它出现最多。
-4. **选原话。** 在私有候选旁记原消息位置、日期、说话人和上下句。摘候选时多看用户听完 AI 后说的下一句：有没有顺着它的逻辑反问、给一个离谱的例外，或者隔了几天回来把账结了？试着盖住类型名和短评，让不认识这人的读者也能听出他哪里较真、哪里心软、哪里突然变脸。具体人名和项目细节遮不掉，或全靠解释才能成立，就从另一事件找一句。普通工作说明和术语长段留在私有材料。新报告默认上 **两句**。跨对话回顾先试两件独立事情的两句话：在另一种生活或工作情境里，这个人有没有做出同一种让朋友一眼认得的反应？把两句互换顺序，各自仍应听得懂。最出彩的一句开场。两句试排后，只读将上图的字：读者能说清第二句里的人或东西怎么冒出来了吗？断在中间时，优先换成同一现场里自带起因和落点的两句；也可用一行已核事实补上缺的一步。只有一句值得转发就只选一句。第三句只在带来翻转或省去它就断掉时上图，新图最多三句。检索范围和发言账照常覆盖全部已核记录。见[选材参考](references/scene-selection.md)。
-5. **付印。** 每句最多 80 字，保留原文、空格和标点。摘短只能取完整保留原意的连续片段。两条真实独立的发言各标自己的日期，避免剪成同一场对话。排除代拟稿、他人引语、系统提示、报告制作指令和工作机密。宿主问卷（本地标 `input_method=question_form`）可以核对本人选了什么；只有确认系本人输入的自由表述，才采作金句。粘贴材料很长时读到最后，分清被转贴的文字和本人在末尾补的要求。优先让原话直接开场，默认省略主场景、导语和短评。确实差半步才听得懂时，补一行可核实的事实前情（最多 24 字）。只有脱敏摘要时，用一个可核的具体动作出短卡。
+4. **选原话。** 在私有候选旁记原消息位置、日期、说话人和上下句。摘候选时多看用户听完 AI 后说的下一句：有没有顺着它的逻辑反问、给一个离谱的例外，或者隔了几天回来把账结了？试着盖住类型名和短评，让不认识这人的读者也能听出他哪里较真、哪里心软、哪里突然变脸。具体人名和项目细节遮不掉，或全靠解释才能成立，就从另一事件找一句。普通工作说明和术语长段留在私有材料。新报告默认上 **两句**。跨对话回顾先试两件独立事情的两句话：在另一种生活或工作情境里，这个人有没有做出同一种让朋友一眼认得的反应？把两句互换顺序，各自仍应听得懂。最出彩的一句开场。两句试排后，只读将上图的字：读者能说清第二句里的人或东西怎么冒出来了吗？断在中间时，优先换成同一现场里自带起因和落点的两句；也可用一行已核事实补上缺的一步。只有一句值得转发就只选一句。如果另一次有确实不同的收尾（嘴上说随便，后来自己逐个称重），可以直接用当事人说的第三句；三句要有递进或反差，新图最多三句。检索范围和发言账照常覆盖全部已核记录。见[选材参考](references/scene-selection.md)。
+5. **付印。** 每句最多 80 字，保留原文、空格和标点。摘短只能取完整保留原意的连续片段。两条真实独立的发言各标自己的日期，避免剪成同一场对话。排除代拟稿、他人引语、系统提示、报告制作指令和工作机密。宿主问卷（本地标 `input_method=question_form`）可以核对本人选了什么；只有确认系本人输入的自由表述，才采作金句。粘贴材料很长时读到最后，分清被转贴的文字和本人在末尾补的要求。优先让原话直接开场。确实差半步才听得懂时，补一行可核实的事实前情（最多 24 字）。翻一遍没有入选引语的那些事，若发现另一项具体动作或真实后续，填清单「用法」/ 链接 `use` / JSON `share_story.habits`，给读者一个新的细节。只有另一句空泛概括时省去此栏。只有脱敏摘要时，用一个可核的具体动作出短卡。
 
-先根据对话选定九型，把类型 ID 写入主题字段。整张报告固定使用该人格的配色，范围、署名和用户自定义的短标签都不改变这套颜色。尾部另可放 0–3 个短标签，每个最多六字。标签可借用原话里的物件或算账方式，「哪个动作只有在这张图里才说得通」是取舍标准。「善于提问」「当场纠偏」这类能移到别张图上的话直接删去。AI 的真实原话最多一条，仅在同一原线程里夹在两条用户发言之间，或确实紧接最后一问、能当落点时入选，另标「AI」。互不相干的问答分别呈现。没有任何具体互动材料时，提示到日常使用的旧对话发同一句口令；无需用户粘贴历史。
+先根据对话选定九型，把类型 ID 写入主题字段。整张报告固定使用该人格的配色，范围、署名和用户自定义的短标签都不改变这套颜色。尾部另可放 0–3 个短标签，每个最多六字。优先取当事人做的取舍；单独的物品清单不如一个贴身的说法。标签可直接摘有个人立场的一小段原文，把物件和当事人的做法连起来，「哪个动作只有在这张图里才说得通」是取舍标准。「善于提问」「当场纠偏」这类能移到别张图上的话直接删去。AI 的真实原话最多一条，仅在同一原线程里夹在两条用户发言之间，或确实紧接最后一问、能当落点时入选，另标「AI」。互不相干的问答分别呈现。没有任何具体互动材料时，提示到日常使用的旧对话发同一句口令；无需用户粘贴历史。
 
 | 人格类型 | 行为依据 | 重点贴纸 / 署名签 |
 |---|---|---|
@@ -74,29 +76,40 @@ description: 用已授权的本人聊天生成 PUAI 年度报告长图。适用�
 - **在对话里展示。** 输出真实 PNG 后，优先用宿主支持的图片附件或富输出直接发送这份文件已有的像素。在交互式 Python 单元中可运行 `from render_chat_png import display_chat_png` 后调用 `display_chat_png(path)`。支持 Markdown 图片的本地对话，用图片语法引用真实绝对路径（例如 `![我的年度报告](/实际路径/报告.png)`）。若 ChatGPT 只把工具输出折叠在分析过程里，确认 PNG 已写入，最终回复用图片语法内嵌实际文件，例如 `![我的年度报告](sandbox:/mnt/data/PUAI-2026.png)`。已经显示成图就结束，无需再给下载链接。
 - **对话不能展示像素。** 已有成品时先尝试该客户端实际支持的图片附件或富输出。仅当宿主没有可用的图片执行或展示工具，或上面的本地渲染确实失败，才进入网页路径。给一个「打开图片预览」链接，使用官方 A 版网页，由浏览器自动出图。地址从 `https://xn--sxrw8m230b.com/PUAI/make/#p?` 开始。例如已判为 AI因斯坦的单场用 `name=确定的署名&scope=thread&theme=einstein&q=MM-DD~本人逐字原话&days=MM-DD:N:?` 表示可逐条计数的单场精选，替换示意字段为核实的值；只有摘要时用 `lead=具体事实` 替代 q。按需加 setup、tag 等字段，q、tag 可重复。引语可加真实日期前缀 `MM-DD~`，AI 原话用 ai 或 endai。日期账 days 为逐日的 `MM-DD:N:H`，多日用英文逗号分隔；无日期账 undated 为 `N:H`。N 是本人消息数，H 是该组核准命中数，未逐条审完或无主题时填问号。token 为日志整数。用有序键值对编码，所有分享数据仅在 # 后，手工拼接可直接写中文并转义值里的空格、&、#、+、% 和括号。链接直接回给当事人，由对方设备在本地生成 PNG。浏览器请求服务器时不会携带 # 后的数据。助手无需用网页工具打开含原话的链接，也无需把原话提交给任何服务。仅能发文字时，把可点击的本人预览作为这条回复的成品；不要停在报告单、文稿或一段字段。链接里只放已选好、适合本人分享的内容。
 
-交付前看实际成品，数一遍上图原话（新图一至三句，有摘要而无引语时为零），核对成品署名和读到的本人称呼，检查署名旁的类型章是否与所选九型一致，对照原文检查角色和引语，逐一对照私有日期账、每条有依据的引语日期和最终送入渲染器的字段。若日期全丢在中途，补字段后再交图。核对统计分母。转发入口留在图尾。示意与真实报告分清，只在用户要求时使用明确标注的演示资料。
+交付前看实际成品，数一遍上图原话（新图一至三句，有摘要而无引语时为零），核对成品署名和读到的本人称呼，检查署名旁的类型章是否与所选九型一致，对照原文检查角色和引语，逐一对照私有日期账、每条有依据的引语日期和最终送入渲染器的字段。若日期全丢在中途，补字段后再交图。核对统计分母。最后只看付印的数据：有两个现场支撑的标签写进了 tag / 标签 / keywords 吗？不要只在分析里给人起好外号。若只剩物名，回到引语中找本人那个带立场的动词。转发入口留在图尾。示意与真实报告分清，只在用户要求时使用明确标注的演示资料。
 
 ## 联网加载官方模板
 
-已有 `scripts/notebook_card.py` 就直接导入。空白 Python 内核可执行下面的单元。先把本人报告单存为字符串 `receipt`（格式见上文）；请求只读取公开程序，报告内容在内核里排版。调用产生的 `image/png` 可直接展示。需要在最终回复内嵌文件时，用 `output` 的实际路径。
+已有 `scripts/notebook_card.py` 就直接导入。空白 Python 内核可执行下面的单元。先把本人报告单存为字符串 `receipt`（格式见上文）；请求读取公开程序和 A 版字体，报告内容在内核里排版。字体离线时使用内核可用的中文字体。调用产生的 `image/png` 可直接展示。需要在最终回复内嵌文件时，用 `output` 的实际路径。
 
 ```python
 from hashlib import sha256
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from urllib.request import urlopen
 from uuid import uuid4
 
 renderer_url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook_card.py"
-expected_sha256 = "546c8d4c29abe27cff93823f8fd0bcf7e548475a59704ccd51dfc41f9e0b9dea"
+expected_sha256 = "ce112bc0c18e6830ad1c831d71c49d2b157ad680846c6902b08eff4b9f35c6b9"
 with urlopen(renderer_url, timeout=8) as response:
     source = response.read()
 if sha256(source).hexdigest() != expected_sha256:
     raise ValueError("读取的模板版本与本页不一致，请用下方内嵌源码。")
-renderer = {"__name__": "puai_notebook"}
-exec(compile(source, "puai_notebook.py", "exec"), renderer)
 folder = Path("/mnt/data")
 output = folder / f"PUAI-{uuid4().hex[:8]}.png" if folder.is_dir() else None
-renderer["show_puai"](receipt, output=output)
+with TemporaryDirectory() as assets:
+    path = Path(assets)
+    font_url = "https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/assets/SmileySans-Oblique.woff2"
+    try:
+        with urlopen(font_url, timeout=5) as response:
+            font_bytes = response.read(2_000_000)
+        if sha256(font_bytes).hexdigest() == "731f22973349404b15a88a99ef3b5dd4104c0965c23b7e485c1f11e84fea99e2":
+            (path / "SmileySans-Oblique.woff2").write_bytes(font_bytes)
+    except OSError:
+        pass
+    renderer = {"__name__": "puai_notebook", "__file__": str(path / "notebook_card.py")}
+    exec(compile(source, "puai_notebook.py", "exec"), renderer)
+    renderer["show_puai"](receipt, output=output)
 ```
 
 ## 离线对话画布
@@ -219,9 +232,16 @@ def parse_receipt(text):
             continue
         field, value = match[1].lower(), match[2].strip()
         if field in {"划线", "复读"}:
-            if quote_number is not None:
+            if quote_number is not None and quote_number < 6:
                 if field == "划线":
-                    highlights[quote_number] = value
+                    # Some clients group all q fields, followed by all marks.
+                    originals = [re.sub(r"^\d\d-\d\d~", "", q) for q in values["原话"][:6]]
+                    matches = [i for i, q in enumerate(originals) if value in q]
+                    if len(value) <= 30:
+                        if quote_number in matches:
+                            highlights[quote_number] = value
+                        elif len(matches) == 1:
+                            highlights[matches[0]] = value
                 elif re.fullmatch(r"[0-9]{1,5}", value) and 2 <= int(value) <= 50000:
                     repeats[quote_number] = int(value)
             continue
@@ -343,11 +363,11 @@ def load_font(path=None):
     here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
     candidates = [path] if path else [
         Path.home()/"Library/Fonts/PingFangSC-Regular.ttf", "/System/Library/Fonts/PingFang.ttc",
+        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
+        here/"SmileySans-Oblique.woff2",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
         "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf", "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
         "/System/Library/Fonts/STHeiti Medium.ttc", "C:/Windows/Fonts/msyh.ttc",
-        here.parent/"assets/SmileySans-Oblique.woff2", here/"assets/SmileySans-Oblique.woff2",
-        here/"SmileySans-Oblique.woff2",
     ]
     for filename in candidates:
         try:
@@ -387,7 +407,7 @@ def draw_report(r, font):
         cmd("text", (x, y), str(value), font=face, fill=color, anchor=align,
             stroke_width=stroke if bold else 0, stroke_fill=color)
 
-    def wrap(value, width, size, emphasis=""):
+    def wrap(value, width, size, emphasis="", spoken=False):
         face = font(size)
         units = []
         parts = [value]
@@ -399,14 +419,14 @@ def draw_report(r, font):
         for token in tokens:
             parts = [token] if face.getlength(token) <= width else list(token)
             for part in parts:
-                if units and re.fullmatch(r"[，。、！？；：…）】」》％,.!?;:%)]", part):
+                if units and re.fullmatch(r"[，。、！？；：…）】」』”’》％,.!?;:%)]", part):
                     units[-1] += part
                 else:
                     units.append(part)
 
-        def fit(line_width):
+        def fit(line_width, pieces=units):
             rows, current = [], ""
-            for unit in units:
+            for unit in pieces:
                 if current and face.getlength(current+unit) > line_width:
                     rows.append(current)
                     current = ""
@@ -414,6 +434,21 @@ def draw_report(r, font):
             return rows + ([current] if current else [])
 
         rows = fit(width)
+        if spoken and len(rows) > 1:
+            # Prefer whole spoken clauses when they fit, preserving marked runs and punctuation.
+            clauses, current = [], []
+            for unit in units:
+                current.append(unit)
+                if re.search(r"[，。！？；!?;][”’」』）】]*$", unit):
+                    clauses.append(current)
+                    current = []
+            if current:
+                clauses.append(current)
+            pieces = ["".join(clause) for clause in clauses]
+            if len(pieces) > 1 and all(face.getlength(piece) <= width for piece in pieces):
+                spoken_rows = fit(width, pieces)
+                if len(spoken_rows) <= len(rows) + 1:
+                    return spoken_rows
         # Rebalance a stranded final word when the number of lines stays the same.
         if len(rows) > 1 and face.getlength(rows[-1]) < width * .3:
             for smaller in range(width-size, int(width*.65), -size):
@@ -424,6 +459,11 @@ def draw_report(r, font):
                 if face.getlength(rows[-1]) >= width * .3:
                     break
         return rows
+```
+
+### A 版源码 4/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/04.txt)
+
+```python
 
     def paragraph(x, y, rows, size, color=ink, bold=False):
         for row in rows:
@@ -444,11 +484,6 @@ def draw_report(r, font):
         # Centre the ink, including a mixed Latin/CJK signature, inside the sticker.
         left, top, right, bottom = font(size).getbbox(value, anchor="lt")
         text(round(x-(left+right)/2), round(y-(top+bottom)/2), value, size, color, bold)
-```
-
-### A 版源码 4/7 · [本段原文](https://raw.githubusercontent.com/TANGXTONG1/PUAI/main/docs/notebook/04.txt)
-
-```python
 
     def fitted(value, width, size):
         while size > 18 and font(size).getlength(value) > width:
@@ -498,7 +533,7 @@ def draw_report(r, font):
         width = min(804, max(540, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
         x = 852-width if style == 1 and len(quotes) > 1 else 48
         emphasis = r["emphases"][i]
-        rows = wrap(quote, width-2*inset, size, emphasis)
+        rows = wrap(quote, width-2*inset, size, emphasis, spoken=True)
         header = bool(dt or r["reply"] or repeats)
         body_top = (80 if burst else 78) - (0 if header else 49)
         leading = round(size*1.35)
@@ -755,25 +790,31 @@ def draw_report(r, font):
     if quote_first:
         habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
     if habits:
-        y = heading(y,"日常用法")
-        for habit in habits:
-            y = paragraph(48,y,wrap(habit,804,38),38)+17
-        y += 12
+        heading(y,"日常用法")
+        for index, habit in enumerate(habits):
+            if index:
+                cmd("line", (264,y,852,y), fill="#BAC6C8", width=2)
+                y += 14
+            y = paragraph(264,y,wrap(habit,588,37),37,bold=True)+15
+        y += 24
     stickers = []
     if r["tags"]:
         zone = y
-        rect(0,zone,900,212,signal)
-        text(48,zone+24,"片段标签" if scope_title else "人格标签",38,bold=True)
         tags = r["tags"]
-        width = (804-32)//3
+        compact = len(tags) <= 2
+        height = 144 if compact else 212
+        chip_y = zone + (37 if compact else 94)
+        rect(0,zone,900,height,signal)
+        text(48,zone+(47 if compact else 24),"片段标签" if scope_title else "人格标签",38,bold=True)
+        width = (588-16)//2 if compact else (804-32)//3
         for i,tag in enumerate(tags):
             if len(tag) > 10:
                 tag = tag[:9]+"…"
-            x = 48+i*(width+16)
-            rect(x,zone+94,width,62,paper,ink)
-            centered(x+width/2,zone+125,tag,fitted(tag,width-20,40),bold=True)
-            stickers.append((x-5,zone+88,x+width+6,zone+162))
-        y += 212
+            x = (264 if compact else 48)+i*(width+16)
+            rect(x,chip_y,width,62,paper,ink)
+            centered(x+width/2,chip_y+31,tag,fitted(tag,width-20,40),bold=True)
+            stickers.append((x-5,chip_y-6,x+width+6,chip_y+68))
+        y += height
     footer_height = 228
     rect(0,y,900,footer_height,"#FBFBF8")
     text(48,y+49,"扫码获取口令",46,bold=True)

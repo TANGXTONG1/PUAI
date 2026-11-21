@@ -107,9 +107,16 @@ def parse_receipt(text):
             continue
         field, value = match[1].lower(), match[2].strip()
         if field in {"划线", "复读"}:
-            if quote_number is not None:
+            if quote_number is not None and quote_number < 6:
                 if field == "划线":
-                    highlights[quote_number] = value
+                    # Some clients group all q fields, followed by all marks.
+                    originals = [re.sub(r"^\d\d-\d\d~", "", q) for q in values["原话"][:6]]
+                    matches = [i for i, q in enumerate(originals) if value in q]
+                    if len(value) <= 30:
+                        if quote_number in matches:
+                            highlights[quote_number] = value
+                        elif len(matches) == 1:
+                            highlights[matches[0]] = value
                 elif re.fullmatch(r"[0-9]{1,5}", value) and 2 <= int(value) <= 50000:
                     repeats[quote_number] = int(value)
             continue

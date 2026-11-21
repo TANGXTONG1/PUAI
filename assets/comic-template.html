@@ -168,7 +168,7 @@ const legacyPalette=!story && report.theme===undefined;
 const colors=legacyPalette?classicPalette():printPalette(editionColors[unclassified?'neutral':selectedKey]);
 const {ink,muted,accent,pale,base:paper}=colors;
 const footerInk=legacyPalette&&isRoast?paper:colors.onSignal;
-const fontFamily='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Smiley Sans",sans-serif';
+const fontFamily='"PingFang SC","Smiley Sans","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
 const owner=report.person?.name||'你';
 const isSpecimen=report.mode==='demo' && owner==='版式试样';
 const demoLabel=report.mode==='demo'?(isSpecimen?'演示数据':story?'虚拟人物样例':'虚构演示'):'';
@@ -509,6 +509,37 @@ function closingPhrase(text) {
  if(Array.from(words).length<2||Array.from(last).length>12||/^(?:对吧|对吗|好吗|行吗|是吗|好吧|可以吗)$/u.test(words))return '';
  return last;
 }
+// A pause in speech is a better line ending than cutting the next thought in half.
+function spokenLines(q,width,size){
+  const rows=richLines(q,width,size);
+  if(rows.length<2)return rows;
+  const clauses=[];
+  let clause=[];
+  for(const token of rows.flat()){
+    if(clause.length&&/[，。！？；!?;][”’」』）】]*$/u.test(clause.at(-1).value)&&
+       !/^[，。！？；!?;”’」』）】]/u.test(token.value)){
+      clauses.push(clause);
+      clause=[];
+    }
+    clause.push(token);
+  }
+  clauses.push(clause);
+  if(clauses.length===1)return rows;
+  const widthOf=group=>group.reduce((total,t)=>{
+    font(size,t.strong?700:600);
+    return total+ctx.measureText(t.value).width;
+  },0);
+  const spoken=[];
+  let row=[],used=0;
+  for(const clause of clauses){
+    const w=widthOf(clause);
+    if(w>width)return rows;
+    if(row.length&&used+w>width){spoken.push(row);row=[];used=0}
+    row.push(...clause);used+=w;
+  }
+  spoken.push(row);
+  return spoken.length<=rows.length+1?spoken:rows;
+}
 function comicQuote(q,index,y,draw=true){
 if(!q.emphasis)q={...q,emphasis:closingPhrase(q.text)};
 const i = quotes.length === 1 ? 1 : index % 3;
@@ -529,7 +560,7 @@ if (q.repeat_count) {
 const w = Math.min(804, Math.max(540, contentWidth + 2 * pad));
 const alignRight = i === 1 && quotes.length > 1;
 const x = alignRight ? 852 - w : 48;
-const rows = richLines(q,w-2*pad,size);
+const rows = spokenLines(q,w-2*pad,size);
 const hasHeader=Boolean(hasAiReply||q.date||q.kind==='rewrite'||q.repeat_count);
 const textTop=(burst?80:78)-(hasHeader?0:49);
 const h=rows.length*leading+textTop+(burst?36:18),tail=burst?0:22;
@@ -654,8 +685,24 @@ if(lead&&quotesFirst)y=comicLead(y,draw);
 if(posterHabits.length&&!leadWithHabits)y=comicHabits(y,draw);
 if(posterScenes.length)y=comicScenes(y,draw);
 const showTags=!story||report.keywords.length>0;
-if(draw&&showTags){box(0,y-8,900,196+extraBottomMargin,0,colors.signal);text(tagLabel,48,y+16,38,footerInk,800);const w=(804-32)/3;report.keywords.forEach((k,i)=>{const x=48+i*(w+16);ctx.save();ctx.translate(x,y+88);ctx.rotate([-.016,.015,-.012][i]);box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);font(40,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);ctx.restore()})}
-const footerTop=Math.ceil(y+(showTags?188+extraBottomMargin:16));
+const compactTags=report.keywords.length>0&&report.keywords.length<=2;
+const tagHeight=compactTags?144:196+extraBottomMargin;
+if(draw&&showTags){
+  box(0,y-8,900,tagHeight,0,colors.signal);
+  text(tagLabel,48,y+(compactTags?41:16),38,footerInk,800);
+  const w=compactTags?(588-16)/2:(804-32)/3;
+  report.keywords.forEach((k,i)=>{
+    const x=(compactTags?264:48)+i*(w+16);
+    ctx.save();ctx.translate(x,y+(compactTags?30:88));ctx.rotate([-.016,.015,-.012][i]);
+    box(0,0,w,62,0,paper);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.strokeRect(0,0,w,62);
+    font(40,800);ctx.textBaseline='alphabetic';
+    const size=Math.min(40,40*(w-20)/Math.max(1,ctx.measureText(k).width));
+    font(size,800);ctx.textBaseline='alphabetic';const m=ctx.measureText(k);
+    ctx.fillStyle=ink;ctx.fillText(k,(w+m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2,(62+m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2);
+    ctx.restore();
+  });
+}
+const footerTop=Math.ceil(y+(showTags?tagHeight-8:16));
 if(draw)drawShareFooter(footerTop);
 return footerTop+shareFooterHeight;
 }

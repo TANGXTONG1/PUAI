@@ -25,7 +25,7 @@ test('the shared launcher includes an editable signature and the official skill 
   assert.ok(auto.includes('https://raw.githubusercontent.com/TANGXTONG1/PUAI/'));
   assert.equal(new URL(auto.split('\n').at(-1)).pathname, '/TANGXTONG1/PUAI/main/SKILL.md');
   assert.ok(auto.includes('直接在对话里显示'));
-  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '15');
+  assert.equal(new URL(auto.split('\n').at(-1)).searchParams.get('v'), '16');
   assert.match(auto, /官方模板/);
   assert.match(auto, /预览链接/);
   assert.match(auto, /别用 AI 绘图/);

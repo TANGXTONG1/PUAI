@@ -26,6 +26,7 @@ function collectFields(lines, start) {
   let ending;
   const body = [];
   const quoteNotes = [];
+  const originals = [];
   let quote = '', index = -1;
   for (const line of lines.slice(start + 1).filter(Boolean)) {
     if (/^(?:```|~~~)|^(?:报告结束|结束|END|END PUAI)$/iu.test(line) || title.test(line)) break;
@@ -33,15 +34,25 @@ function collectFields(lines, start) {
     if (field && (field[1] === '划线' || field[1] === '复读')) {
       if (quote && index < 6) {
         const value = field[2].trim();
-        const note = quoteNotes[index] ?? {};
-        if (field[1] === '划线' && publishableLine(value, 30) && quote.includes(value)) note.emphasis = value;
+        // Chat clients may group their q fields, then their mark fields.
+        let target = index;
+        if (field[1] === '划线' && !quote.includes(value)) {
+          const matches = originals.flatMap((text, i) => text.includes(value) ? [i] : []);
+          if (matches.length !== 1) continue;
+          target = matches[0];
+        }
+        const note = quoteNotes[target] ?? {};
+        if (field[1] === '划线' && publishableLine(value, 30)) note.emphasis = value;
         if (field[1] === '复读' && /^[1-9]\d{0,4}$/u.test(value) && +value >= 2 && +value <= 50000) note.repeat_count = +value;
-        if (Object.keys(note).length) quoteNotes[index] = note;
+        if (Object.keys(note).length) quoteNotes[target] = note;
       }
       continue;
     }
     quote = field?.[1] === '原话' ? field[2].replace(/^\d{2}-\d{2}~/u, '') : '';
-    if (quote) index++;
+    if (quote) {
+      index++;
+      originals.push(quote);
+    }
     body.push(line);
   }
   for (const [index, line] of body.entries()) {

@@ -98,25 +98,31 @@
     if quote_first:
         habits = [habit for habit in r["habits"] if len(habit) <= 24][:1]
     if habits:
-        y = heading(y,"日常用法")
-        for habit in habits:
-            y = paragraph(48,y,wrap(habit,804,38),38)+17
-        y += 12
+        heading(y,"日常用法")
+        for index, habit in enumerate(habits):
+            if index:
+                cmd("line", (264,y,852,y), fill="#BAC6C8", width=2)
+                y += 14
+            y = paragraph(264,y,wrap(habit,588,37),37,bold=True)+15
+        y += 24
     stickers = []
     if r["tags"]:
         zone = y
-        rect(0,zone,900,212,signal)
-        text(48,zone+24,"片段标签" if scope_title else "人格标签",38,bold=True)
         tags = r["tags"]
-        width = (804-32)//3
+        compact = len(tags) <= 2
+        height = 144 if compact else 212
+        chip_y = zone + (37 if compact else 94)
+        rect(0,zone,900,height,signal)
+        text(48,zone+(47 if compact else 24),"片段标签" if scope_title else "人格标签",38,bold=True)
+        width = (588-16)//2 if compact else (804-32)//3
         for i,tag in enumerate(tags):
             if len(tag) > 10:
                 tag = tag[:9]+"…"
-            x = 48+i*(width+16)
-            rect(x,zone+94,width,62,paper,ink)
-            centered(x+width/2,zone+125,tag,fitted(tag,width-20,40),bold=True)
-            stickers.append((x-5,zone+88,x+width+6,zone+162))
-        y += 212
+            x = (264 if compact else 48)+i*(width+16)
+            rect(x,chip_y,width,62,paper,ink)
+            centered(x+width/2,chip_y+31,tag,fitted(tag,width-20,40),bold=True)
+            stickers.append((x-5,chip_y-6,x+width+6,chip_y+68))
+        y += height
     footer_height = 228
     rect(0,y,900,footer_height,"#FBFBF8")
     text(48,y+49,"扫码获取口令",46,bold=True)

@@ -32,6 +32,13 @@ Token：13000
 
 
 class ChatPngTest(unittest.TestCase):
+    def test_grouped_highlights_keep_their_matching_quote(self):
+        receipt = ("PUAI 2026\n原话：02-04~买五单能靠花钱养活自己？\n原话：07-16~塑料袋也能切盘端上桌。"
+                   "\n划线：花钱养活自己\n划线：切盘端上桌\n划线：编出来的")
+        self.assertEqual(renderer.parse_receipt(receipt)["emphases"], ["花钱养活自己", "切盘端上桌"])
+        unclear = "PUAI 2026\n原话：昨天买五单。\n原话：今天买五单。\n原话：那我走了。\n划线：买五单"
+        self.assertEqual(renderer.parse_receipt(unclear)["emphases"], ["", "", ""])
+
     def test_signature_placeholder_is_never_painted_as_the_name(self):
         for incoming, expected in [("", "我"), ("XXX", "我"), ("「xXx」", "我"), ("ＸＸＸ", "我"),
                                    ("叉叉叉", "我"), ("不愿透露姓名的唐某", "不愿透露姓名的唐某"), ("XXX号", "XXX号")]:

@@ -142,3 +142,22 @@ test('九型独立署在图上，精选保留范围标题，兼容旧 JSON', {
     await browser.close();
   }
 });
+
+test('原话换行保留铺垫和转折，也保留原标点与划线', {
+  skip: !chromium && 'Install playwright-core to run the browser integration.',
+}, async () => {
+  const frame = await readFile(new URL('../docs/make/poster-frame.txt', import.meta.url), 'utf8');
+  const browser = await chromium.launch({executablePath: process.env.PUAI_CHROMIUM});
+  try {
+    const page = await browser.newPage({viewport:{width:390,height:844}});
+    const q = '我是想省十分钟，结果你让我提前半小时出门。';
+    const fields = new URLSearchParams({theme:'einstein', q, mark:'提前半小时出门。'});
+    const report = parseReport(readDirectFields('#p?'+fields), {allowExcerptsWithoutLedger:true});
+    await page.setContent(frame.replace('__REPORT_JSON__', () => JSON.stringify(report)));
+    await page.waitForFunction(() => document.querySelector('#preview')?.naturalWidth === 900);
+    assert.deepEqual(await page.evaluate(() => stickerLayouts[0].rows),
+      ['我是想省十分钟，','结果你让我提前半小时出门。']);
+  } finally {
+    await browser.close();
+  }
+});

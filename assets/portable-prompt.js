@@ -4,7 +4,7 @@ function puaiPortablePrompt(nickname = '') {
   const placeholder = /^[「“"]?(?:[xｘ×]{3}|叉叉叉)[」”"]?$/iu.test(name);
   const signature = name && !placeholder ? '署名「' + name + '」' : '署名沿用我在聊天里用过的称呼';
   return '读下方 $puai，整理我的 2026 聊天，' + signature +
-    '。只用官方模板直接在对话里显示 PNG，跑不了给我的预览链接，读不到请直说，别用 AI 绘图。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=15';
+    '。只用官方模板直接在对话里显示 PNG，跑不了给我的预览链接，读不到请直说，别用 AI 绘图。\nhttps://raw.githubusercontent.com/TANGXTONG1/PUAI/main/SKILL.md?v=16';
 }
 
 function bindPuaiPromptCopy(button, fallback, status, nickname) {
