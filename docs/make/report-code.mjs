@@ -217,8 +217,10 @@ function richActivity(fields, theme, allowExcerptsWithoutLedger, lead, scope) {
   const last = days[days.length - 1].date;
   activity.rhythm = { first_seen: first, last_seen: last, analysis_start: first, analysis_end: last, analysis_months: [...monthRows.keys()] };
   // Ranking affects only which three calendars fit on the poster.
+  const quotedMonths = new Set(activity.share_quotes.filter(q => q.date).map(q => q.date.slice(0, 7)));
   activity.months = months.sort((a, b) =>
-    b.active_days - a.active_days || b.messages - a.messages || b.month.localeCompare(a.month)
+    b.active_days - a.active_days || b.messages - a.messages ||
+    Number(quotedMonths.has(b.month)) - Number(quotedMonths.has(a.month)) || b.month.localeCompare(a.month)
   ).slice(0, 3).sort((a, b) => a.month.localeCompare(b.month));
   return activity;
 }

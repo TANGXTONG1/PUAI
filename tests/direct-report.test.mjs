@@ -29,6 +29,13 @@ test('a single named persona among the tags selects its original edition on both
   assert.equal(report('#p?q=挑一只。&tag=PUAI&theme=free').theme, 'free');
 });
 
+test('相同活跃天数和发言量时保留选句所在的月份，全期统计仍包括其余月份', () => {
+  const { activity } = report('#p?q=02-01~原话。&days=02-01:1:?,03-01:1:?,04-01:1:?,09-01:4:?,10-01:1:?,10-02:1:?');
+  assert.deepEqual(activity.months.map(row => row.month), ['2026-02','2026-09','2026-10']);
+  assert.equal(activity.summary.messages, 9);
+  assert.equal(activity.daily_profile.active_days, 6);
+});
+
 test('原话划线、复读和接话在网页端保持对应', () => {
   const card = report('#p?' + new URLSearchParams([
     ['q','多调研点啊，我缺你这点 token 吗？'], ['repeat','4'], ['mark','我缺你这点 token 吗？'],

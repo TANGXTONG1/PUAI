@@ -86,7 +86,19 @@ def draw_report(r, font):
                     current = []
             if current:
                 clauses.append(current)
-            pieces = ["".join(clause) for clause in clauses]
+            pieces = []
+            for clause in clauses:
+                phrase = "".join(clause)
+                turn = re.search(r"就是|结果|但是|可是|偏偏|反倒|还得|才是", phrase[3:]) if face.getlength(phrase) > width else None
+                if turn:
+                    cut = turn.start()+3
+                    left, right = phrase[:cut], phrase[cut:]
+                    marked = phrase.find(emphasis) if emphasis else -1
+                    if (not (marked >= 0 and marked < cut < marked+len(emphasis))
+                        and all(width*.26 <= face.getlength(p) <= width for p in (left, right))):
+                        pieces.extend((left, right))
+                        continue
+                pieces.append(phrase)
             if len(pieces) > 1 and all(face.getlength(piece) <= width for piece in pieces):
                 spoken_rows = fit(width, pieces)
                 if len(spoken_rows) <= len(rows) + 1:

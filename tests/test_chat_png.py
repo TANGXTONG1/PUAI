@@ -60,9 +60,9 @@ class ChatPngTest(unittest.TestCase):
         nickname = "很长的一串昵称"*2+"唐某"
         themes = {"puai": "PUAI", "einstein": "AI因斯坦", "teach": "AI的教育",
                   "aicu": "AICU", "edison": "AI迪生", "free": "AI咋咋地",
-                  "hush": "AI在心口难开", "all": "AI特全体", "support": "AI的供养", "": "待定"}
+                  "hush": "AI在心口难开", "all": "AI特全体", "support": "AI的供养", "": "类型待定"}
         for key, value in themes.items():
-            for scope, caption in [("history", "年度类型"), ("thread", "本次类型"), ("fragments", "本次类型")]:
+            for scope, caption in [("history", "年度报告"), ("thread", "本次对话精选"), ("fragments", "聊天片段精选")]:
                 with self.subTest(key=key, scope=scope):
                     receipt = f"PUAI 2026\n范围：{scope}\n署名：{nickname}\n标签：小算盘\n原话：算盘得响。"
                     if key:
@@ -74,9 +74,10 @@ class ChatPngTest(unittest.TestCase):
                     with patch.object(ImageDraw.ImageDraw, "text", observe):
                         img = renderer.draw_report(renderer.parse_receipt(receipt), font)
                     self.assertEqual(img.width, 900)
-                    self.assertLessEqual(bounds[nickname+"的"][2], bounds[caption][0]-12)
-                    self.assertLess(bounds[caption][2], bounds[value][0])
-                    self.assertLess(bounds[value][1], 95)
+                    self.assertLessEqual(bounds[nickname][2], bounds["2026"][0]-12)
+                    self.assertLess(bounds["2026"][2], bounds[caption][0])
+                    self.assertLess(bounds[caption][3], bounds[value][1])
+                    self.assertLess(bounds[value][3], 236)
                     self.assertLessEqual(bounds[value][2], 852)
                     self.assertGreater(bounds["小算盘"][1], bounds[value][3])
                     self.assertGreater(len(img.crop(bounds[value]).getcolors(90000)), 2)
@@ -112,7 +113,8 @@ class ChatPngTest(unittest.TestCase):
             with patch.object(ImageDraw.ImageDraw, "text") as draw:
                 renderer.draw_report(parsed, font)
                 painted = [call.args[1] for call in draw.call_args_list]
-            self.assertIn("2026 AI的教育 报告", painted)
+            self.assertIn("2026", painted)
+            self.assertEqual(painted.count("AI的教育"), 1)
             if expected:
                 self.assertIn(expected, painted)
             self.assertTrue(all(q in painted for q in "甲乙丙丁戊己"))
@@ -132,6 +134,10 @@ class ChatPngTest(unittest.TestCase):
             ("原话：02-03~甲。\n原话：02-03~乙。\n原话：丙。\n发言日期：02-03,04-05,04-05",
              ("片段日期", "核实 2 天", "2 / 3 句原话有日期", "02 月", "04 月"), ("单日最高", "条指令")),
             ("原话：02-03~甲。", ("片段日期", "核实 1 天", "1 句原话有日期"), ("单日最高", "条指令")),
+            ("原话：02-01~原话。\n发言日期：02-01,03-01,04-01,05-01",
+             ("片段日期", "02 月", "04 月", "05 月"), ("03 月", "条指令")),
+            ("原话：02-01~原话。\n日期账：02-01:1:?,03-01:1:?,04-01:1:?,09-01:4:?,10-01:1:?,10-02:1:?",
+             ("发言日历", "02 月", "09 月", "10 月", "9 条指令"), ("03 月", "04 月")),
             ("原话：04-05~甲。\n发言日期：04-05,09-10\n日期账：09-10:5:?",
              ("发言日历", "有发言的日子", "1 天", "单日最高发言", "9.10 · 5 条", "另有 1 个已知日期", "04.05"), ("2 天开喷",)),
         ]
@@ -161,10 +167,10 @@ class ChatPngTest(unittest.TestCase):
         source = "PUAI 2026\n主题：puai\n日期账：09-10:5:?\n发言日期：09-12"
         report = renderer.parse_receipt(source)
         font = renderer.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
-        with patch.object(ImageDraw.ImageDraw, "ellipse") as dots:
+        with patch.object(ImageDraw.ImageDraw, "rounded_rectangle") as cells:
             renderer.draw_report(report, font)
-        # The month grid uses 23px dots; ignore legends and the decorative graphics.
-        painted = [call for call in dots.call_args_list if call.args[0][2]-call.args[0][0] == 23
+        # At export scale a calendar square has 24px of ink inside a 26px cell.
+        painted = [call for call in cells.call_args_list if call.args[0][2]-call.args[0][0] == 24
                    and call.kwargs.get("fill") == renderer.PALETTES["puai"][1]]
         self.assertEqual(len(painted), 2)
         self.assertEqual((len(report["days"]), report["total"]), (1, 5))
@@ -221,7 +227,7 @@ AI：四行。
 
         with patch.object(ImageDraw.ImageDraw,"text",observe):
             img = renderer.draw_report(renderer.parse_receipt(source),font)
-        badge = "不愿透露姓名的唐某的"
+        badge = "不愿透露姓名的唐某"
         xy, kwargs = positions[badge]
         bounds = kwargs["font"].getbbox(badge,anchor=kwargs["anchor"])
         actual_cx = xy[0]+(bounds[0]+bounds[2])/2

@@ -119,19 +119,22 @@ test('九型独立署在图上，精选保留范围标题，兼容旧 JSON', {
       }
       const isPartial = scope === 'fragments' || scope === 'thread';
       const label = isPartial ? '本次类型' : '年度类型';
-      const nick = ink.find(t => t.value === owner+'的');
-      const caption = ink.find(t => t.value === label);
-      const type = ink.find(t => t.value === value);
-      assert.ok(nick && caption && type, [theme, scope, label, value].join(' / '));
-      assert.ok(nick.end + 20 <= caption.x && caption.end < type.x && type.end <= 852);
-      assert.ok(type.y <= 92);
+      const scopeStamp = {thread:'本次对话精选',fragments:'聊天片段精选'}[scope] || '年度报告';
+      const nick = ink.find(t => t.value === owner);
+      const year = ink.find(t => t.value === '2026');
+      const caption = ink.find(t => t.value === scopeStamp);
+      const visibleType = theme ? value : '类型待定';
+      const type = ink.find(t => t.value === visibleType);
+      assert.ok(nick && year && caption && type, [theme, scope, label, value].join(' / '));
+      assert.ok(nick.end + 20 <= year.x && year.end < caption.x && caption.end <= 852);
+      assert.ok(caption.y <= 92 && type.y > 92 && type.end <= 852);
+      assert.ok(!ink.some(t => t.value.includes('扫图底')));
       assert.ok(alt.includes(label+'：'+value));
       assert.ok(ink.some(t => t.value === '装盘高手'));
-      if (theme) assert.ok(ink.some(t => t.value === '2026 '+value+' 报告' && t.y < 202));
+      if (theme) assert.ok(alt.includes('2026 '+value+' 报告'));
       if (isPartial) {
         const caption = scope === 'thread' ? '本次对话精选' : '聊天片段精选';
         assert.ok(alt.includes(caption));
-        if (theme) assert.ok(ink.some(t => t.value.includes(caption) && t.y > 150 && t.y < 260));
       }
       if (mode) {
         const source = ink.find(t => t.value === (mode === 'demo' ? '虚拟人物样例' : '自述'));

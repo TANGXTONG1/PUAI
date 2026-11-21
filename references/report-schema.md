@@ -158,7 +158,7 @@ A 版在私有输入提供 `share_story` 时增加公开的 `story = {persona,sc
 - `analysis_start`：有达标月份时取该月 1 日，否则取 `first_seen`；`analysis_end` 为 `last_seen`。分析期包括起点到末次可见记录间的全部可见活跃日，后续稀疏月份仍纳入，不声称全程连续高频。
 - `analysis_months`：分析期内有记录月份的 `YYYY-MM` 数组，按月份升序。空记录时上述日期与密集月份为 `null`，两个月份数组为空；`criteria` 仍保留。
 
-`selected_months` 仅用于日历选展：从分析期月份中，按可见活跃天数选择最多 3 个最活跃月，并列优先较新，最后按月份升序展示。`months` 对应这些选展月份，每项为 `{month,active_days,messages,roast_days?,roast_messages?}`。日历选展不决定统计分母，未展示月份不代表没有使用；HTML 折叠统计口径应说明日历仅展示部分月份。
+`selected_months` 仅用于日历选展：从分析期月份中，按可见活跃天数选择最多 3 个月；天数相同时先看发言条数，再看当月是否有入选原话，仍相同则优先较新，最后按月份升序展示。`months` 对应这些选展月份，每项为 `{month,active_days,messages,roast_days?,roast_messages?}`。日历选展不决定统计分母，未展示月份不代表没有使用；HTML 折叠统计口径应说明日历仅展示部分月份。
 
 `days` 包含整个分析期的活跃日期，每项只含 `date`、`count`、可选 `roast_count`，按日期升序。`summary` 合计整个分析期的 `active_days`、`messages`，输入提供吐槽子集时再增加 `roast_days`、`roast_messages`；不受 3 个日历选展月份限制，也不保留连续天数、峰值或最晚时刻。没有达标密集月时仍统计全部可见片段，空记录的基础计数为 0；吐槽计数是否出现仍取决于是否提供过核验子集。`coverage` 沿用输入，不能因推导了使用节奏就改成完整覆盖。
 

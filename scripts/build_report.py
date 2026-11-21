@@ -89,9 +89,10 @@ def activity_timestamp(value, path):
         raise ReportError(f"{path}: invalid timestamp") from exc
 
 
-def select_active_months(month_counts):
-    """Select up to three busiest visible months, preferring newer ties."""
-    ranked = sorted(month_counts, key=lambda month: (month_counts[month], month), reverse=True)
+def select_active_months(months, analysis_months, quoted_months):
+    """Break ties in active days and message volume with the calendar's quote markers."""
+    ranked = sorted(analysis_months, key=lambda m: (
+        months[m]["active_days"], months[m]["messages"], m in quoted_months, m), reverse=True)
     return sorted(ranked[:3])
 
 
@@ -581,8 +582,6 @@ def compact_activity(activity, include_early_quotes=False):
         if reviewed:
             row["roast_days"] += int(day["roast_count"] > 0)
             row["roast_messages"] += day["roast_count"]
-    selected = select_active_months({month: row["active_days"] for month, row in months.items()
-                                     if month in analysis_months})
     summary_keys = ["active_days", "messages"]
     if reviewed:
         summary_keys.extend(["roast_days", "roast_messages"])
@@ -590,8 +589,6 @@ def compact_activity(activity, include_early_quotes=False):
         "timezone": aggregate["timezone"],
         "coverage": aggregate["coverage"],
         "rhythm": rhythm,
-        "selected_months": selected,
-        "months": [months[month] for month in selected],
         "summary": {key: sum(months[month][key] for month in analysis_months) for key in summary_keys},
         "days": [
             {key: day[key] for key in ("date", "count", "roast_count") if key in day}
@@ -623,6 +620,10 @@ def compact_activity(activity, include_early_quotes=False):
                     public_quote["repeat_count"] = len(quote["repeat_message_ids"])
                 quotes.append(public_quote)
         result["share_quotes"] = quotes
+    quoted_months = {q["date"][:7] for q in result.get("share_quotes", [])}
+    selected = select_active_months(months, analysis_months, quoted_months)
+    result["selected_months"] = selected
+    result["months"] = [months[month] for month in selected]
     return result
 
 

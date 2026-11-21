@@ -314,7 +314,19 @@ def draw_report(r, font):
                     current = []
             if current:
                 clauses.append(current)
-            pieces = ["".join(clause) for clause in clauses]
+            pieces = []
+            for clause in clauses:
+                phrase = "".join(clause)
+                turn = re.search(r"就是|结果|但是|可是|偏偏|反倒|还得|才是", phrase[3:]) if face.getlength(phrase) > width else None
+                if turn:
+                    cut = turn.start()+3
+                    left, right = phrase[:cut], phrase[cut:]
+                    marked = phrase.find(emphasis) if emphasis else -1
+                    if (not (marked >= 0 and marked < cut < marked+len(emphasis))
+                        and all(width*.26 <= face.getlength(p) <= width for p in (left, right))):
+                        pieces.extend((left, right))
+                        continue
+                pieces.append(phrase)
             if len(pieces) > 1 and all(face.getlength(piece) <= width for piece in pieces):
                 spoken_rows = fit(width, pieces)
                 if len(spoken_rows) <= len(rows) + 1:
@@ -356,27 +368,37 @@ def draw_report(r, font):
         return size
 
     scope_title = {"thread": "本次对话精选", "fragments": "聊天片段精选"}.get(r["scope"])
-    type_caption = "本次类型" if scope_title else "年度类型"
-    type_name = name if theme else "待定"
-    caption_width = round(font(26).getlength(type_caption))
-    type_width = round(font(34).getlength(type_name))
-    type_left = 852 - (16 + caption_width + 12 + type_width + 16)
-    rect(type_left, 36, 852-type_left, 56, tint, ink)
-    centered(type_left+16+caption_width/2, 64, type_caption, 26)
-    centered(852-16-type_width/2, 64, type_name, 34, bold=True)
+    cover_label = scope_title or "年度报告"
+    cover_title = name if theme else "类型待定"
+    cover_height = 237
+    rect(0, 0, 900, cover_height, calendar_ink)
+    rect(0, cover_height-8, 900, 8, signal)
+    year_text = str(year)
+    year_width = round(font(32).getlength(year_text))
+    caption_width = round(font(28).getlength(cover_label))
+    stamp_left = 852 - (16 + year_width + 28 + caption_width + 16)
+    rect(stamp_left, 36, 852-stamp_left, 56, tint)
+    divider = stamp_left+16+year_width+14
+    cmd("line", (divider, 49, divider, 79), fill=ink, width=2)
+    centered(stamp_left+16+year_width/2, 64, year_text, 32, bold=True)
+    centered(852-16-caption_width/2, 64, cover_label, 28, bold=True)
 
-    badge = r["name"]+"的"
-    badge_size = fitted(badge, type_left-22-48-44, 34)
+    badge = r["name"]
+    badge_size = fitted(badge, stamp_left-22-48-44, 34)
     badge_w = round(font(badge_size).getlength(badge))+44
     rect(48, 36, badge_w, 56, accent)
     centered(48+badge_w/2, 64, badge, badge_size, on_accent, True)
-    title = f"{name} 报告" if theme else (scope_title or "AI 相处报告")
-    title = f"{year} {title}"
-    text(48, 115, title, fitted(title, 804, 68), bold=True)
-    if scope_title and theme:
-        text(48, 200, scope_title, 32, bold=True)
-    text(852, 202, "扫图底二维码获取口令 ↓", 28, align="rt")
-    y = 260
+    display = font(98)
+    here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
+    for folder in (here.parent/"assets", here/"assets", here):
+        try:
+            display = ImageFont.truetype(str(folder/"SmileySans-Oblique.woff2"), 98)
+            break
+        except OSError:
+            continue
+    cmd("text", (48, 108), cover_title, font=display, fill="#FFFFFF", anchor="lt",
+        stroke_width=0 if display.getname()[0] == "Smiley Sans" else 1, stroke_fill="#FFFFFF")
+    y = cover_height+32
 
     quotes = r["quotes"]
     quote_first = theme == "puai" and bool(quotes)
@@ -395,10 +417,13 @@ def draw_report(r, font):
         size = 50 if i == 0 else 46
         repeats = r["repeats"][i]
         meta_width = ((157 if dt else 0)+(92 if r["reply"] else 0)+font(32).getlength(f"复读×{repeats}")) if repeats else 0
-        width = min(804, max(540, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
-        x = 852-width if style == 1 and len(quotes) > 1 else 48
+        align_right = style == 1 and len(quotes) > 1
+        max_width = min(750 if align_right else 804, max(416, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
         emphasis = r["emphases"][i]
-        rows = wrap(quote, width-2*inset, size, emphasis, spoken=True)
+        rows = wrap(quote, max_width-2*inset, size, emphasis, spoken=True)
+        widest_row = round(max(font(size).getlength(row) for row in rows))
+        width = max_width if repeats else min(max_width, max(416, max_width-148, widest_row+2*inset+8))
+        x = 852-width if align_right else 48
         header = bool(dt or r["reply"] or repeats)
         body_top = (80 if burst else 78) - (0 if header else 49)
         leading = round(size*1.35)
@@ -415,6 +440,8 @@ def draw_report(r, font):
             cmd("polygon", pts, fill=fill)
             cmd("line", pts+[pts[0]], fill=ink, width=3, joint="curve")
         else:
+            if i == 0:
+                rect(x+5, top+7, width, height, ink, radius=28)
             rect(x, top, width, height, fill, ink, 28)
             tail = x+width-145 if style else x+82
             base = top+height
@@ -432,14 +459,19 @@ def draw_report(r, font):
             text(x+width-inset,meta_y,f"复读×{repeats}",30,fg,True,"rt")
         start = quote.find(emphasis) if emphasis else -1
         end, offset = start+len(emphasis), 0
-        hi, hi_text = [(tint,ink), (accent,on_accent), (calendar_ink,"#FFFFFF")][style]
+        hi, hi_text = [(signal,ink), (accent,on_accent), (calendar_ink,"#FFFFFF")][style]
+        if burst and style == 1 and on_pull not in (paper, "#FFFFFF"):
+            hi, hi_text = calendar_ink, "#FFFFFF"
         for line_no, row in enumerate(rows):
             at = top+body_top+line_no*leading
             a, b = max(start-offset, 0), min(end-offset, len(row))
             if a < b:
                 xx = body_x + font(size).getlength(row[:a])
                 right = body_x + font(size).getlength(row[:b])
-                rect(round(xx)-2,at-4,round(right-xx)+4,size+9,hi)
+                if style == 0:
+                    rect(round(xx)-2, at+round(size*.48), round(right-xx)+4, round(size*.48), hi)
+                else:
+                    rect(round(xx)-2, at-4, round(right-xx)+4, size+8, hi)
                 if a:
                     text(body_x, at, row[:a], size, fg, True)
                 text(xx, at, row[a:b], size, hi_text, True)
@@ -473,7 +505,6 @@ def draw_report(r, font):
         y = paragraph(48,y,wrap(r["short"],800,41),41,bold=True)+28
     if r["total"] or r["tokens"] is not None:
         ratio = None if r["hits"] is None else r["hits"]/r["total"]
-        width = 514 if ratio is not None else 804
         if r["tokens"] is not None:
             tokens = r["tokens"]
             if tokens >= 100_000_000:
@@ -484,32 +515,34 @@ def draw_report(r, font):
             caption = "和 AI 对话，烧了"
         else:
             value, caption = f'{r["total"]:,} 条指令', "记录里，你发出了"
-        height = 154 if ratio is not None else 104
-        rect(48,y,width,height,pull)
-        if ratio is not None:
-            text(74,y+18,caption,34,on_pull,True)
-            text(74,y+72,value,fitted(value,width-52,52),on_pull,True)
-            cx, cy, rad = 720, y+72, 65
-            bounds = (cx-rad,cy-rad,cx+rad,cy+rad)
-            cmd("ellipse",bounds,outline=tint,width=12)
-            if ratio:
-                cmd("arc",bounds,-90,-90+ratio*360,fill=calendar_ink,width=12)
-            percentage = f"{ratio*100:.1f}".removesuffix(".0")+"%"
-            centered(cx,cy-23,"约",24,bold=True)
-            centered(cx,cy+14,percentage,fitted(percentage,108,44),bold=True)
-            text(cx,y+156,"指令在骂 AI" if theme=="puai" else theme_label+"指令占比",30,align="mt")
-        else:
-            text(74,y+32,caption,34,on_pull,True)
-            centered(625,y+52,value,fitted(value,390,52),on_pull,True)
         extra = []
         if r["tokens"] is not None and r["total"]:
             extra.append(f'{r["total"]:,} 条指令')
         if ratio is not None:
             extra.append(f'{r["hits"]:,} 条{theme_label}')
+        height, split = (180 if extra else 148), 548
+        rect(48,y,804,height,tint if ratio is not None else pull,radius=10)
+        if ratio is not None:
+            rect(48,y,split-48,height,pull,radius=10)
+            rect(split-10,y,10,height,pull)
+            cx, cy, rad = split+58, y+height/2, 41
+            bounds = (cx-rad,cy-rad,cx+rad,cy+rad)
+            cmd("ellipse",bounds,outline=paper,width=12)
+            if ratio:
+                cmd("arc",bounds,-90,-90+ratio*360,fill=calendar_ink,width=12)
+            percentage = "约 "+f"{ratio*100:.1f}".removesuffix(".0")+"%"
+            text(split+114,cy-45,percentage,fitted(percentage,176,48),bold=True)
+            label = "指令在骂 AI" if theme=="puai" else theme_label+"指令占比"
+            text(split+114,cy+23,label,fitted(label,172,30),bold=True)
+            for yy in (y,y+height):
+                cmd("ellipse",(split-7,yy-7,split+7,yy+7),fill=paper)
+        width = 445 if ratio is not None else 750
+        text(76,y+21,caption,30,on_pull,True)
+        text(76,y+66,value,fitted(value,width,64),on_pull,True)
         if extra:
-            value = " · ".join(extra)
-            text(48,y+(169 if ratio is not None else 117),value,fitted(value,width,31),bold=True)
-        y += 232 if ratio is not None else (178 if extra else 139)
+            detail = " · ".join(extra)
+            text(76,y+141,detail,fitted(detail,width,30),on_pull)
+        y += height+39
 
     days = r["days"]
     quote_dates = [dt for dt, _ in quotes if dt]
@@ -540,22 +573,22 @@ def draw_report(r, font):
             if quote_dates:
                 dated = str(len(quote_dates)) if len(quote_dates) == len(quotes) else f"{len(quote_dates)} / {len(quotes)}"
                 secondary = f"{dated} 句原话有日期"
-        selected = sorted(sorted(month_counts, key=lambda m: (-month_counts[m], -month_messages[m], -m))[:3])
+        quoted_months = {dt.month for dt in quote_dates}
+        selected = sorted(sorted(month_counts, key=lambda m: (
+            month_counts[m], month_messages[m], m in quoted_months, m), reverse=True)[:3])
         legend = [("发言" if days else "已核日期", ink)]
         if any(h for _,h in days.values()):
             legend.append((theme_label, calendar_ink))
         legend.append(("缺记录", None))
 
-        def dot(px, py, diameter, fill):
-            cmd("ellipse",(px,py,px+diameter,py+diameter),fill=fill,outline=fill or "#87959D",width=1)
-            if not fill:
-                cmd("line",(px+4,py+diameter-4,px+diameter-4,py+4),fill="#87959D",width=1)
+        def calendar_cell(px, py, size, fill):
+            rect(px+1, py+1, size-2, size-2, fill or paper, None if fill else "#87959D", radius=4)
 
         def month_grid(month, x, top, width):
             cx = x+width/2
             centered(cx,top+17,f"{month:02} 月",34,bold=True)
             weeks = calendar.Calendar(0).monthdayscalendar(year,month)
-            step, diameter = 28, 23
+            step, diameter = 31, 26
             left = round(cx-((len(weeks)-1)*step+diameter)/2)
             for week, dates in enumerate(weeks):
                 for weekday, day in enumerate(dates):
@@ -565,10 +598,10 @@ def draw_report(r, font):
                     record = days.get(dt)
                     fill = calendar_ink if record and record[1] else ink if dt in calendar_dates or dt in observed_dates else None
                     px, py = left+week*step,top+54+weekday*step
-                    dot(px,py,diameter,fill)
+                    calendar_cell(px,py,diameter,fill)
                     if dt in markers:
-                        cmd("rectangle",(px-2,py-2,px+diameter+2,py+diameter+2),outline=ink,width=2)
-                        centered(px+diameter/2,py+diameter/2,str(markers[dt]),18,"#FFFFFF" if fill else ink,True)
+                        cmd("rectangle",(px-1,py-1,px+diameter+1,py+diameter+1),outline=ink,width=2)
+                        centered(px+diameter/2,py+diameter/2,str(markers[dt]),21,"#FFFFFF" if fill else ink,True)
             monthly = [(n,h) for day,(n,h) in days.items() if day.month==month]
             if monthly:
                 n = month_messages[month]
@@ -576,22 +609,22 @@ def draw_report(r, font):
                     hits = sum(h for _,h in monthly)
                     stat = f"{hits} {'喷 / ' if theme=='puai' else '/ '}{n} 条"
                     left, bar = x+18, width-36
-                    rect(left, top+296, bar, 8, tint)
+                    rect(left, top+317, bar, 8, tint)
                     if hits:
-                        rect(left,top+296,round(bar*hits/n),8,calendar_ink)
+                        rect(left,top+317,round(bar*hits/n),8,calendar_ink)
                 else:
                     stat = f"{n} 条发言"
             elif len(selected) > 1:
                 stat = f"核实 {month_counts[month]} 天"
             else:
                 return
-            centered(cx,top+265,stat,fitted(stat,width-8,30),bold=True)
+            centered(cx,top+290,stat,fitted(stat,width-8,30),bold=True)
 
         def date_legend(x, at, available):
             col = available/len(legend)
             for i,(label,fill) in enumerate(legend):
                 xx = round(x+i*col)
-                dot(xx,at+4,20,fill)
+                calendar_cell(xx,at+4,21,fill)
                 text(xx+28,at,label,26)
 
         def date_fact(x, at, width, label, value):
@@ -609,7 +642,7 @@ def draw_report(r, font):
             if secondary and not days:
                 text(428,y+112,secondary,fitted(secondary,424,34),bold=True)
             date_legend(428,y+245,424)
-            y += 334
+            y += 356
         else:
             if days:
                 date_fact(48,y,325,"有发言的日子",primary)
@@ -623,8 +656,11 @@ def draw_report(r, font):
             date_legend(48,y+65,804)
             width = (804-24*(len(selected)-1))//len(selected)
             for i,month in enumerate(selected):
-                month_grid(month,48+i*(width+24),y+125,width)
-            y += 462
+                left = 48+i*(width+24)
+                if i:
+                    cmd("line",(left-12,y+129,left-12,y+442),fill="#BAC6C8",width=2)
+                month_grid(month,left,y+125,width)
+            y += 483
         extra = sorted(observed_dates.difference(days)) if days else []
         if extra:
             listed = "、".join(day.strftime("%m.%d") for day in extra[:3])
@@ -655,29 +691,40 @@ def draw_report(r, font):
     stickers = []
     if r["tags"]:
         zone = y
-        tags = r["tags"]
+        tags = [tag if len(tag) <= 10 else tag[:9]+"…" for tag in r["tags"]]
         compact = len(tags) <= 2
-        height = 144 if compact else 212
-        chip_y = zone + (37 if compact else 94)
+        height = 144 if compact else 188
+        chip_y = zone + (41 if compact else 78)
         rect(0,zone,900,height,signal)
-        text(48,zone+(47 if compact else 24),"片段标签" if scope_title else "人格标签",38,bold=True)
-        width = (588-16)//2 if compact else (804-32)//3
-        for i,tag in enumerate(tags):
-            if len(tag) > 10:
-                tag = tag[:9]+"…"
-            x = (264 if compact else 48)+i*(width+16)
-            rect(x,chip_y,width,62,paper,ink)
-            centered(x+width/2,chip_y+31,tag,fitted(tag,width-20,40),bold=True)
-            stickers.append((x-5,chip_y-6,x+width+6,chip_y+68))
+        text(48,zone+(52 if compact else 21),"片段标签" if scope_title else "人格标签",38,bold=True)
+        x = 264 if compact else 48
+        size = 40
+        while True:
+            widths = [round(font(size).getlength(tag)) + 38 for tag in tags]
+            if sum(widths) + 18*(len(tags)-1) <= 852-x or size <= 20:
+                break
+            size -= 1
+        for tag, width in zip(tags, widths):
+            edge = [(x,chip_y),(x+width-10,chip_y),(x+width,chip_y+10),
+                    (x+width,chip_y+63),(x,chip_y+63)]
+            cmd("polygon",edge,fill=paper)
+            cmd("line",edge+[edge[0]],fill=ink,width=3)
+            centered(x+width/2,chip_y+31.5,tag,size,bold=True)
+            stickers.append((x-5,chip_y-6,x+width+6,chip_y+70))
+            x += width+18
         y += height
     footer_height = 228
-    rect(0,y,900,footer_height,"#FBFBF8")
-    text(48,y+49,"扫码获取口令",46,bold=True)
-    text(48,y+124,"发给自己的 Agent 总结出图。",34)
+    rect(0,y,900,footer_height,paper)
+    cmd("line",(48,y+2,852,y+2),fill=ink,width=2)
+    text(48,y+56,"扫码获取口令",48,bold=True)
+    text(48,y+126,"发给自己的 Agent 总结出图。",34)
     cell = 5
     modules = len(QR_ROWS)
     qr_size = (modules+8)*cell
     qr_x, qr_y = 852-qr_size, y+(footer_height-qr_size)//2
+    tip, mid = qr_x-24, y+footer_height//2
+    cmd("line",(tip-43,mid,tip,mid),fill=ink,width=4)
+    cmd("line",[(tip-14,mid-13),(tip,mid),(tip-14,mid+13)],fill=ink,width=4)
     rect(qr_x,qr_y,qr_size,qr_size,"#FFFFFF")
     for row,bits in enumerate(QR_ROWS):
         for col in range(modules):

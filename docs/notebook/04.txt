@@ -25,27 +25,37 @@
         return size
 
     scope_title = {"thread": "本次对话精选", "fragments": "聊天片段精选"}.get(r["scope"])
-    type_caption = "本次类型" if scope_title else "年度类型"
-    type_name = name if theme else "待定"
-    caption_width = round(font(26).getlength(type_caption))
-    type_width = round(font(34).getlength(type_name))
-    type_left = 852 - (16 + caption_width + 12 + type_width + 16)
-    rect(type_left, 36, 852-type_left, 56, tint, ink)
-    centered(type_left+16+caption_width/2, 64, type_caption, 26)
-    centered(852-16-type_width/2, 64, type_name, 34, bold=True)
+    cover_label = scope_title or "年度报告"
+    cover_title = name if theme else "类型待定"
+    cover_height = 237
+    rect(0, 0, 900, cover_height, calendar_ink)
+    rect(0, cover_height-8, 900, 8, signal)
+    year_text = str(year)
+    year_width = round(font(32).getlength(year_text))
+    caption_width = round(font(28).getlength(cover_label))
+    stamp_left = 852 - (16 + year_width + 28 + caption_width + 16)
+    rect(stamp_left, 36, 852-stamp_left, 56, tint)
+    divider = stamp_left+16+year_width+14
+    cmd("line", (divider, 49, divider, 79), fill=ink, width=2)
+    centered(stamp_left+16+year_width/2, 64, year_text, 32, bold=True)
+    centered(852-16-caption_width/2, 64, cover_label, 28, bold=True)
 
-    badge = r["name"]+"的"
-    badge_size = fitted(badge, type_left-22-48-44, 34)
+    badge = r["name"]
+    badge_size = fitted(badge, stamp_left-22-48-44, 34)
     badge_w = round(font(badge_size).getlength(badge))+44
     rect(48, 36, badge_w, 56, accent)
     centered(48+badge_w/2, 64, badge, badge_size, on_accent, True)
-    title = f"{name} 报告" if theme else (scope_title or "AI 相处报告")
-    title = f"{year} {title}"
-    text(48, 115, title, fitted(title, 804, 68), bold=True)
-    if scope_title and theme:
-        text(48, 200, scope_title, 32, bold=True)
-    text(852, 202, "扫图底二维码获取口令 ↓", 28, align="rt")
-    y = 260
+    display = font(98)
+    here = Path(globals().get("__file__", "render_chat_png.py")).resolve().parent
+    for folder in (here.parent/"assets", here/"assets", here):
+        try:
+            display = ImageFont.truetype(str(folder/"SmileySans-Oblique.woff2"), 98)
+            break
+        except OSError:
+            continue
+    cmd("text", (48, 108), cover_title, font=display, fill="#FFFFFF", anchor="lt",
+        stroke_width=0 if display.getname()[0] == "Smiley Sans" else 1, stroke_fill="#FFFFFF")
+    y = cover_height+32
 
     quotes = r["quotes"]
     quote_first = theme == "puai" and bool(quotes)
@@ -64,10 +74,13 @@
         size = 50 if i == 0 else 46
         repeats = r["repeats"][i]
         meta_width = ((157 if dt else 0)+(92 if r["reply"] else 0)+font(32).getlength(f"复读×{repeats}")) if repeats else 0
-        width = min(804, max(540, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
-        x = 852-width if style == 1 and len(quotes) > 1 else 48
+        align_right = style == 1 and len(quotes) > 1
+        max_width = min(750 if align_right else 804, max(416, round(max(font(size).getlength(quote)+8, meta_width))+2*inset))
         emphasis = r["emphases"][i]
-        rows = wrap(quote, width-2*inset, size, emphasis, spoken=True)
+        rows = wrap(quote, max_width-2*inset, size, emphasis, spoken=True)
+        widest_row = round(max(font(size).getlength(row) for row in rows))
+        width = max_width if repeats else min(max_width, max(416, max_width-148, widest_row+2*inset+8))
+        x = 852-width if align_right else 48
         header = bool(dt or r["reply"] or repeats)
         body_top = (80 if burst else 78) - (0 if header else 49)
         leading = round(size*1.35)
@@ -84,6 +97,8 @@
             cmd("polygon", pts, fill=fill)
             cmd("line", pts+[pts[0]], fill=ink, width=3, joint="curve")
         else:
+            if i == 0:
+                rect(x+5, top+7, width, height, ink, radius=28)
             rect(x, top, width, height, fill, ink, 28)
             tail = x+width-145 if style else x+82
             base = top+height
@@ -101,14 +116,19 @@
             text(x+width-inset,meta_y,f"复读×{repeats}",30,fg,True,"rt")
         start = quote.find(emphasis) if emphasis else -1
         end, offset = start+len(emphasis), 0
-        hi, hi_text = [(tint,ink), (accent,on_accent), (calendar_ink,"#FFFFFF")][style]
+        hi, hi_text = [(signal,ink), (accent,on_accent), (calendar_ink,"#FFFFFF")][style]
+        if burst and style == 1 and on_pull not in (paper, "#FFFFFF"):
+            hi, hi_text = calendar_ink, "#FFFFFF"
         for line_no, row in enumerate(rows):
             at = top+body_top+line_no*leading
             a, b = max(start-offset, 0), min(end-offset, len(row))
             if a < b:
                 xx = body_x + font(size).getlength(row[:a])
                 right = body_x + font(size).getlength(row[:b])
-                rect(round(xx)-2,at-4,round(right-xx)+4,size+9,hi)
+                if style == 0:
+                    rect(round(xx)-2, at+round(size*.48), round(right-xx)+4, round(size*.48), hi)
+                else:
+                    rect(round(xx)-2, at-4, round(right-xx)+4, size+8, hi)
                 if a:
                     text(body_x, at, row[:a], size, fg, True)
                 text(xx, at, row[a:b], size, hi_text, True)

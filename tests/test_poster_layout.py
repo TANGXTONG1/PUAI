@@ -25,7 +25,7 @@ class PosterLayout(unittest.TestCase):
 
     def test_quote_wrap_keeps_the_setup_and_its_turn_in_separate_lines(self):
         line = "我是想省十分钟，结果你让我提前半小时出门。"
-        data = poster.parse_receipt("PUAI 2026\n原话："+line+"\n划线：提前半小时出门。")
+        data = poster.parse_receipt("PUAI 2026\n署名：青碗\n原话："+line+"\n划线：提前半小时出门。")
         font = poster.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
         with patch.object(ImageDraw.ImageDraw, "text") as painted:
             poster.draw_report(data, font)
@@ -56,13 +56,13 @@ class PosterLayout(unittest.TestCase):
         face = poster.load_font(ROOT / "assets/SmileySans-Oblique.woff2")
         with patch.object(ImageDraw.ImageDraw, "text", trace):
             image = poster.draw_report(data, face)
-        order = ["2026 PUAI 报告", "本次对话精选", "这点 token", "我继续。", "尾款呢？",
+        order = ["本次对话精选", "PUAI", "这点 token", "我继续。", "尾款呢？",
                  "记录里，你发出了", "发言日历", "片段标签", "扫码获取口令"]
         self.assertEqual([positions[k][1] for k in order], sorted(positions[k][1] for k in order))
         self.assertIn("复读×4", positions)
-        for label, palette_slot in [("这点 token", 7), ("尾款呢？", 2)]:
+        for label, palette_slot, offset in [("这点 token", 6, 26), ("尾款呢？", 2, -3)]:
             x, y = positions[label]
-            self.assertEqual(image.getpixel((round(x), round(y)-3)), ImageColor.getrgb(poster.PALETTES["puai"][palette_slot]))
+            self.assertEqual(image.getpixel((round(x)-1, round(y)+offset)), ImageColor.getrgb(poster.PALETTES["puai"][palette_slot]))
 
     def test_empty_or_generic_endings_do_not_get_an_invented_highlight(self):
         for line in ["就看看。", "少算了，对吧？", "我问的是，这样真的每次都能百分之百保证永远算对吗？"]:
